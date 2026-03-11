@@ -432,6 +432,7 @@ export default function EnergyTransitionAtlas() {
 
   /* ── Mobile filter panel ── */
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   /* ── Form states ── */
   const [submitForm, setSubmitForm] = useState({ title:"", url:"", brand:"", dim:"", topic:"", inf:"", year:"", country:"", org:"", desc:"", img:"" });
@@ -642,7 +643,10 @@ export default function EnergyTransitionAtlas() {
             className={`font-['League_Gothic'] text-[#FFF8E5] text-xl tracking-widest uppercase transition-opacity duration-300 cursor-pointer ${
               scrolledPastHero ? "opacity-100" : "opacity-0"
             }`}
-            onClick={() => navigateTo("#/")}
+            onClick={() => {
+              if (isHome) window.scrollTo({ top: 0, behavior: "smooth" });
+              else navigateTo("#/");
+            }}
           >
             Energy Transition Atlas
           </h1>
@@ -670,7 +674,10 @@ export default function EnergyTransitionAtlas() {
       {/* ─── 3. Hero Section ─── */}
       <section ref={heroRef} className="bg-[#58044D] px-6 py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-['League_Gothic'] text-white text-5xl lg:text-7xl uppercase tracking-wide leading-tight">
+          <h2
+            className={`font-['League_Gothic'] text-white text-5xl lg:text-7xl uppercase tracking-wide leading-tight ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
+            onClick={() => { if (!isHome) navigateTo("#/"); }}
+          >
             Energy Transition Atlas
           </h2>
           <p className="mt-4 text-[#FFF8E5] text-lg lg:text-xl font-light max-w-3xl leading-relaxed opacity-90">
@@ -707,7 +714,7 @@ export default function EnergyTransitionAtlas() {
                 ))}
               </div>
               <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8">Our Vision</h3>
-              <p>We believe the energy transition should be nature-positive and people-positive. The Atlas aims to break down silos between organisations, sectors, and borders by making successful approaches discoverable and shareable.</p>
+              <p>We believe the energy transition should be Nature-Positive and People-Positive. The Atlas aims to break down silos between organisations, sectors, and borders by making successful approaches discoverable and shareable.</p>
             </div>
           </div>
         </section>
@@ -744,14 +751,9 @@ export default function EnergyTransitionAtlas() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Brand</label>
-                    <select required value={submitForm.brand} onChange={(e) => setSubmitForm(f => ({ ...f, brand: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors">
-                      <option value="">Select...</option>
-                      <option value="RGI">RGI</option>
-                      <option value="OCEaN">OCEaN</option>
-                      <option value="GINGR">GINGR</option>
-                      <option value="SL4B">SL4B</option>
-                    </select>
+                    <label className="block text-sm font-medium text-[#424244] mb-1">Source Organisation</label>
+                    <p className="text-xs text-[#424244] opacity-60 mb-2">The organisation or website where this practice is published</p>
+                    <input type="text" required value={submitForm.brand} onChange={(e) => setSubmitForm(f => ({ ...f, brand: e.target.value }))} placeholder="e.g. TenneT, RTE, IUCN..." className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-[#424244] mb-1">Theme</label>
@@ -829,8 +831,8 @@ export default function EnergyTransitionAtlas() {
                   Germany
                 </p>
                 <p>
-                  <a href="mailto:info@renewables-grid.eu" className="text-[#58044D] font-medium hover:underline">
-                    info@renewables-grid.eu
+                  <a href="mailto:communication@renewables-grid.eu" className="text-[#58044D] font-medium hover:underline">
+                    communication@renewables-grid.eu
                   </a>
                 </p>
               </div>
@@ -875,21 +877,24 @@ export default function EnergyTransitionAtlas() {
           {/* ─── 4. Filter Section ─── */}
           <section className="bg-[#FFF8E5] px-6 py-6">
             <div className="max-w-7xl mx-auto space-y-4">
-              {/* Desktop: Search row + view toggles + sort + more options */}
+              {/* Desktop: All controls in one row — filters left, search right */}
               <div className="hidden md:flex items-center gap-3 flex-wrap">
-                <div className="relative flex-1 min-w-[200px] max-w-[220px]">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#424244] opacity-50">
-                    <IconSearch />
-                  </span>
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search practices..."
-                    aria-label="Search practices"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
-                  />
-                </div>
+                {basicFilters.map((f) => (
+                  <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
+                ))}
+                <button
+                  onClick={() => setMoreOptions(!moreOptions)}
+                  aria-label={moreOptions ? "Hide additional filters" : "Show additional filters"}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm transition-colors ${
+                    moreOptions
+                      ? "bg-[#58044D] text-white border-[#58044D]"
+                      : "border-[#C9C9C9] text-[#424244] hover:border-[#58044D] bg-white"
+                  }`}
+                >
+                  {moreOptions ? <IconX /> : <IconSettings />}
+                  <span>More Options</span>
+                </button>
+                <SortDropdown value={sortMode} onChange={setSortMode} />
                 <button
                   onClick={() => setViewMode("list")}
                   aria-label="List view"
@@ -912,24 +917,7 @@ export default function EnergyTransitionAtlas() {
                 >
                   <IconGridView />
                 </button>
-                <SortDropdown value={sortMode} onChange={setSortMode} />
-                <button
-                  onClick={() => setMoreOptions(!moreOptions)}
-                  aria-label={moreOptions ? "Hide additional filters" : "Show additional filters"}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm transition-colors ${
-                    moreOptions
-                      ? "bg-[#58044D] text-white border-[#58044D]"
-                      : "border-[#C9C9C9] text-[#424244] hover:border-[#58044D] bg-white"
-                  }`}
-                >
-                  {moreOptions ? <IconX /> : <IconSettings />}
-                  <span>More Options</span>
-                </button>
-              </div>
-
-              {/* Mobile: Filters button + sort only */}
-              <div className="flex md:hidden items-center gap-3">
-                <div className="relative flex-1 min-w-0">
+                <div className="ml-auto relative min-w-[200px] max-w-[220px]">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#424244] opacity-50">
                     <IconSearch />
                   </span>
@@ -937,30 +925,78 @@ export default function EnergyTransitionAtlas() {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search..."
+                    placeholder="Search practices..."
                     aria-label="Search practices"
                     className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
                   />
                 </div>
+              </div>
+
+              {/* Desktop: Expanded filters — left-aligned, compact */}
+              {moreOptions && (
+                <div className="hidden md:flex items-center gap-3 flex-wrap">
+                  {expandedFilters.map((f) => (
+                    <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
+                  ))}
+                </div>
+              )}
+
+              {/* Mobile: Infrastructure + Theme + More Filters + Search icon + Sort */}
+              <div className="flex md:hidden items-center gap-2 flex-wrap">
+                <FilterDropdown label={basicFilters[0].label} options={basicFilters[0].options} selected={basicFilters[0].selected} onChange={basicFilters[0].onChange} />
+                <FilterDropdown label={basicFilters[1].label} options={basicFilters[1].options} selected={basicFilters[1].selected} onChange={basicFilters[1].onChange} />
                 <button
                   onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-                  aria-label="Toggle filters"
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
+                  aria-label="Toggle additional filters"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                     filterPanelOpen
                       ? "bg-[#58044D] text-white border-[#58044D]"
                       : "bg-white text-[#58044D] border-[#58044D]"
                   }`}
                 >
                   <IconSettings />
-                  <span>Filters</span>
+                  <span>More</span>
                 </button>
-                <SortDropdown value={sortMode} onChange={setSortMode} />
+                <div className="ml-auto flex items-center gap-2">
+                  <button
+                    onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                    aria-label="Toggle search"
+                    className={`p-2.5 rounded-full border transition-colors ${
+                      mobileSearchOpen
+                        ? "border-[#58044D] text-[#58044D] bg-white"
+                        : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
+                    }`}
+                  >
+                    <IconSearch />
+                  </button>
+                  <SortDropdown value={sortMode} onChange={setSortMode} />
+                </div>
               </div>
 
-              {/* Mobile filter panel */}
+              {/* Mobile: Expandable search bar */}
+              {mobileSearchOpen && (
+                <div className="md:hidden">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#424244] opacity-50">
+                      <IconSearch />
+                    </span>
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search practices..."
+                      aria-label="Search practices"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile: Expanded filter panel (Topic + expanded filters + view toggles) */}
               {filterPanelOpen && (
                 <div className="md:hidden flex flex-col gap-3">
-                  {[...basicFilters, ...expandedFilters].map((f) => (
+                  <FilterDropdown label={basicFilters[2].label} options={basicFilters[2].options} selected={basicFilters[2].selected} onChange={basicFilters[2].onChange} />
+                  {expandedFilters.map((f) => (
                     <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
                   ))}
                   <div className="flex items-center gap-3">
@@ -987,22 +1023,6 @@ export default function EnergyTransitionAtlas() {
                       <IconGridView />
                     </button>
                   </div>
-                </div>
-              )}
-
-              {/* Desktop: Filter pills (basic) */}
-              <div className="hidden md:flex items-center gap-3 flex-wrap">
-                {basicFilters.map((f) => (
-                  <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
-                ))}
-              </div>
-
-              {/* Desktop: Expanded filters */}
-              {moreOptions && (
-                <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {expandedFilters.map((f) => (
-                    <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
-                  ))}
                 </div>
               )}
             </div>
@@ -1182,7 +1202,7 @@ export default function EnergyTransitionAtlas() {
             <div>
               <GreyscaleRGILogo />
               <p className="mt-4 text-[#C9C9C9] text-sm leading-relaxed">
-                A joint project by RGI, OCEaN, GINGR, and SL4B.
+                The Energy Transition Atlas is a project by the Renewables Grid Initiative which aims to break down silos between organisations, sectors, and borders by making successful approaches to a Nature- and People-Positive energy transition discoverable and shareable.
               </p>
             </div>
             {/* Col 2: Contact */}
@@ -1194,8 +1214,8 @@ export default function EnergyTransitionAtlas() {
                 12101 Berlin, Germany
               </p>
               <p className="mt-2">
-                <a href="mailto:info@renewables-grid.eu" className="text-[#FFF8E5] text-sm hover:text-white transition-colors">
-                  info@renewables-grid.eu
+                <a href="mailto:communication@renewables-grid.eu" className="text-[#FFF8E5] text-sm hover:text-white transition-colors">
+                  communication@renewables-grid.eu
                 </a>
               </p>
             </div>
