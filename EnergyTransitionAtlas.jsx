@@ -238,7 +238,7 @@ function FilterDropdown({ label, options, selected, onChange }) {
         className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
           active
             ? "bg-[#58044D] text-white border-[#58044D]"
-            : "bg-transparent text-[#58044D] border-[#58044D]"
+            : "bg-white text-[#58044D] border-[#58044D]"
         }`}
       >
         <span>{label}{active ? ` (${selected.length})` : ""}</span>
@@ -360,12 +360,20 @@ export default function EnergyTransitionAtlas() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const pageItems = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-  /* ── pagination range ── */
+  /* ── pagination range (truncated: 1 2 ... 10 style) ── */
   const paginationNumbers = useMemo(() => {
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) pages.push(i);
-    return pages;
-  }, [totalPages]);
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages = new Set([1, totalPages, page, page - 1, page + 1]);
+    const sorted = [...pages].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
+    const result = [];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push("...");
+      result.push(sorted[i]);
+    }
+    return result;
+  }, [totalPages, page]);
 
   /* ── basic filters (always visible) ── */
   const basicFilters = [
@@ -407,9 +415,9 @@ export default function EnergyTransitionAtlas() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-['DM_Sans']">
+    <div className="min-h-screen flex flex-col font-['Kantumruy_Pro']">
       {/* Google Fonts */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=League+Gothic&family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap');`}</style>
 
       {/* ─── 1. Brand Bar ─── */}
       <div className="bg-[#424244] px-6 py-2">
@@ -417,13 +425,14 @@ export default function EnergyTransitionAtlas() {
           <span className="text-white text-xs font-semibold tracking-wider">RGI</span>
           <span className="text-white text-xs font-semibold tracking-wider">OCEaN</span>
           <span className="text-white text-xs font-semibold tracking-wider">GINGR</span>
+          <span className="text-white text-xs font-semibold tracking-wider">SL4B</span>
         </div>
       </div>
 
       {/* ─── 2. Header Bar (sticky) ─── */}
       <header className="sticky top-0 z-40 bg-[#58044D] px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="font-['DM_Sans'] text-[#FFF8E5] text-lg tracking-widest uppercase font-bold">
+          <h1 className="font-['League_Gothic'] text-[#FFF8E5] text-xl tracking-widest uppercase">
             Energy Transition Atlas
           </h1>
           <button className="border border-[#FFF8E5] text-[#FFF8E5] px-5 py-1.5 rounded-full text-sm font-medium tracking-wide hover:bg-[#FFF8E5] hover:text-[#58044D] transition-colors">
@@ -435,11 +444,11 @@ export default function EnergyTransitionAtlas() {
       {/* ─── 3. Hero Section ─── */}
       <section className="bg-[#58044D] px-6 py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-['DM_Sans'] text-white text-4xl lg:text-5xl font-extrabold uppercase tracking-wide leading-tight">
+          <h2 className="font-['League_Gothic'] text-white text-5xl lg:text-7xl uppercase tracking-wide leading-tight">
             Energy Transition Atlas
           </h2>
-          <p className="mt-4 text-[#FFF8E5] text-lg lg:text-xl font-light max-w-2xl leading-relaxed opacity-90">
-            Accelerating the energy transition while restoring nature and empowering communities
+          <p className="mt-4 text-[#FFF8E5] text-lg lg:text-xl font-light max-w-3xl leading-relaxed opacity-90">
+            Explore a growing collection of real-world energy transition practices from across organisations and projects — a shared navigator breaking down silos between partners, sectors, and borders.
           </p>
         </div>
       </section>
@@ -466,7 +475,7 @@ export default function EnergyTransitionAtlas() {
               className={`p-2.5 rounded-lg border transition-colors ${
                 viewMode === "list"
                   ? "border-[#58044D] text-[#58044D] bg-white"
-                  : "border-[#C9C9C9] text-[#424244] bg-transparent hover:border-[#58044D]"
+                  : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
               }`}
               title="List view"
             >
@@ -477,7 +486,7 @@ export default function EnergyTransitionAtlas() {
               className={`p-2.5 rounded-lg border transition-colors ${
                 viewMode === "grid"
                   ? "border-[#58044D] text-[#58044D] bg-white"
-                  : "border-[#C9C9C9] text-[#424244] bg-transparent hover:border-[#58044D]"
+                  : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
               }`}
               title="Grid view"
             >
@@ -647,19 +656,23 @@ export default function EnergyTransitionAtlas() {
               >
                 <IconChevronLeft />
               </button>
-              {paginationNumbers.map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setPage(n)}
-                  className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-                    n === page
-                      ? "bg-[#58044D] text-white"
-                      : "text-[#424244] hover:bg-[#FFF8E5]"
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
+              {paginationNumbers.map((n, i) =>
+                n === "..." ? (
+                  <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-sm text-[#424244] opacity-50">...</span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                      n === page
+                        ? "bg-[#58044D] text-white"
+                        : "text-[#424244] hover:bg-[#FFF8E5]"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                )
+              )}
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
@@ -675,11 +688,11 @@ export default function EnergyTransitionAtlas() {
       {/* ─── 7. Footer ─── */}
       <footer className="bg-[#424244] px-6 py-10">
         <div className="max-w-7xl mx-auto">
-          <h4 className="font-['DM_Sans'] text-[#FFF8E5] text-xl font-bold uppercase tracking-widest">
+          <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-2xl uppercase tracking-widest">
             Energy Transition Atlas
           </h4>
           <p className="mt-4 text-[#FFF8E5] opacity-60 text-sm leading-relaxed max-w-2xl">
-            A joint project by the Renewables Grid Initiative (RGI), the Offshore Coalition for Energy and Nature (OCEaN), and the Global Initiative for Nature, Grids and Renewables (GINGR).
+            A joint project by the Renewables Grid Initiative (RGI), the Offshore Coalition for Energy and Nature (OCEaN), the Global Initiative for Nature, Grids and Renewables (GINGR), and SafeLines4Birds (SL4B).
           </p>
         </div>
       </footer>
