@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The **Energy Transition Atlas** is a mobile-first single-page web application that displays a searchable, filterable directory of ~302 energy transition best practices. It is owned by the Global Initiative for Nature, Grids and Renewables (GINGR), a joint initiative of the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN).
+The **Energy Transition Atlas** is a mobile-first single-page web application that displays a searchable, filterable directory of ~321 energy transition best practices. It is owned by the Global Initiative for Nature, Grids and Renewables (GINGR), a joint initiative of the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN).
 
 **Live site:** https://beston54.github.io/energy-transition-atlas/
 **Repo:** https://github.com/beston54/energy-transition-atlas
@@ -20,11 +20,13 @@ The **Energy Transition Atlas** is a mobile-first single-page web application th
 | File | Purpose |
 |------|---------|
 | `index.html` | Entry point — loads React, Babel, Tailwind, and the JSX component |
-| `EnergyTransitionAtlas.jsx` | Main React component (~1700 lines). Contains all UI, filters, data, and logic |
-| `practices_master.csv` | Master data CSV (302 practices, 13 columns). Source of truth for practice data |
+| `EnergyTransitionAtlas.jsx` | Main React component (~1800 lines). Contains all UI, filters, data, and logic |
+| `practices_master.csv` | Master data CSV (321 practices, 13 columns). Source of truth for practice data |
 | `build_master_csv.py` | Python build script that merges Excel + scraped website data into the CSV |
 | `csv_to_jsx.py` | Converts `practices_master.csv` into the JS array and injects it into the JSX file |
 | `scrape_panorama.py` | Two-phase IUCN Panorama scraper: browser JS + Python CSV merge |
+| `scrape_ocean.py` | OCEaN Enhancement & Restoration Projects scraper (sitemap + BeautifulSoup) |
+| `classify_crosscutting.py` | Script to identify and apply cross-cutting theme/topic classifications |
 | `panorama_raw.json` | Raw scraped data from Panorama (698 solutions, 17 energy-relevant) |
 | `gingr-logo-grey.svg` | GINGR logo used in the footer |
 | `ETA_Atlas_Prototype.jsx` | Earlier prototype version (kept for reference, not used) |
@@ -66,8 +68,8 @@ Run: `python3.11 csv_to_jsx.py`
 |--------|------|-------------|
 | `id` | int | Auto-assigned sequential ID |
 | `title` | string | Practice title |
-| `url` | string | Link to full practice page on renewables-grid.eu or panorama.solutions |
-| `brand` | string | "RGI" or "Panorama" — determines Atlas Partner filter and source linking |
+| `url` | string | Link to full practice page on renewables-grid.eu, panorama.solutions, or offshore-coalition.eu |
+| `brand` | string | "RGI", "OCEaN", or "Panorama" — determines Atlas Partner filter and source linking |
 | `theme` | string | One of: People, Technology, Nature, Planning (maps to `dim` in JSX) |
 | `topic` | string | Normalized topic (e.g., "Bird Protection", "Climate Adaptation & Resilience") |
 | `inf` | string | Infrastructure type filter (often empty) |
@@ -80,7 +82,7 @@ Run: `python3.11 csv_to_jsx.py`
 
 ## Frontend Component Structure (EnergyTransitionAtlas.jsx)
 
-- **PRACTICES array** (lines 26–329): Inline data, 302 practice objects
+- **PRACTICES array** (lines 26–348): Inline data, 321 practice objects
 - **DIMENSION_TOPICS** (lines ~331-342): Dynamically computed theme→topic mapping from PRACTICES data
 - **THEME_COLORS** (lines ~358-366): Theme-specific color classes (amber/emerald/sky/violet) + `themeClasses()` helper
 - **Filter state**: Multi-select dropdowns for Infrastructure, Theme, Topic, Country, Year, Organisation + Award toggle
@@ -128,6 +130,19 @@ python3.11 scrape_panorama.py
 python3.11 csv_to_jsx.py
 ```
 
+### Refresh OCEaN practices
+```bash
+python3.11 scrape_ocean.py   # Scrapes 20 Enhancement & Restoration Projects
+python3.11 csv_to_jsx.py     # Updates the JSX inline data
+```
+
+### Reclassify cross-cutting practices
+```bash
+python3.11 classify_crosscutting.py  # DRY_RUN=True by default, prints candidates
+# Review output, then set DRY_RUN=False in script and re-run to apply
+python3.11 csv_to_jsx.py
+```
+
 ### Add a new practice manually
 Add a row to `practices_master.csv`, then run `python3.11 csv_to_jsx.py` to sync.
 
@@ -141,6 +156,8 @@ Add a row to `practices_master.csv`, then run `python3.11 csv_to_jsx.py` to sync
 - `"Europe"` and `"Worldwide"` are used as country values for multi-country practices
 - **17 Panorama practices** have no descriptions (scraper captured boilerplate sidebar text; descriptions were cleared)
 - **17 Panorama practices** have no year data (Panorama doesn't expose publication dates in the same way)
+- **19 OCEaN practices** have descriptions scraped from project pages (Objectives sections)
+- **23 practices** have composite (cross-cutting) themes and/or topics (e.g., "Nature, Technology")
 
 ---
 
@@ -238,6 +255,55 @@ All 21 sprint tasks are now complete. No remaining tasks.
 
 **Final counts:** 302 practices total (285 RGI + 17 Panorama)
 
+---
+
+## 7-Task Improvement Sprint — COMPLETE (2026-03-26)
+
+### Completed
+
+**Task 1: Remove "Grids, offshore wind" infrastructure value**
+- Practice ID 235 ("HV Voltage Source Converter for Skagerrak 4 Interconnector") changed from `"Grids, Offshore wind"` to `"Grids"`
+- Infrastructure filter dropdown no longer shows composite value
+
+**Task 2: Cross-cutting practices classification**
+- Created `classify_crosscutting.py` with keyword-based analysis of title + description
+- 11 practices reclassified with composite themes (e.g., Nature → Nature, Technology)
+- 2 practices gained composite topics (e.g., Bird Protection → Bird Protection, Monitoring & Reporting)
+- Total composite practices: 12 → 23
+- Key cross-cuts: AI/IoT bird detection (Nature+Tech), planning dialogues (People+Planning), nature-based solutions (Nature+Tech)
+
+**Task 3: Better Panorama practice photos**
+- 15 of 17 Panorama practices updated from org logos to actual project photos
+- Used Chrome browser to bypass Cloudflare and extract `cover_small` style images from Panorama solution pages
+- 2 practices already had suitable photos (IDs 299, 308)
+
+**Task 4: OCEaN scraper and practices**
+- Created `scrape_ocean.py` — fetches sitemap from `oc_db_project-sitemap.xml`, scrapes 20 Enhancement & Restoration Project pages
+- 19 new OCEaN practices added (IDs 309–327)
+- 1 RGI practice re-branded to OCEaN ("Fish hotels", ID 125) via fuzzy title matching
+- Theme: mostly Nature, topic: mostly "Nature Conservation & Restoration", inf: "Offshore wind"
+- OCEaN automatically appears in Atlas Partner filter (brand system is dynamic)
+
+**Task 5: About page — Vision, Mission & Values**
+- Moved "Our Vision" section above Contributing Partners (was below)
+- Updated vision text to match gingr.org: "A rapid energy transition enabled by wind, solar and electricity grids..."
+- Added "Our Mission" section with GINGR's monitoring/reporting framework mission
+- Added "Our Values" section with Nature-Positive (emerald accent) and People-Positive (amber accent) cards
+
+**Task 6: Footer — GINGR only**
+- Removed `<GreyscaleRGILogo />` and vertical divider from footer
+- Updated contact to "GINGR Secretariat, c/o Renewables Grid Initiative" with `info@gingr.org`
+- Updated copyright to "© 2026 GINGR – Global Initiative for Nature, Grids and Renewables"
+- Changed all `communication@renewables-grid.eu` references across the site to `info@gingr.org`
+
+**Task 7: Mobile filter layout**
+- Mobile filter row changed from `flex-wrap` (two lines) to horizontally scrollable single row
+- Added `.scrollbar-hide` CSS utility for clean scroll UX
+- Search icon and Sort dropdown pinned to the right with `flex-shrink-0`
+- All filter buttons/dropdowns have `flex-shrink-0` to prevent squishing
+
+**Final counts:** 321 practices total (284 RGI + 20 OCEaN + 17 Panorama)
+
 ## Learnings for Future Sessions
 
 - **Always re-read file before editing.** The JSX file is ~1650 lines and frequently modified. The Edit tool requires a fresh read — stale reads cause "file modified since read" errors.
@@ -249,8 +315,14 @@ All 21 sprint tasks are now complete. No remaining tasks.
 - **WCAG AA contrast colors.** Use `#6B6B6D` for secondary text on cream `#FFF8E5` background (replaces `opacity-60`), and `#767676` for tertiary/placeholder text (replaces `opacity-50`). Both pass WCAG AA at these sizes.
 - **Award filter is now a standalone toggle button**, not a FilterDropdown. It uses `aria-pressed` and `IconAward`. If re-adding it to expandedFilters, remember to also remove the standalone button to avoid duplication.
 - **SubmissionCriteriaModal has a focus trap.** Uses `useEffect` with keydown listener for Tab cycling and Escape close. Focus is restored to the previously focused element on close. This pattern should be replicated for any future modals.
-- **Mobile filter layout.** Primary row now shows all 3 basicFilters (Infrastructure, Theme, Topic) + Award toggle + More button. The expanded panel only shows Year, Location, Organisation, Atlas Partner, and view toggles. Don't re-add Topic or Award to the expanded panel.
+- **Mobile filter layout.** Primary row is now a horizontally scrollable single row with basicFilters (Infrastructure, Theme, Topic) + Award toggle + More button, with search icon and Sort pinned right. The expanded panel only shows Year, Location, Organisation, Atlas Partner, and view toggles. Don't re-add Topic or Award to the expanded panel.
 - **Panorama scraper limitations.** Cloudflare blocks direct Python HTTP requests to panorama.solutions. The browser JS snippet must be pasted manually in DevTools. The scraper's description extraction often captures sidebar boilerplate instead of actual content — descriptions may need manual clearing or a better CSS selector.
 - **Panorama map API.** The endpoint `/en/rest/explore-solution/json/map?keyword=X&field_ecosystem=All` returns GeoJSON features with `nid` and `title`. Broad keywords (e.g., "climate mitigation") return many non-energy results; the Python-side `ENERGY_KEYWORDS` filter is essential.
 - **Brand field drives Atlas Partner filter.** The `allBrands` computed set and `selBrands` filter state are derived dynamically from PRACTICES data. Adding a new brand value (e.g., "Panorama") automatically creates a new filter option. The `BRAND_LINKS` constant maps brand names to URLs for the partner link overlay.
 - **Planning reclassification pitfalls.** Keywords like "plan" match "power plant", "sea " matches coastal locations. Manual review is essential — automated reclassification should be conservative and use multi-word patterns.
+- **OCEaN website is scrapable with Python.** Unlike Panorama (Cloudflare-blocked), offshore-coalition.eu allows direct `requests` + `BeautifulSoup` scraping. The sitemap at `oc_db_project-sitemap.xml` lists all 20 Enhancement & Restoration Projects. Metadata fields use `div.font-bold.text-secondary` label/value patterns.
+- **Cross-cutting classification requires DRY_RUN.** The `classify_crosscutting.py` script defaults to `DRY_RUN = True` — always review candidates before applying. Keywords like "community" or "stakeholder" in Nature descriptions are strong signals for adding People as a second theme.
+- **Mobile filter scrollbar-hide pattern.** The `.scrollbar-hide` CSS class hides scrollbars across browsers (webkit, Firefox, IE/Edge). Applied to the mobile filter row with `overflow-x-auto`. Filters scroll horizontally while search/sort stay pinned right via `flex-shrink-0`.
+- **Panorama image replacement via browser.** Cloudflare blocks WebFetch/requests, so use Chrome MCP tools to visit each solution page. The `cover_small` Drupal image style provides good card images. Look for images via `.field--name-field-image img` or `og:image` meta tag — avoid `organisation-logo` path images.
+- **Footer and contact email.** The footer now uses GINGR-only branding with `info@gingr.org`. All email references across Submit form, Contact form, and footer were updated. The Privacy Policy link still points to renewables-grid.eu.
+- **About page structure.** Order is: intro paragraphs → Vision → Mission → Values (2 cards) → Contributing Partners. Values use `border-l-4` with emerald/amber accents matching the Nature/People theme colors.
