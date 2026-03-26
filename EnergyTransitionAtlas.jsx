@@ -1656,12 +1656,12 @@ export default function EnergyTransitionAtlas() {
                 </div>
               )}
 
-              {/* Mobile: Infrastructure + Theme + Topic + Award + More Filters + Search icon + Sort */}
-              <div className="flex md:hidden items-center gap-2">
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+              {/* Mobile: Two rows — filters scroll, search+sort below */}
+              <div className="md:hidden space-y-2">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {basicFilters.map((f) => (
                     <div key={f.label} className="flex-shrink-0">
-                      <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} />
+                      <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
                     </div>
                   ))}
                   <button
@@ -1689,7 +1689,7 @@ export default function EnergyTransitionAtlas() {
                     <span>More</span>
                   </button>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
                     aria-label="Toggle search"
