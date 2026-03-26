@@ -1176,13 +1176,13 @@ export default function EnergyTransitionAtlas() {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
 
-      {/* ─── 1. Brand Bar ─── */}
-      <div className="bg-[#424244] px-6 py-2">
+      {/* ─── 1. Brand Bar (desktop only) ─── */}
+      <div className="hidden md:block bg-[#424244] px-6 py-2">
         <div className="max-w-7xl mx-auto flex items-center gap-4 overflow-x-auto scrollbar-hide">
           <span className="text-[#C9C9C9] text-xs whitespace-nowrap flex-shrink-0">A platform by</span>
           {[
-            { name: "GINGR", logo: "logos/gingr.svg", url: BRAND_LINKS.GINGR },
-            { name: "RGI", logo: "logos/rgi.svg", url: BRAND_LINKS.RGI },
+            { name: "GINGR", logo: "logos/gingr-white.svg", url: BRAND_LINKS.GINGR },
+            { name: "RGI", logo: "logos/rgi-white.svg", url: BRAND_LINKS.RGI },
             { name: "IUCN", logo: "logos/iucn.png", url: BRAND_LINKS.IUCN, invert: true },
           ].map(b => (
             <a key={b.name} href={b.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity" title={b.name}>
@@ -1658,9 +1658,9 @@ export default function EnergyTransitionAtlas() {
 
               {/* Mobile: Two rows — filters scroll, search+sort below */}
               <div className="md:hidden space-y-2">
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 flex-wrap">
                   {basicFilters.map((f) => (
-                    <div key={f.label} className="flex-shrink-0">
+                    <div key={f.label}>
                       <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
                     </div>
                   ))}
@@ -1668,7 +1668,7 @@ export default function EnergyTransitionAtlas() {
                     onClick={() => setAwardOnly(!awardOnly)}
                     aria-label="Toggle award winners only"
                     aria-pressed={awardOnly}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
                       awardOnly
                         ? "bg-[#58044D] text-white border-[#58044D]"
                         : "bg-white text-[#58044D] border-[#58044D]"
@@ -1679,7 +1679,7 @@ export default function EnergyTransitionAtlas() {
                   <button
                     onClick={() => setFilterPanelOpen(!filterPanelOpen)}
                     aria-label="Toggle additional filters"
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                       filterPanelOpen
                         ? "bg-[#58044D] text-white border-[#58044D]"
                         : "bg-white text-[#58044D] border-[#58044D]"
