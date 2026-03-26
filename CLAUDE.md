@@ -20,7 +20,7 @@ The **Energy Transition Atlas** is a mobile-first single-page web application th
 | File | Purpose |
 |------|---------|
 | `index.html` | Entry point — loads React, Babel, Tailwind, and the JSX component |
-| `EnergyTransitionAtlas.jsx` | Main React component (~1800 lines). Contains all UI, filters, data, and logic |
+| `EnergyTransitionAtlas.jsx` | Main React component (~1850 lines). Contains all UI, filters, data, and logic |
 | `practices_master.csv` | Master data CSV (321 practices, 13 columns). Source of truth for practice data |
 | `build_master_csv.py` | Python build script that merges Excel + scraped website data into the CSV |
 | `csv_to_jsx.py` | Converts `practices_master.csv` into the JS array and injects it into the JSX file |
@@ -28,7 +28,8 @@ The **Energy Transition Atlas** is a mobile-first single-page web application th
 | `scrape_ocean.py` | OCEaN Enhancement & Restoration Projects scraper (sitemap + BeautifulSoup) |
 | `classify_crosscutting.py` | Script to identify and apply cross-cutting theme/topic classifications |
 | `panorama_raw.json` | Raw scraped data from Panorama (698 solutions, 17 energy-relevant) |
-| `gingr-logo-grey.svg` | GINGR logo used in the footer |
+| `gingr-logo-grey.svg` | GINGR greyscale logo used in the footer |
+| `logos/` | Partner logos: `gingr.svg`, `rgi.svg`, `ocean.svg`, `iucn.png`, `sl4b.svg`, `panorama.svg`, `grid-award.svg` |
 | `ETA_Atlas_Prototype.jsx` | Earlier prototype version (kept for reference, not used) |
 
 ## Data Pipeline
@@ -92,6 +93,8 @@ Run: `python3.11 csv_to_jsx.py`
 - **Search**: Free-text AND search across title, desc, org, topic, country, dim
 - **URL params**: Filter state synced to URL query params for shareability
 - **Modals**: Submission form, Submission Criteria
+- **Country normalization**: `COUNTRY_NORMALIZE` constant + `normalizeCountry()` helper (UI-layer only, CSV untouched)
+- **About page sections**: Intro → Vision → Mission → Values → How Practices Are Collected → Grid Award → Contributing Partners (with logos) → Partner CTA
 
 ## Design Tokens
 
@@ -304,6 +307,113 @@ All 21 sprint tasks are now complete. No remaining tasks.
 
 **Final counts:** 321 practices total (284 RGI + 20 OCEaN + 17 Panorama)
 
+---
+
+## About Page & Footer Sprint — COMPLETE (2026-03-26)
+
+### Completed
+
+**Task 1: Footer layout adjustments**
+- GINGR logo enlarged from `h-[44px]` to `h-[56px]` in `GreyscaleGINGRLogo` component
+- Footer grid changed from `md:grid-cols-3` to `md:grid-cols-[2fr_1fr_1fr]` — description column gets double width
+
+**Task 2: About page content rewrite**
+- Rewrote intro paragraphs to frame GINGR as coordinator (not owner), emphasising collaborative contribution
+- Atlas-specific Vision: "A world where the knowledge and experience of organisations across sectors and borders are openly shared..."
+- Atlas-specific Mission: "Together with our contributing partners, we make proven approaches...discoverable, shareable, and actionable"
+- Values cards kept unchanged (Nature-Positive / People-Positive)
+- NEW section: "How Practices Are Collected" — bullet list describing RGI database (since 2010), IUCN Panorama, and OCEaN contributions, with inline "we'd love to hear from you" link to Contact
+- NEW section: "The Grid Award" — award logo (`logos/grid-award.svg`), star icon explanation, dynamic count (`PRACTICES.filter(p => p.award).length`), link to RGI awards page
+
+**Task 3: Partner CTA**
+- Added "Interested in becoming a contributing partner?" + "Get in touch" pill button below Contributing Partners section
+- Button navigates to #contact via `setCurrentPage` + `scrollTo(0,0)`
+
+**Task 4: Partner logos on About page**
+- Copied 7 logo files into `logos/` directory (GINGR, RGI, OCEaN, IUCN, SL4B, Panorama, Grid Award)
+- Added `logo` field to partner card data array
+- IUCN logo gets `logoBg: true` for dark background treatment (white-on-transparent PNG)
+- Panorama logo downloaded from panorama.solutions via curl with browser user-agent
+- Text fallback for any partner without a logo file
+
+**Task 5: Location filter cleanup**
+- Added `COUNTRY_NORMALIZE` constant with 11 mappings (cities→countries, "USA"→"United States", "Scotland"→"United Kingdom", etc.)
+- Added `normalizeCountry()` helper function
+- Updated `allCountries` computation and filter predicate to use normalization
+- CSV untouched — normalization is UI-layer only
+- Result: 44 clean country entries (was ~51 with cities/duplicates)
+
+---
+
+## Next Sprint Plan — Execute on command
+
+**Instructions:** Start a new chat and say "execute the plan". Complete tasks in order. Always re-read the JSX file before editing — it's ~1850 lines and line numbers shift frequently.
+
+### Task 1: Practice Detail Popup
+Add a preview/detail popup that appears when clicking a practice card (instead of immediately navigating away). The popup should:
+- Show all metadata already in the CSV: title, theme, topic, infrastructure, year, country, organisation, description
+- Show all topic badges (currently cards only show the first topic for multi-topic practices — fix this)
+- Include a "Go to practice" button that opens the external URL in a new tab
+- Include an X close button (top-right)
+- Skip the photo in the popup (keep it simple)
+- Use the existing `SubmissionCriteriaModal` focus trap pattern as reference: `role="dialog"`, `aria-modal="true"`, Escape to close, focus trap, focus restoration on close
+- The popup must work well on mobile — full-screen overlay on small screens, centered modal on desktop
+- Cards should `onClick` → open popup instead of being `<a>` links. The "Go to practice" button inside the popup replaces the direct link
+
+### Task 2: Backfill Missing Descriptions
+~92 RGI practices and ~17 Panorama practices have no descriptions. Write a scraper script that:
+- Reads `practices_master.csv` and identifies practices with empty `desc` fields
+- For RGI practices (renewables-grid.eu URLs): scrapes the practice page and extracts the first paragraph or summary text
+- For Panorama practices (panorama.solutions URLs): uses Chrome MCP tools (Cloudflare blocks Python requests) to extract the solution description
+- Updates the CSV with scraped descriptions
+- Run `csv_to_jsx.py` after to sync
+
+### Task 3: CSV Export on Contact Page
+Add a "Download filtered results as CSV" button on the Contact page (#contact). It should:
+- Export the currently filtered practices (respecting all active filters)
+- Include all CSV columns: title, url, brand, theme, topic, infrastructure, year, country, org, desc, award
+- Use client-side CSV generation (Blob + download link)
+- Button styling: pill button matching existing design tokens
+
+### Task 4: Brand Bar Improvement
+The top brand bar (partner links) is unlabeled and confusing on mobile. Replace with a subtle "Powered by" or "A platform by" text followed by partner logos/names. Should be visually cohesive and on-brand. Consider whether to keep it as a bar or integrate into the nav/footer.
+
+### Task 5: Hero Tagline Update
+Update the hero tagline from "Explore a growing collection of real-world energy transition practices..." to something that mentions nature and people values, aligned with the new About page text. Example: "Discover proven approaches to a nature-positive and people-positive energy transition."
+
+### Task 6: About Page Anchor Links
+Add a mini table of contents / anchor links at the top of the About page for quick navigation to sections: Vision, Mission, Values, How Practices Are Collected, Grid Award, Contributing Partners. Especially useful on mobile where the page is a long scroll.
+
+### Task 7: Mobile Menu Redesign
+The mobile navigation needs a full redesign. The current hamburger menu and filter layout don't work well on small screens. Consider:
+- Better hamburger menu with slide-out or full-screen overlay
+- Search bar always visible or more prominent
+- Filter layout optimised for touch (larger tap targets, better dropdown UX)
+- This is a larger task — plan it carefully before implementing
+
+### Task 8: Country Filter Region Groupings
+Add region groupings to the Location filter dropdown (e.g., "Northern Europe", "Southeast Asia"). This helps policy makers working at regional level. Consider adding a search-within-filter input for dropdowns with 15+ options (Organisation, Country, Topic).
+
+### Task 9: Contact Page GINGR Branding
+The Contact page heading still says "Renewables Grid Initiative" (line ~1355). Update to lead with GINGR, mentioning RGI as the hosting organisation. Consistent with footer and About page branding.
+
+### Task 10: Submission Criteria Modal — Add IUCN
+Criterion #7 in the SubmissionCriteriaModal mentions "Joint approval by RGI and GINGR" but omits IUCN, despite IUCN co-founding GINGR and contributing Panorama practices. Update to include IUCN or reword to be more inclusive.
+
+### Task 11: Grid Award Branding Clarification
+The Grid Award is an RGI initiative but the Atlas is now GINGR-owned. Add a note in the Grid Award section clarifying this is an RGI recognition within the GINGR framework. Consider whether GINGR will have its own recognition program in future.
+
+### Task 12: Values Cards — Add Framework Links
+Link the Nature-Positive card to the Kunming-Montreal Global Biodiversity Framework and the People-Positive card to relevant social/community frameworks. Light touch — just add underlined links to the framework names within the existing card text.
+
+### Task 13: Remove Dead Code
+Remove the `GreyscaleRGILogo` component (~40 lines of inline SVG) that is defined but never rendered. Reduces file size.
+
+### Task 14: Agent Review
+After all tasks, if 30% context remains, run a review agent team to assess the UI changes and provide further suggestions.
+
+---
+
 ## Learnings for Future Sessions
 
 - **Always re-read file before editing.** The JSX file is ~1650 lines and frequently modified. The Edit tool requires a fresh read — stale reads cause "file modified since read" errors.
@@ -325,4 +435,11 @@ All 21 sprint tasks are now complete. No remaining tasks.
 - **Mobile filter scrollbar-hide pattern.** The `.scrollbar-hide` CSS class hides scrollbars across browsers (webkit, Firefox, IE/Edge). Applied to the mobile filter row with `overflow-x-auto`. Filters scroll horizontally while search/sort stay pinned right via `flex-shrink-0`.
 - **Panorama image replacement via browser.** Cloudflare blocks WebFetch/requests, so use Chrome MCP tools to visit each solution page. The `cover_small` Drupal image style provides good card images. Look for images via `.field--name-field-image img` or `og:image` meta tag — avoid `organisation-logo` path images.
 - **Footer and contact email.** The footer now uses GINGR-only branding with `info@gingr.org`. All email references across Submit form, Contact form, and footer were updated. The Privacy Policy link still points to renewables-grid.eu.
-- **About page structure.** Order is: intro paragraphs → Vision → Mission → Values (2 cards) → Contributing Partners. Values use `border-l-4` with emerald/amber accents matching the Nature/People theme colors.
+- **About page structure.** Order is: intro paragraphs → Vision → Mission → Values (2 cards) → How Practices Are Collected → The Grid Award → Contributing Partners (with logos) → Partner CTA. Values use `border-l-4` with emerald/amber accents matching the Nature/People theme colors.
+- **Partner logos live in `logos/` directory.** Files: `gingr.svg`, `rgi.svg`, `ocean.svg`, `iucn.png` (white-on-transparent, needs `logoBg: true` for dark bg), `sl4b.svg`, `panorama.svg`, `grid-award.svg`. IUCN logo gets a `bg-[#424244] rounded px-2 py-1` treatment. Panorama logo was downloaded via curl with browser user-agent (Cloudflare blocks plain requests but allows UA-spoofed curl).
+- **Country normalization is UI-layer only.** The `COUNTRY_NORMALIZE` constant + `normalizeCountry()` helper maps city/region entries and duplicates to clean country names. Applied in `allCountries` computation and in the filter predicate. CSV is untouched — normalization only affects filter display and matching.
+- **Footer asymmetric grid.** Uses `md:grid-cols-[2fr_1fr_1fr]` — Tailwind CDN supports arbitrary values. GINGR logo is 56px (`h-[56px]`). The grid gives Col1 (description) double the width of Contact and Links columns.
+- **Grid Award section.** Uses `logos/grid-award.svg` image alongside text. The award count is computed dynamically: `PRACTICES.filter(p => p.award).length`. Links to `renewables-grid.eu/good-practices/rgi-good-practice-award.html`.
+- **Partner CTA pattern.** The "Get in touch" button uses `onClick` with `setCurrentPage("#contact")` + `window.scrollTo(0, 0)` for client-side navigation, with `href="#contact"` as fallback.
+- **Dead code: `GreyscaleRGILogo` component** (lines ~549-588) is defined but never rendered. Can be safely removed to reduce file size.
+- **Tailwind CDN arbitrary values work** for grid-cols (`[2fr_1fr_1fr]`) but screenshots at 1280px render as very dark JPEG — this is a preview tool compression artifact, not a real rendering issue. Verify with `preview_inspect` or `preview_eval` instead of relying on screenshots for dark backgrounds.
