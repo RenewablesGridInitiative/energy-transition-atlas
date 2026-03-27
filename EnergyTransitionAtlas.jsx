@@ -1226,7 +1226,7 @@ export default function EnergyTransitionAtlas() {
       <header className="sticky top-0 z-40 bg-[#58044D] px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <h1
-            className={`font-['League_Gothic'] text-[#FFF8E5] text-xl tracking-widest uppercase transition-opacity duration-300 cursor-pointer ${
+            className={`font-['League_Gothic'] text-[#FFF8E5] text-xl tracking-widest uppercase transition-opacity duration-300 cursor-pointer min-w-0 truncate ${
               scrolledPastHero ? "opacity-100" : "opacity-0"
             }`}
             onClick={() => {
@@ -1236,7 +1236,7 @@ export default function EnergyTransitionAtlas() {
           >
             Energy Transition Atlas
           </h1>
-          <div ref={menuRef} className="relative">
+          <div ref={menuRef} className="relative flex-shrink-0">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-expanded={menuOpen}
@@ -1299,7 +1299,7 @@ export default function EnergyTransitionAtlas() {
       <section ref={heroRef} className="bg-[#58044D] px-6 py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
           <h2
-            className={`font-['League_Gothic'] text-white text-5xl lg:text-7xl uppercase tracking-wide leading-tight ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
+            className={`font-['League_Gothic'] text-white text-3xl sm:text-5xl lg:text-7xl uppercase tracking-wide leading-tight ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
             onClick={() => { if (!isHome) navigateTo("#/"); }}
           >
             Energy Transition Atlas
@@ -1679,9 +1679,9 @@ export default function EnergyTransitionAtlas() {
                 </div>
               )}
 
-              {/* Mobile: Single row — Infrastructure, Theme, More, Sort, Search */}
+              {/* Mobile: Single row — Infrastructure, Theme, More, Sort */}
               <div className="md:hidden">
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2">
                   {[basicFilters[0], basicFilters[1]].map((f) => (
                     <div key={f.label}>
                       <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
@@ -1699,23 +1699,12 @@ export default function EnergyTransitionAtlas() {
                     <IconSettings />
                   </button>
                   <SortDropdown value={sortMode} onChange={setSortMode} compact />
-                  <button
-                    onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                    aria-label="Toggle search"
-                    className={`flex-shrink-0 p-2.5 rounded-full border transition-colors ${
-                      mobileSearchOpen
-                        ? "border-[#58044D] text-[#58044D] bg-white"
-                        : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
-                    }`}
-                  >
-                    <IconSearch />
-                  </button>
                 </div>
               </div>
 
-              {/* Mobile: Expandable search bar */}
-              {mobileSearchOpen && (
-                <div className="md:hidden">
+              {/* Mobile: Expanded filter panel (Search, Topic, Awards, expanded filters, view) */}
+              {filterPanelOpen && (
+                <div className="md:hidden flex flex-col gap-3">
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#767676]">
                       <IconSearch />
@@ -1729,12 +1718,6 @@ export default function EnergyTransitionAtlas() {
                       className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
                     />
                   </div>
-                </div>
-              )}
-
-              {/* Mobile: Expanded filter panel (Topic, Awards, expanded filters, view) */}
-              {filterPanelOpen && (
-                <div className="md:hidden flex flex-col gap-3">
                   <FilterDropdown label={basicFilters[2].label} options={basicFilters[2].options} selected={basicFilters[2].selected} onChange={basicFilters[2].onChange} searchable={basicFilters[2].searchable} />
                   <button
                     onClick={() => setAwardOnly(!awardOnly)}
