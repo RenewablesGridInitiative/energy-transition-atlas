@@ -50,8 +50,8 @@ TOPIC_NORMALIZATION = {
     "integrated vegetation management": "Integrated Vegetation Management",
     "circularity and supply chains": "Circularity & Supply Chains",
     "circularity & supply chains": "Circularity & Supply Chains",
-    "offshore energy and nature": "Offshore Energy & Nature",
-    "offshore energy & nature": "Offshore Energy & Nature",
+    "offshore energy and nature": "Nature Conservation & Restoration",
+    "offshore energy & nature": "Nature Conservation & Restoration",
     "spatial optimisation": "Spatial Optimisation",
     "energy system planning": "Energy System Planning",
     "energy system optimisation": "Energy System Optimisation",
@@ -60,7 +60,7 @@ TOPIC_NORMALIZATION = {
     "monitoring & reporting": "Monitoring & Reporting",
     "nature conservation & restoration": "Nature Conservation & Restoration",
     "advocating for optimised grids": "Advocating for Optimised Grids",
-    "implementing rgi declarations": "Implementing RGI Declarations",
+    "implementing rgi declarations": "Public Acceptance & Engagement",
     "fair & inclusive energy transition": "Fair & Inclusive Energy Transition",
 }
 
@@ -375,7 +375,6 @@ def scrape_practice(url, session):
         "Bird Protection": "Nature",
         "Integrated Vegetation Management": "Nature",
         "Nature Conservation & Restoration": "Nature",
-        "Offshore Energy & Nature": "Nature",
         "Monitoring & Reporting": "Nature",
         "Circularity & Supply Chains": "Technology",
         "Circularity and Supply Chains": "Technology",

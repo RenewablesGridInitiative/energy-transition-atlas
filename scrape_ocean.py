@@ -62,13 +62,13 @@ def classify_project(title: str, desc: str) -> tuple[str, str]:
     if any(w in text for w in ["spatial planning", "marine spatial",
                                 "policy", "regulation", "framework",
                                 "environmental impact assessment", "eia"]):
-        return "Planning", "Offshore Energy & Nature"
+        return "Planning", "Nature Conservation & Restoration"
 
     # Technology: specific tech innovation (3D printing, sensors, AI)
     if any(w in text for w in ["3d print", "sensor", "monitoring system",
                                 "technology readiness", "artificial reef",
                                 "innovative", "prototype"]):
-        return "Technology", "Offshore Energy & Nature"
+        return "Technology", "Nature Conservation & Restoration"
 
     # Default: Nature (marine restoration/conservation focus)
     if any(w in text for w in ["restor", "reef", "seagrass", "habitat",
@@ -77,7 +77,7 @@ def classify_project(title: str, desc: str) -> tuple[str, str]:
                                 "mussel", "fish"]):
         return "Nature", "Nature Conservation & Restoration"
 
-    return "Nature", "Offshore Energy & Nature"
+    return "Nature", "Nature Conservation & Restoration"
 
 
 def classify_infrastructure(title: str, desc: str, inf_type: str) -> str:
