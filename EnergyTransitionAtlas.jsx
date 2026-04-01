@@ -431,6 +431,92 @@ const COUNTRY_REGIONS = {
   "Multi-country": ["Europe", "Worldwide"],
 };
 
+/* Organisation normalization (UI-layer only — CSV untouched) */
+const ORG_NORMALIZE = {
+  /* Trailing punctuation */
+  "50Hertz,": "50Hertz",
+  "BirdLife,": "BirdLife",
+  "DSO Entity,": "DSO Entity",
+  "Deutsche Umwelthilfe,": "Deutsche Umwelthilfe",
+  "EDP Networks,": "EDP Networks",
+  "Institute for Sustainable Futures (ISF),": "Institute for Sustainable Futures (ISF)",
+  "Natuurpunt,": "Natuurpunt",
+  "Royal Society for the Conservation of Nature (RSCN),": "Royal Society for the Conservation of Nature (RSCN)",
+  "Universidad Autónoma de Barcelona,": "Universidad Autónoma de Barcelona",
+  "Utrecht University,": "Utrecht University",
+  /* Red Eléctrica variants */
+  "Red Eléctrica": "Red Eléctrica de España",
+  "REE – Red Eléctrica de España": "Red Eléctrica de España",
+  "Elewit – technological platform of the Red Eléctrica Group": "Red Eléctrica de España",
+  "Red Eléctrica and ECOncrete": "Red Eléctrica de España",
+  "Red Eléctrica, Mediterranean Institute for Advanced Studies (IMEDEA), Regional Ministry of the Environment and Territory, Ministry of Defense and the Pollensa Military Air Base": "Red Eléctrica de España",
+  "Red Eléctrica, Spanish Council for Scientific Research (CSIC)": "Red Eléctrica de España",
+  /* RTE variants */
+  "RTE": "RTE – Réseau de Transport d\u2019Electricité",
+  "RTE, TBM Environment": "RTE – Réseau de Transport d\u2019Electricité",
+  /* REN variant */
+  "Rede Electrica Nacional (REN), University of Coimbra, whereness": "REN – Rede Eléctrica Nacional",
+  /* NABU variants */
+  "NABU – Naturschutzbund Deutschland": "NABU",
+  "NABU; BUND": "NABU",
+  /* 50Hertz consortiums */
+  "50Hertz, Energinet": "50Hertz",
+  "50Hertz, Technische Universität Dresden, Mitnetz Strom, Landschaftspflegeverband Westsachsen e.V.": "50Hertz",
+  "50Hertz; WWF Germany": "50Hertz",
+  /* TenneT consortiums */
+  "TenneT, Van Oord, and Waardenburg Ecology": "TenneT",
+  "TenneT; Küstenwelten Institute (KWI)": "TenneT",
+  "SMA Solar Technology & TenneT": "TenneT",
+  "Schleswig\u2011Holstein Ministry of Energy, Agriculture, the Environment and Rural Areas; TenneT": "TenneT",
+  "Ecocean, TenneT": "TenneT",
+  /* TransnetBW consortiums */
+  "TransnetBW; Netze BW": "TransnetBW",
+  "TransnetBW; Stadt Leingarten": "TransnetBW",
+  "TransnetBW; TenneT": "TransnetBW",
+  /* Ørsted consortiums */
+  "Ørsted and WWF Denmark": "Ørsted",
+  "Ørsted and the Penghu Marine Biology Research Center": "Ørsted",
+  "Ørsted, DTU Aqua, WWF Denmark": "Ørsted",
+  "Ørsted, Wageningen Marine Research, and the Rich North Sea": "Ørsted",
+  "Ørsted, Yorkshire Wildlife Trust and Lincolnshire Wildlife Trust": "Ørsted",
+  /* Vattenfall consortiums */
+  "Vattenfall, Van Oord, Seaway 7, Wageningen Marine Research, Waardenburg Ecology, Rich North Sea, and Witteveen & Bos": "Vattenfall",
+  "Vattenfall, the Rich North Sea, the Royal Netherlands Institute for Sea Research, Wageningen Marine Research, and Waardenburg Ecology": "Vattenfall",
+  /* The Rich North Sea consortiums */
+  "The Rich North Sea, Blauwwind consortium, Van Oord, Bluestream offshore, and Eurofins AquaSense": "The Rich North Sea",
+  "The Rich North Sea, Eneco, and Van Oord": "The Rich North Sea",
+  "The Rich North Sea, Waterproof, Wageningen Marine Research, NIOZ and Waardenburg Ecology; Gemini Wind Park- ZeeEnergie.": "The Rich North Sea",
+  /* Elia consortiums */
+  "LIFE Elia-RTE; Elia; RTE; Ecofirst": "Elia",
+  "Elia in cooperation with Flemish DSOs": "Elia",
+  /* Other consortiums → lead org */
+  "EirGrid, SONI": "EirGrid",
+  "E.ON, Westnetz": "E.ON",
+  "Statnett, NINA": "Statnett",
+  "Swissgrid & ETH Zurich": "Swissgrid",
+  "Swiss Federal Office of Energy (SFOE) (leading role);Swissgrid;Federal Office for Spatial Development (ARE);Federal Office for the Environment (FOEN);Federal Inspectorate for Heavy Current Installations (ESTI);Federal Office of Transport (FOT);Electricity Industry;Swiss Federal Railways;Swiss organizations for environmental protection;Project engineer;Local associations for environmental protection;Concerned canton": "Swissgrid",
+  "California ISO, First Solar, National Renewable Energy Laboratory (NREL)": "California ISO",
+  "National Grid Viking Link Limited & Energinet.dk": "National Grid",
+  "BirdLife Africa, Bulgarian Society for the Protection of Birds (BSPB), Ethiopian Wildlife and Natural History Society (EWNHS)": "BirdLife",
+  "BirdLife, Convention on Migratory Species (CMS), MAVA Foundation": "BirdLife",
+  "Bulgarian Society for the Protection of Birds (BSPB), EGD West": "BSPB",
+  "SPEA, E\u2011REDES, Quercus, LPN, INCF": "SPEA",
+  "APG, ELES, Mavir, Transelectrica": "APG",
+  "CIRCE Foundation, Project consortium": "CIRCE Foundation",
+  "ECOncrete and Prysmian": "ECOncrete",
+  "ECOncrete, Stony Brook University": "ECOncrete",
+  "ECOCEAN, OW, EFGL, Centre de Recherche sur les Écosystèmes Marins (CREM – UPVD/CNRS)": "Ecocean",
+  "Ecocean & OCEAN WINDS": "Ecocean",
+  "Energiot, Iberdrola": "Iberdrola",
+  "FARCROSS Project Consortium, IPTO – Independent Power Transmission Operator, SmartWires": "IPTO",
+  "Maynooth University (MU), Nature+, Trinity College Dublin (TCD)": "Maynooth University",
+  "Community of Allensbach, Easy Smart Grid, EIFER": "Community of Allensbach",
+  "Van Oord, Wageningen Marine Research, Waardenburg Ecology, Netherlands Institute for Sea Research, HZ University of Applied Sciences, and Roem van Yerseke": "Van Oord",
+  "ERIGrid consortium (18 partners from 11 European countries)": "ERIGrid",
+  "Å Energi, Glitre Nett, NODES": "Å Energi",
+};
+const normalizeOrg = (o) => ORG_NORMALIZE[o] || o;
+
 /* Derived filter option lists (filter out empty/null values) */
 const allTopics    = [...new Set(PRACTICES.flatMap(p => p.topic ? p.topic.split(", ") : []))].filter(Boolean).sort();
 const allBrands    = [...new Set(PRACTICES.map(p => p.brand))].filter(Boolean).sort();
@@ -438,7 +524,7 @@ const allDims      = [...new Set(PRACTICES.flatMap(p => p.dim ? p.dim.split(", "
 const allCountries = [...new Set(PRACTICES.map(p => normalizeCountry(p.country)))].filter(Boolean).sort();
 const allYears     = [...new Set(PRACTICES.map(p => p.year))].filter(y => y != null).sort((a, b) => b - a);
 const allInfra     = [...new Set(PRACTICES.map(p => p.inf))].filter(Boolean).sort();
-const allOrgs      = [...new Set(PRACTICES.map(p => p.org))].filter(Boolean).sort();
+const allOrgs      = [...new Set(PRACTICES.map(p => normalizeOrg(p.org)))].filter(Boolean).sort();
 
 /* ── Helper: get filtered topics based on selected dimensions ── */
 function getFilteredTopics(selectedDims) {
@@ -892,17 +978,17 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
         aria-label={`Filter by ${label}`}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+        className={`flex items-center justify-between gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
           active
             ? "bg-[#58044D] text-white border-[#58044D]"
             : "bg-white text-[#58044D] border-[#58044D]"
         }`}
       >
-        <span>{label}{active ? ` (${selected.length})` : ""}</span>
+        <span className="truncate">{label}{active ? ` (${selected.length})` : ""}</span>
         {active ? (
-          <span onClick={(e) => { e.stopPropagation(); onChange([]); }}><IconX /></span>
+          <span className="flex-shrink-0" onClick={(e) => { e.stopPropagation(); onChange([]); }}><IconX /></span>
         ) : (
-          <IconPlus />
+          <span className="flex-shrink-0"><IconPlus /></span>
         )}
       </button>
       {open && (
@@ -1097,7 +1183,7 @@ export default function EnergyTransitionAtlas() {
         const pInfra = p.inf ? p.inf.split(/[;,]\s*/) : [];
         if (!pInfra.some(i => selInfra.includes(i))) return false;
       }
-      if (selOrgs.length && !selOrgs.includes(p.org)) return false;
+      if (selOrgs.length && !selOrgs.includes(normalizeOrg(p.org))) return false;
       if (awardOnly && !p.award) return false;
       return true;
     });
@@ -1718,13 +1804,13 @@ export default function EnergyTransitionAtlas() {
                       className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 [&>.relative]:w-full [&>.relative>button]:w-full">
                     <FilterDropdown label={basicFilters[2].label} options={basicFilters[2].options} selected={basicFilters[2].selected} onChange={basicFilters[2].onChange} searchable={basicFilters[2].searchable} />
                     <button
                       onClick={() => setAwardOnly(!awardOnly)}
                       aria-label="Toggle award winners only"
                       aria-pressed={awardOnly}
-                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors w-full ${
                         awardOnly
                           ? "bg-[#58044D] text-white border-[#58044D]"
                           : "bg-white text-[#58044D] border-[#58044D]"
