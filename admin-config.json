@@ -1,0 +1,35 @@
+{
+  "about": {
+    "intro": [
+      "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
+      "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
+      "The Atlas is owned and managed by the <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">Global Initiative for Nature, Grids and Renewables (GINGR)</a>, a joint initiative of the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN)."
+    ],
+    "vision": "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.",
+    "mission": "The Energy Transition Atlas brings together a growing network of partners who document and share what works in renewable energy and grid development. By collecting these practices in one searchable platform, we help practitioners, policymakers, and communities put proven approaches to work.",
+    "values": [
+      {
+        "title": "Collaboration",
+        "text": "The Atlas is built by many hands. We welcome new partners because sharing knowledge across organisations and borders gets us to a clean energy system faster."
+      },
+      {
+        "title": "Openness",
+        "text": "All practices in the Atlas are freely accessible. Each one links back to the source organisation, while the Atlas provides search and discovery in one place."
+      },
+      {
+        "title": "Evidence-Based",
+        "text": "Every practice in the Atlas comes from real-world implementation. We focus on what has been tested and measured, so others can learn from actual results."
+      }
+    ],
+    "collection": {
+      "intro": "The Atlas draws on several complementary sources, each bringing a unique perspective to the energy transition:",
+      "sources": [
+        "RGI's Good Practice Database has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
+        "IUCN's PANORAMA platform contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
+        "OCEaN brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together."
+      ],
+      "cta": "The collection keeps growing. New partners and practices are added on a rolling basis. If your organisation documents energy transition practices, we'd love to hear from you."
+    },
+    "partnerCTA": "Interested in becoming a contributing partner?"
+  }
+}

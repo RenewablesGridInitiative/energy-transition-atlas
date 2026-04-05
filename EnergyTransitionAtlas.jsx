@@ -380,7 +380,7 @@ const BRAND_LINKS = {
 /* ══════════════════════════════════════════════════════════════════════════════
    COLOUR TOKENS  (from Figma branding frame)
    ══════════════════════════════════════════════════════════════════════════════ */
-const PURPLE   = "#58044D";
+const PURPLE   = "#6B21A8";
 const CREAM    = "#FFF8E5";
 const CHARCOAL = "#424244";
 const LTGREY   = "#C9C9C9";
@@ -396,7 +396,7 @@ const THEME_COLORS = {
 };
 function themeClasses(dim) {
   const c = THEME_COLORS[dim];
-  return c ? `${c.bg} ${c.text} ${c.border}` : "bg-white text-[#58044D] border-[#58044D]";
+  return c ? `${c.bg} ${c.text} ${c.border}` : "bg-white text-[#6B21A8] border-[#6B21A8]";
 }
 
 /* Country normalization (UI-layer only — CSV untouched) */
@@ -640,107 +640,121 @@ const IconSort = () => (
   </svg>
 );
 
-function SubmissionCriteriaModal({ onClose }) {
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement;
-    modalRef.current?.focus();
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "Tab" && modalRef.current) {
-        const focusable = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [onClose]);
-
-  const criteria = [
-    {
-      title: "Publicly documented",
-      desc: "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference.",
-    },
-    {
-      title: "Relevance to energy infrastructure",
-      desc: "The practice must relate to electricity grids, solar, onshore wind, offshore wind, or broader energy systems.",
-    },
-    {
-      title: "Nature- or People-positive focus",
-      desc: "The practice must demonstrably address biodiversity, landscape integration, community engagement, social acceptance, or other environmental and social dimensions of the energy transition.",
-    },
-    {
-      title: "Replicability",
-      desc: "The approach should be transferable to other projects, organisations, or geographies beyond the original context.",
-    },
-    {
-      title: "Demonstrated outcomes",
-      desc: "Preference is given to practices with measurable, documented, or independently verified results, though emerging and innovative approaches are also considered.",
-    },
-    {
-      title: "Recency",
-      desc: "Practices should generally date from 2000 onwards and reflect current standards and regulatory contexts.",
-    },
-    {
-      title: "Joint approval by RGI and IUCN",
-      desc: "All submissions are reviewed by the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN). Both organisations must approve a practice before it is published in the Atlas. Submissions that do not meet the criteria may be declined or returned for revision.",
-      highlight: true,
-    },
-  ];
-
+/* ══════════════════════════════════════════════════════════════════════════════
+   HERO ANIMATED GRAPHIC (desktop only)
+   ══════════════════════════════════════════════════════════════════════════════ */
+function HeroGraphic() {
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="criteria-modal-title" tabIndex={-1} className="bg-[#FFF8E5] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl outline-none">
-        {/* Header */}
-        <div className="flex items-start justify-between p-8 pb-4">
-          <h2 id="criteria-modal-title" className="font-['League_Gothic'] text-[#58044D] text-3xl lg:text-4xl uppercase tracking-wide">Submission Criteria</h2>
-          <button
-            onClick={onClose}
-            className="ml-4 mt-1 text-[#424244] hover:text-[#58044D] transition-colors text-2xl leading-none"
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
-        {/* Body */}
-        <div className="px-8 pb-8">
-          <p className="text-[#424244] text-sm leading-relaxed mb-6">
-            The Energy Transition Atlas is a curated resource. To maintain quality and relevance, all practices are reviewed jointly by <strong>RGI</strong> and <strong>IUCN</strong> before publication. Submissions should meet the following criteria:
-          </p>
-          <ol className="space-y-4">
-            {criteria.map((item, i) => (
-              <li key={i} className={`flex gap-4 p-4 rounded-xl ${item.highlight ? "bg-[#58044D]/8 border border-[#58044D]/20" : "bg-white border border-[#C9C9C9]/60"}`}>
-                <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${item.highlight ? "bg-[#58044D] text-white" : "bg-[#C9C9C9]/40 text-[#424244]"}`}>
-                  {i + 1}
-                </span>
-                <div>
-                  <p className={`text-sm font-semibold mb-0.5 ${item.highlight ? "text-[#58044D]" : "text-[#424244]"}`}>{item.title}</p>
-                  <p className="text-sm text-[#424244] opacity-80 leading-relaxed">{item.desc}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-full bg-[#58044D] text-white text-sm font-medium hover:bg-[#58044D]/90 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="relative w-full max-w-[380px] mx-auto" style={{ aspectRatio: "1" }}>
+      <style>{`
+        @keyframes hero-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes hero-float-1 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes hero-float-2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes hero-float-3 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes hero-pulse { 0%,100% { opacity: 0.25; } 50% { opacity: 0.45; } }
+        .hero-globe { animation: hero-spin 90s linear infinite; transform-origin: center; }
+        .hero-icon-1 { animation: hero-float-1 4s ease-in-out infinite; }
+        .hero-icon-2 { animation: hero-float-2 5s ease-in-out infinite 0.5s; }
+        .hero-icon-3 { animation: hero-float-3 4.5s ease-in-out infinite 1s; }
+        .hero-icon-4 { animation: hero-float-1 5.5s ease-in-out infinite 1.5s; }
+        .hero-icon-5 { animation: hero-float-2 4s ease-in-out infinite 2s; }
+        .hero-ring-pulse { animation: hero-pulse 6s ease-in-out infinite; }
+      `}</style>
+      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        {/* Pulsing outer ring */}
+        <circle cx="200" cy="200" r="185" fill="none" stroke="#FFF8E5" strokeWidth="0.5" className="hero-ring-pulse" />
+        <circle cx="200" cy="200" r="170" fill="none" stroke="#FFF8E5" strokeWidth="0.5" opacity="0.15" className="hero-ring-pulse" style={{ animationDelay: "2s" }} />
+
+        {/* Globe group — rotates slowly */}
+        <g className="hero-globe">
+          {/* Globe outline */}
+          <circle cx="200" cy="200" r="120" fill="none" stroke="#FFF8E5" strokeWidth="1.5" opacity="0.5" />
+          {/* Equator */}
+          <ellipse cx="200" cy="200" rx="120" ry="30" fill="none" stroke="#FFF8E5" strokeWidth="0.8" opacity="0.35" />
+          {/* Latitude lines */}
+          <ellipse cx="200" cy="160" rx="105" ry="22" fill="none" stroke="#FFF8E5" strokeWidth="0.6" opacity="0.25" />
+          <ellipse cx="200" cy="240" rx="105" ry="22" fill="none" stroke="#FFF8E5" strokeWidth="0.6" opacity="0.25" />
+          {/* Meridian */}
+          <ellipse cx="200" cy="200" rx="30" ry="120" fill="none" stroke="#FFF8E5" strokeWidth="0.8" opacity="0.35" />
+          {/* Secondary meridian */}
+          <ellipse cx="200" cy="200" rx="80" ry="120" fill="none" stroke="#FFF8E5" strokeWidth="0.6" opacity="0.2" />
+        </g>
+
+        {/* Compass cross — static */}
+        <line x1="200" y1="60" x2="200" y2="75" stroke="#FFF8E5" strokeWidth="1.5" opacity="0.6" />
+        <line x1="200" y1="325" x2="200" y2="340" stroke="#FFF8E5" strokeWidth="1.5" opacity="0.6" />
+        <line x1="60" y1="200" x2="75" y2="200" stroke="#FFF8E5" strokeWidth="1.5" opacity="0.6" />
+        <line x1="325" y1="200" x2="340" y2="200" stroke="#FFF8E5" strokeWidth="1.5" opacity="0.6" />
+        {/* Compass N */}
+        <text x="200" y="52" textAnchor="middle" fill="#FFF8E5" fontSize="12" fontWeight="bold" opacity="0.5">N</text>
+
+        {/* ── Floating topic icons ── */}
+
+        {/* Wind turbine — top right */}
+        <g className="hero-icon-1" opacity="0.8">
+          <g transform="translate(310, 85)">
+            <line x1="0" y1="8" x2="0" y2="28" stroke="#FFF8E5" strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="8" x2="-10" y2="-4" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="0" y1="8" x2="11" y2="-2" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="0" y1="8" x2="1" y2="0" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="0" cy="8" r="2.5" fill="#FFF8E5" />
+          </g>
+        </g>
+
+        {/* Solar panel — bottom right */}
+        <g className="hero-icon-2" opacity="0.7">
+          <g transform="translate(320, 300)">
+            <rect x="-14" y="-10" width="28" height="20" rx="2" fill="none" stroke="#FFF8E5" strokeWidth="1.5" />
+            <line x1="-14" y1="-3" x2="14" y2="-3" stroke="#FFF8E5" strokeWidth="0.8" />
+            <line x1="-14" y1="4" x2="14" y2="4" stroke="#FFF8E5" strokeWidth="0.8" />
+            <line x1="-5" y1="-10" x2="-5" y2="10" stroke="#FFF8E5" strokeWidth="0.8" />
+            <line x1="5" y1="-10" x2="5" y2="10" stroke="#FFF8E5" strokeWidth="0.8" />
+            <line x1="0" y1="10" x2="0" y2="18" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+        </g>
+
+        {/* Power lines / pylon — bottom left */}
+        <g className="hero-icon-3" opacity="0.75">
+          <g transform="translate(72, 310)">
+            <line x1="0" y1="-15" x2="0" y2="15" stroke="#FFF8E5" strokeWidth="2" strokeLinecap="round" />
+            <line x1="-10" y1="-8" x2="10" y2="-8" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-7" y1="0" x2="7" y2="0" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-10" y1="-8" x2="-5" y2="-15" stroke="#FFF8E5" strokeWidth="1" />
+            <line x1="10" y1="-8" x2="5" y2="-15" stroke="#FFF8E5" strokeWidth="1" />
+          </g>
+        </g>
+
+        {/* Leaf — top left */}
+        <g className="hero-icon-4" opacity="0.8">
+          <g transform="translate(75, 95)">
+            <path d="M0,12 Q-12,-4 0,-14 Q12,-4 0,12 Z" fill="none" stroke="#FFF8E5" strokeWidth="1.5" />
+            <line x1="0" y1="12" x2="0" y2="-8" stroke="#FFF8E5" strokeWidth="1" />
+            <path d="M0,4 Q-5,0 -6,-4" fill="none" stroke="#FFF8E5" strokeWidth="0.8" />
+            <path d="M0,0 Q5,-3 7,-6" fill="none" stroke="#FFF8E5" strokeWidth="0.8" />
+          </g>
+        </g>
+
+        {/* People — left center */}
+        <g className="hero-icon-5" opacity="0.7">
+          <g transform="translate(48, 195)">
+            <circle cx="-6" cy="-8" r="4" fill="none" stroke="#FFF8E5" strokeWidth="1.5" />
+            <path d="M-6,-4 L-6,6" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M-6,6 L-10,14" stroke="#FFF8E5" strokeWidth="1.2" strokeLinecap="round" />
+            <path d="M-6,6 L-2,14" stroke="#FFF8E5" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="8" cy="-8" r="4" fill="none" stroke="#FFF8E5" strokeWidth="1.5" />
+            <path d="M8,-4 L8,6" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M8,6 L4,14" stroke="#FFF8E5" strokeWidth="1.2" strokeLinecap="round" />
+            <path d="M8,6 L12,14" stroke="#FFF8E5" strokeWidth="1.2" strokeLinecap="round" />
+          </g>
+        </g>
+
+        {/* Small decorative dots */}
+        <circle cx="155" cy="65" r="2" fill="#FFF8E5" opacity="0.3" />
+        <circle cx="340" cy="190" r="1.5" fill="#FFF8E5" opacity="0.25" />
+        <circle cx="250" cy="350" r="2" fill="#FFF8E5" opacity="0.2" />
+        <circle cx="55" cy="260" r="1.5" fill="#FFF8E5" opacity="0.3" />
+        <circle cx="270" cy="55" r="1.5" fill="#FFF8E5" opacity="0.25" />
+      </svg>
     </div>
   );
 }
@@ -791,8 +805,8 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-3">
-          <h2 id="practice-modal-title" className="font-['League_Gothic'] text-[#58044D] text-2xl lg:text-3xl uppercase tracking-wide pr-4">{p.title}</h2>
-          <button onClick={onClose} className="ml-4 mt-1 text-[#424244] hover:text-[#58044D] transition-colors text-2xl leading-none flex-shrink-0" aria-label="Close">×</button>
+          <h2 id="practice-modal-title" className="font-['League_Gothic'] text-[#6B21A8] text-2xl lg:text-3xl uppercase tracking-wide pr-4">{p.title}</h2>
+          <button onClick={onClose} className="ml-4 mt-1 text-[#424244] hover:text-[#6B21A8] transition-colors text-2xl leading-none flex-shrink-0" aria-label="Close">×</button>
         </div>
         <div className="px-6 pb-6">
           {/* Theme + ALL topic badges */}
@@ -801,7 +815,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
               <span key={d} className={`text-xs border rounded-full px-3 py-0.5 ${getThemeClasses(d)}`}>{d}</span>
             ))}
             {p.topic && p.topic.split(", ").map(t => (
-              <span key={t} className="text-xs border border-[#58044D]/30 text-[#58044D] rounded-full px-3 py-0.5">{t}</span>
+              <span key={t} className="text-xs border border-[#6B21A8]/30 text-[#6B21A8] rounded-full px-3 py-0.5">{t}</span>
             ))}
           </div>
           {/* Metadata */}
@@ -811,7 +825,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
             {p.org && <div className="flex items-center gap-1.5"><IconBuilding /><span>{p.org}</span></div>}
             {p.inf && <div className="flex items-center gap-1.5"><IconLayers /><span>{p.inf}</span></div>}
           </div>
-          {p.award && <div className="flex items-center gap-1.5 text-[#58044D] text-sm font-medium mb-4"><IconAward /><span>RGI Grid Awards: Good Practice of the Year{p.year ? ` (${p.year})` : ""}</span></div>}
+          {p.award && <div className="flex items-center gap-1.5 text-[#6B21A8] text-sm font-medium mb-4"><IconAward /><span>RGI Grid Awards: Good Practice of the Year{p.year ? ` (${p.year})` : ""}</span></div>}
           {/* Description */}
           {p.desc ? (
             <p className="text-sm text-[#424244] leading-relaxed mb-4">{p.desc}</p>
@@ -821,13 +835,13 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
           {/* Atlas Partner */}
           {p.brand && (
             <p className="text-xs text-[#6B6B6D] mb-6">
-              Atlas Partner: <a href={BRAND_LINKS[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#58044D] font-medium hover:underline">{{ RGI: "Renewables Grid Initiative (RGI)", OCEaN: "Offshore Coalition for Energy and Nature (OCEaN)", Panorama: "IUCN PANORAMA – Solutions for a Healthy Planet" }[p.brand] || p.brand}</a>
+              Atlas Partner: <a href={BRAND_LINKS[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#6B21A8] font-medium hover:underline">{{ RGI: "Renewables Grid Initiative (RGI)", OCEaN: "Offshore Coalition for Energy and Nature (OCEaN)", Panorama: "IUCN PANORAMA – Solutions for a Healthy Planet" }[p.brand] || p.brand}</a>
             </p>
           )}
           {/* Actions */}
           <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-[#C9C9C9] text-[#424244] text-sm font-medium hover:border-[#58044D] transition-colors">Close</button>
-            <a href={p.url} target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 rounded-full bg-[#58044D] text-white text-sm font-medium hover:bg-[#58044D]/90 transition-colors inline-flex items-center gap-2">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-[#C9C9C9] text-[#424244] text-sm font-medium hover:border-[#6B21A8] transition-colors">Close</button>
+            <a href={p.url} target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors inline-flex items-center gap-2">
               Go to practice <IconChevronRight />
             </a>
           </div>
@@ -877,8 +891,8 @@ function SortDropdown({ value, onChange, compact }) {
         onClick={() => setOpen(!open)}
         aria-label="Sort practices"
         className={compact
-          ? "p-2.5 rounded-full border border-[#C9C9C9] text-[#424244] hover:border-[#58044D] transition-colors bg-white"
-          : "flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-sm text-[#424244] hover:border-[#58044D] transition-colors bg-white"
+          ? "p-2.5 rounded-full border border-[#C9C9C9] text-[#424244] hover:border-[#6B21A8] transition-colors bg-white"
+          : "flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-sm text-[#424244] hover:border-[#6B21A8] transition-colors bg-white"
         }
       >
         {compact ? <IconSort /> : <><span>{current.label}</span><IconChevronDown /></>}
@@ -891,7 +905,7 @@ function SortDropdown({ value, onChange, compact }) {
               onClick={() => { onChange(opt.value); setOpen(false); }}
               className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                 opt.value === value
-                  ? "text-[#58044D] font-medium bg-[#FFF8E5]"
+                  ? "text-[#6B21A8] font-medium bg-[#FFF8E5]"
                   : "text-[#424244] hover:bg-[#FFF8E5]"
               }`}
             >
@@ -960,7 +974,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
       aria-selected={selected.includes(opt)}
       className="flex items-center gap-2 px-4 py-1.5 hover:bg-[#FFF8E5] cursor-pointer text-sm text-[#424244]"
     >
-      <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="accent-[#58044D] w-4 h-4" />
+      <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="accent-[#6B21A8] w-4 h-4" />
       <span>{String(opt)}</span>
     </label>
   );
@@ -975,8 +989,8 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
         aria-haspopup="listbox"
         className={`flex items-center justify-between gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
           active
-            ? "bg-[#58044D] text-white border-[#58044D]"
-            : "bg-white text-[#58044D] border-[#58044D]"
+            ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+            : "bg-white text-[#6B21A8] border-[#6B21A8]"
         }`}
       >
         <span className="truncate">{label}{active ? ` (${selected.length})` : ""}</span>
@@ -992,7 +1006,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
             <div className="px-3 py-2 border-b border-[#C9C9C9]/50">
               <input type="text" value={filterText} onChange={e => setFilterText(e.target.value)}
                 placeholder={`Search ${label.toLowerCase()}...`}
-                className="w-full px-3 py-1.5 text-xs border border-[#C9C9C9] rounded-full focus:outline-none focus:border-[#58044D]" />
+                className="w-full px-3 py-1.5 text-xs border border-[#C9C9C9] rounded-full focus:outline-none focus:border-[#6B21A8]" />
             </div>
           )}
           {groups && !filterText ? (
@@ -1004,7 +1018,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
                 <div key={region}>
                   <button
                     onClick={() => toggleGroup(available)}
-                    className={`w-full text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#58044D] bg-[#58044D]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
+                    className={`w-full text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#6B21A8] bg-[#6B21A8]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
                   >
                     {region} ({available.length})
                   </button>
@@ -1069,13 +1083,17 @@ export default function EnergyTransitionAtlas() {
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  /* ── Form states ── */
-  const [submitForm, setSubmitForm] = useState({ title:"", url:"", brand:"", dim:"", topic:"", inf:"", year:"", country:"", org:"", desc:"", img:"" });
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [showCriteriaModal, setShowCriteriaModal] = useState(false);
+  /* ── UI states ── */
   const [selectedPractice, setSelectedPractice] = useState(null);
-  const [contactForm, setContactForm] = useState({ name:"", email:"", message:"" });
-  const [contactSuccess, setContactSuccess] = useState(false);
+  const [aboutConfig, setAboutConfig] = useState(null);
+
+  /* ── Load editable About config ── */
+  useEffect(() => {
+    fetch("admin-config.json")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.about) setAboutConfig(data.about); })
+      .catch(() => {});
+  }, []);
 
   /* ── Hash change listener ── */
   useEffect(() => {
@@ -1258,12 +1276,6 @@ export default function EnergyTransitionAtlas() {
     setMenuOpen(false);
   }, []);
 
-  /* ── Submit form topics based on selected dim ── */
-  const submitFormTopics = useMemo(() => {
-    if (!submitForm.dim) return [];
-    return DIMENSION_TOPICS[submitForm.dim] || [];
-  }, [submitForm.dim]);
-
   const isHome = currentPage === "#/" || currentPage === "" || currentPage === "#";
 
   /* ══════════════════════════════════════════════════════════════════════════
@@ -1304,7 +1316,7 @@ export default function EnergyTransitionAtlas() {
       </div>
 
       {/* ─── 2. Header Bar (sticky) ─── */}
-      <header className="sticky top-0 z-40 bg-[#58044D] px-6 py-3">
+      <header className="sticky top-0 z-40 bg-[#6B21A8] px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <h1
             className={`font-['League_Gothic'] text-[#FFF8E5] text-xl tracking-widest uppercase transition-opacity duration-300 cursor-pointer min-w-0 truncate ${
@@ -1322,7 +1334,7 @@ export default function EnergyTransitionAtlas() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-expanded={menuOpen}
               aria-label="Navigation menu"
-              className="border border-[#FFF8E5] text-[#FFF8E5] px-5 py-1.5 rounded-full text-sm font-medium tracking-wide hover:bg-[#FFF8E5] hover:text-[#58044D] transition-colors"
+              className="border border-[#FFF8E5] text-[#FFF8E5] px-5 py-1.5 rounded-full text-sm font-medium tracking-wide hover:bg-[#FFF8E5] hover:text-[#6B21A8] transition-colors"
             >
               MENU
             </button>
@@ -1339,7 +1351,7 @@ export default function EnergyTransitionAtlas() {
             {menuOpen && (
               <>
                 <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMenuOpen(false)} />
-                <div className="md:hidden fixed top-0 right-0 z-50 h-full w-72 bg-[#58044D] shadow-2xl">
+                <div className="md:hidden fixed top-0 right-0 z-50 h-full w-72 bg-[#6B21A8] shadow-2xl">
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-8">
                       <span className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest">Menu</span>
@@ -1376,18 +1388,23 @@ export default function EnergyTransitionAtlas() {
         </div>
       </header>
 
-      {/* ─── 3. Hero Section ─── */}
-      <section ref={heroRef} className="bg-[#58044D] px-6 py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto">
-          <h2
-            className={`font-['League_Gothic'] text-white text-3xl sm:text-5xl lg:text-7xl uppercase tracking-wide leading-tight ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
-            onClick={() => { if (!isHome) navigateTo("#/"); }}
-          >
-            Energy Transition Atlas
-          </h2>
-          <p className="mt-4 text-[#FFF8E5] text-lg lg:text-xl font-light max-w-3xl leading-relaxed opacity-90">
-            Explore proven practices for decarbonising energy, protecting nature, and improving lives, shared by a growing network of partners.
-          </p>
+      {/* ���── 3. Hero Section ─── */}
+      <section ref={heroRef} className="bg-[#6B21A8] px-6 py-12 lg:py-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="lg:w-1/2">
+            <h2
+              className={`font-['League_Gothic'] text-white text-3xl sm:text-5xl lg:text-7xl uppercase tracking-wide leading-tight ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
+              onClick={() => { if (!isHome) navigateTo("#/"); }}
+            >
+              Energy Transition Atlas
+            </h2>
+            <p className="mt-4 text-[#FFF8E5] text-lg lg:text-xl font-light max-w-3xl leading-relaxed opacity-90">
+              Explore proven practices for decarbonising energy, protecting nature, and improving lives, shared by a growing network of partners.
+            </p>
+          </div>
+          <div className="hidden lg:block lg:w-5/12">
+            <HeroGraphic />
+          </div>
         </div>
       </section>
 
@@ -1399,7 +1416,7 @@ export default function EnergyTransitionAtlas() {
       {currentPage === "#about" && (
         <section className="flex-1 bg-[#FFF8E5] px-6 py-12">
           <div className="max-w-3xl mx-auto">
-            <h2 className="font-['League_Gothic'] text-[#58044D] text-4xl lg:text-5xl uppercase tracking-wide mb-8">About the Atlas</h2>
+            <h2 className="font-['League_Gothic'] text-[#6B21A8] text-4xl lg:text-5xl uppercase tracking-wide mb-8">About the Atlas</h2>
             <nav className="mb-8 p-4 bg-white rounded-xl border border-[#C9C9C9]" aria-label="About page sections">
               <p className="text-xs text-[#6B6B6D] uppercase tracking-wider font-medium mb-2">On this page</p>
               <div className="flex flex-wrap gap-2">
@@ -1413,53 +1430,68 @@ export default function EnergyTransitionAtlas() {
                 ].map(s => (
                   <a key={s.id} href={`#${s.id}`}
                     onClick={(e) => { e.preventDefault(); document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" }); }}
-                    className="px-3 py-1 rounded-full border border-[#58044D]/30 text-[#58044D] text-xs font-medium hover:bg-[#58044D] hover:text-white transition-colors">
+                    className="px-3 py-1 rounded-full border border-[#6B21A8]/30 text-[#6B21A8] text-xs font-medium hover:bg-[#6B21A8] hover:text-white transition-colors">
                     {s.label}
                   </a>
                 ))}
               </div>
             </nav>
             <div className="space-y-6 text-[#424244] leading-relaxed">
-              <p>The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.</p>
-              <p>Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.</p>
-              <p>The Atlas is owned and managed by the <a href="https://gingr.org" target="_blank" rel="noopener noreferrer" className="text-[#58044D] underline hover:text-[#58044D]/80"><strong>Global Initiative for Nature, Grids and Renewables (GINGR)</strong></a>, a joint initiative of the <strong>Renewables Grid Initiative (RGI)</strong> and the <strong>International Union for Conservation of Nature (IUCN)</strong>.</p>
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-vision">Our Vision</h3>
-              <p>A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.</p>
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-mission">Our Mission</h3>
-              <p>The Energy Transition Atlas brings together a growing network of partners who document and share what works in renewable energy and grid development. By collecting these practices in one searchable platform, we help practitioners, policymakers, and communities put proven approaches to work.</p>
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-values">Our Values</h3>
+              {(aboutConfig?.intro || [
+                "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
+                "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
+                'The Atlas is owned and managed by the <a href="https://gingr.org" target="_blank" rel="noopener noreferrer">Global Initiative for Nature, Grids and Renewables (GINGR)</a>, a joint initiative of the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN).',
+              ]).map((text, i) => (
+                <p key={i} className={i === 2 ? "text-[#424244] [&_a]:text-[#6B21A8] [&_a]:underline [&_a:hover]:text-[#6B21A8]/80 [&_strong]:font-bold" : ""}
+                  dangerouslySetInnerHTML={{ __html: text }} />
+              ))}
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-vision">Our Vision</h3>
+              <p>{aboutConfig?.vision || "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind."}</p>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-mission">Our Mission</h3>
+              <p>{aboutConfig?.mission || "The Energy Transition Atlas brings together a growing network of partners who document and share what works in renewable energy and grid development. By collecting these practices in one searchable platform, we help practitioners, policymakers, and communities put proven approaches to work."}</p>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-values">Our Values</h3>
               <div className="grid sm:grid-cols-3 gap-4 mt-4">
-                <div className="p-4 bg-white rounded-xl border-l-4 border-[#58044D]">
-                  <span className="text-[#58044D] font-bold text-lg">Collaboration</span>
-                  <p className="text-sm text-[#424244] mt-1 leading-relaxed">The Atlas is built by many hands. We welcome new partners because sharing knowledge across organisations and borders gets us to a clean energy system faster.</p>
-                </div>
-                <div className="p-4 bg-white rounded-xl border-l-4 border-sky-500">
-                  <span className="text-sky-700 font-bold text-lg">Openness</span>
-                  <p className="text-sm text-[#424244] mt-1 leading-relaxed">All practices in the Atlas are freely accessible. Each one links back to the source organisation, while the Atlas provides search and discovery in one place.</p>
-                </div>
-                <div className="p-4 bg-white rounded-xl border-l-4 border-emerald-500">
-                  <span className="text-emerald-700 font-bold text-lg">Evidence-Based</span>
-                  <p className="text-sm text-[#424244] mt-1 leading-relaxed">Every practice in the Atlas comes from real-world implementation. We focus on what has been tested and measured, so others can learn from actual results.</p>
-                </div>
+                {(aboutConfig?.values || [
+                  { title: "Collaboration", text: "The Atlas is built by many hands. We welcome new partners because sharing knowledge across organisations and borders gets us to a clean energy system faster." },
+                  { title: "Openness", text: "All practices in the Atlas are freely accessible. Each one links back to the source organisation, while the Atlas provides search and discovery in one place." },
+                  { title: "Evidence-Based", text: "Every practice in the Atlas comes from real-world implementation. We focus on what has been tested and measured, so others can learn from actual results." },
+                ]).map((v, i) => {
+                  const colors = [
+                    { border: "border-[#6B21A8]", text: "text-[#6B21A8]" },
+                    { border: "border-sky-500", text: "text-sky-700" },
+                    { border: "border-emerald-500", text: "text-emerald-700" },
+                  ];
+                  const c = colors[i] || colors[0];
+                  return (
+                    <div key={i} className={`p-4 bg-white rounded-xl border-l-4 ${c.border}`}>
+                      <span className={`${c.text} font-bold text-lg`}>{v.title}</span>
+                      <p className="text-sm text-[#424244] mt-1 leading-relaxed">{v.text}</p>
+                    </div>
+                  );
+                })}
               </div>
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-collection">How Practices Are Collected</h3>
-              <p>The Atlas draws on several complementary sources, each bringing a unique perspective to the energy transition:</p>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-collection">How Practices Are Collected</h3>
+              <p>{aboutConfig?.collection?.intro || "The Atlas draws on several complementary sources, each bringing a unique perspective to the energy transition:"}</p>
               <ul className="list-disc pl-6 space-y-2 text-sm">
-                <li><strong>RGI's Good Practice Database</strong> has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.</li>
-                <li><strong>IUCN's PANORAMA platform</strong> contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.</li>
-                <li><strong>OCEaN</strong> brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.</li>
+                {(aboutConfig?.collection?.sources || [
+                  "RGI's Good Practice Database has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
+                  "IUCN's PANORAMA platform contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
+                  "OCEaN brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
+                ]).map((src, i) => (
+                  <li key={i} dangerouslySetInnerHTML={{ __html: src }} />
+                ))}
               </ul>
-              <p className="text-sm text-[#6B6B6D]">The collection keeps growing. New partners and practices are added on a rolling basis. If your organisation documents energy transition practices, <a href="#contact" onClick={(e) => { e.preventDefault(); setCurrentPage("#contact"); window.scrollTo(0, 0); }} className="text-[#58044D] underline hover:text-[#58044D]/80">we'd love to hear from you</a>.</p>
+              <p className="text-sm text-[#6B6B6D]">{aboutConfig?.collection?.cta || "The collection keeps growing. New partners and practices are added on a rolling basis."} {" "}<a href="#contact" onClick={(e) => { e.preventDefault(); setCurrentPage("#contact"); window.scrollTo(0, 0); }} className="text-[#6B21A8] underline hover:text-[#6B21A8]/80">Get in touch</a>.</p>
 
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-award">RGI Grid Awards</h3>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-award">RGI Grid Awards</h3>
               <div className="flex items-start gap-4 mt-4 p-5 bg-white rounded-xl border border-[#C9C9C9]">
                 <div>
                   <p className="text-sm leading-relaxed">The <span className="inline-flex items-center align-middle"><IconAward /><span className="sr-only">star</span></span> icon on practice cards marks winners of the <strong>RGI Grid Awards: Good Practice of the Year</strong>, an annual recognition by the Renewables Grid Initiative. Winners are selected in three categories: Technological Innovation &amp; System Integration, Communication &amp; Engagement, and Environmental Protection. They receive the <strong>Golden Pylon</strong> trophy at a ceremony during the PCI Energy Days in Brussels. {PRACTICES.filter(p => p.award).length} practices in the Atlas hold this award.</p>
-                  <a href="https://renewables-grid.eu/award/" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-sm text-[#58044D] underline hover:text-[#58044D]/80">Learn more about the RGI Grid Awards</a>
+                  <a href="https://renewables-grid.eu/award/" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-sm text-[#6B21A8] underline hover:text-[#6B21A8]/80">Learn more about the RGI Grid Awards</a>
                 </div>
               </div>
 
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-partners">Contributing Partners</h3>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-partners">Contributing Partners</h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 {[
                   { name: "GINGR", url: BRAND_LINKS.GINGR, desc: "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that owns and manages the Energy Transition Atlas." },
@@ -1474,20 +1506,20 @@ export default function EnergyTransitionAtlas() {
                     href={partner.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-4 bg-white rounded-xl border border-[#C9C9C9] hover:border-[#58044D] hover:shadow-md transition-all"
+                    className="block p-4 bg-white rounded-xl border border-[#C9C9C9] hover:border-[#6B21A8] hover:shadow-md transition-all"
                   >
-                    <span className="text-[#58044D] font-bold text-lg">{partner.name}</span>
+                    <span className="text-[#6B21A8] font-bold text-lg">{partner.name}</span>
                     <p className="text-sm text-[#424244] mt-1 leading-relaxed">{partner.desc}</p>
                     <span className="block text-xs text-[#6B6B6D] mt-2">{partner.url}</span>
                   </a>
                 ))}
               </div>
               <div className="mt-10 text-center">
-                <p className="text-[#6B6B6D] text-lg mb-4">Interested in becoming a contributing partner?</p>
+                <p className="text-[#6B6B6D] text-lg mb-4">{aboutConfig?.partnerCTA || "Interested in becoming a contributing partner?"}</p>
                 <a
                   href="#contact"
                   onClick={(e) => { e.preventDefault(); setCurrentPage("#contact"); window.scrollTo(0, 0); }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#58044D] text-[#58044D] text-sm font-medium hover:bg-[#58044D] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors"
                 >
                   Get in touch
                 </a>
@@ -1500,111 +1532,99 @@ export default function EnergyTransitionAtlas() {
       {/* ─── SUBMIT PAGE ─── */}
       {currentPage === "#submit" && (
         <section className="flex-1 bg-[#FFF8E5] px-6 py-12">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="font-['League_Gothic'] text-[#58044D] text-4xl lg:text-5xl uppercase tracking-wide mb-4">Submit a Practice</h2>
-            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-sm text-amber-800">
-              <strong>Preview:</strong> This form is a demo and does not submit data. To submit a practice, please contact <a href="mailto:info@gingr.org" className="underline font-medium">info@gingr.org</a>.
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-['League_Gothic'] text-[#6B21A8] text-4xl lg:text-5xl uppercase tracking-wide mb-4">Submit a Practice</h2>
+            <p className="text-[#424244] text-base leading-relaxed mb-8 max-w-3xl">
+              Practices in the Energy Transition Atlas are contributed by our Atlas Partners. To have a practice featured, submit it directly to one of the partner platforms below. Each partner reviews submissions against their own criteria and may add approved practices to the Atlas.
+            </p>
+
+            {/* ── Submission Criteria ── */}
+            <div className="mb-10">
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">Submission Criteria</h3>
+              <p className="text-[#424244] text-sm leading-relaxed mb-4">
+                The Energy Transition Atlas is a curated resource. To maintain quality and relevance, all practices are reviewed jointly by <strong>RGI</strong> and <strong>IUCN</strong> before publication. Submissions should meet the following criteria:
+              </p>
+              <ol className="space-y-3">
+                {[
+                  { title: "Publicly documented", desc: "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference." },
+                  { title: "Relevance to energy infrastructure", desc: "The practice must relate to electricity grids, solar, onshore wind, offshore wind, or broader energy systems." },
+                  { title: "Nature- or People-positive focus", desc: "The practice must demonstrably address biodiversity, landscape integration, community engagement, social acceptance, or other environmental and social dimensions of the energy transition." },
+                  { title: "Replicability", desc: "The approach should be transferable to other projects, organisations, or geographies beyond the original context." },
+                  { title: "Demonstrated outcomes", desc: "Preference is given to practices with measurable, documented, or independently verified results, though emerging and innovative approaches are also considered." },
+                  { title: "Recency", desc: "Practices should generally date from 2000 onwards and reflect current standards and regulatory contexts." },
+                  { title: "Joint approval by RGI and IUCN", desc: "All submissions are reviewed by the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN). Both organisations must approve a practice before it is published in the Atlas.", highlight: true },
+                ].map((item, i) => (
+                  <li key={i} className={`flex gap-4 p-4 rounded-xl ${item.highlight ? "bg-[#6B21A8]/8 border border-[#6B21A8]/20" : "bg-white border border-[#C9C9C9]/60"}`}>
+                    <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${item.highlight ? "bg-[#6B21A8] text-white" : "bg-[#C9C9C9]/40 text-[#424244]"}`}>
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className={`text-sm font-semibold mb-0.5 ${item.highlight ? "text-[#6B21A8]" : "text-[#424244]"}`}>{item.title}</p>
+                      <p className="text-sm text-[#424244] opacity-80 leading-relaxed">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <div className="mb-6">
-              <button
-                onClick={() => setShowCriteriaModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#58044D] text-[#58044D] text-sm font-medium hover:bg-[#58044D] hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                Submission Criteria
-              </button>
-            </div>
-            {showCriteriaModal && <SubmissionCriteriaModal onClose={() => setShowCriteriaModal(false)} />}
-            {submitSuccess ? (
-              <div className="bg-white rounded-xl p-8 text-center border border-[#C9C9C9]">
-                <p className="text-[#58044D] font-bold text-xl mb-2">Thank you for your submission!</p>
-                <p className="text-[#424244] opacity-70">We will review your practice and add it to the Atlas soon.</p>
-                <button
-                  onClick={() => { setSubmitSuccess(false); setSubmitForm({ title:"", url:"", brand:"", dim:"", topic:"", inf:"", year:"", country:"", org:"", desc:"", img:"" }); }}
-                  className="mt-6 px-6 py-2.5 rounded-full bg-[#58044D] text-white text-sm font-medium hover:bg-[#58044D]/90 transition-colors"
+
+            {/* ── Partner Submission Pathways ── */}
+            <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">Where to Submit</h3>
+            <p className="text-[#424244] text-sm leading-relaxed mb-6">Each Atlas Partner maintains its own submission process. Choose the platform that best fits your practice:</p>
+            <div className="grid sm:grid-cols-2 gap-5 mb-10">
+              {[
+                {
+                  name: "RGI Good Practice Database",
+                  url: BRAND_LINKS.RGI,
+                  desc: "RGI's Good Practice Database has documented best practices in grid development and renewable energy since 2010, covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe. Contact RGI to submit a practice.",
+                  color: "border-l-[#6B21A8]",
+                },
+                {
+                  name: "IUCN PANORAMA",
+                  url: BRAND_LINKS.Panorama,
+                  desc: "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Submit energy-relevant practices directly through the Panorama platform. Practices are reviewed for conservation relevance and documented outcomes.",
+                  color: "border-l-emerald-500",
+                },
+                {
+                  name: "OCEaN",
+                  url: BRAND_LINKS.OCEaN,
+                  desc: "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together. Contact OCEaN to feature your offshore practice.",
+                  color: "border-l-sky-500",
+                },
+                {
+                  name: "RGI Grid Awards",
+                  url: "https://renewables-grid.eu/award/",
+                  desc: "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.",
+                  color: "border-l-amber-500",
+                },
+              ].map((partner) => (
+                <a
+                  key={partner.name}
+                  href={partner.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`block p-5 bg-white rounded-xl border border-[#C9C9C9] border-l-4 ${partner.color} hover:shadow-md hover:border-[#6B21A8] transition-all`}
                 >
-                  Submit Another
-                </button>
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => { e.preventDefault(); setSubmitSuccess(true); }}
-                className="space-y-5"
+                  <span className="text-[#6B21A8] font-bold text-lg">{partner.name}</span>
+                  <p className="text-sm text-[#424244] mt-2 leading-relaxed">{partner.desc}</p>
+                  <span className="inline-flex items-center gap-1 mt-3 text-xs text-[#6B21A8] font-medium">
+                    Visit website
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </span>
+                </a>
+              ))}
+            </div>
+
+            {/* ── Partner CTA ── */}
+            <div className="text-center py-8 border-t border-[#C9C9C9]/40">
+              <p className="text-[#6B6B6D] text-lg mb-4">Want to become a contributing partner?</p>
+              <a
+                href="#contact"
+                onClick={(e) => { e.preventDefault(); navigateTo("#contact"); }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors"
               >
-                <div>
-                  <label className="block text-sm font-medium text-[#424244] mb-1">Practice Title</label>
-                  <input type="text" required value={submitForm.title} onChange={(e) => setSubmitForm(f => ({ ...f, title: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#424244] mb-1">Source URL</label>
-                  <input type="url" required value={submitForm.url} onChange={(e) => setSubmitForm(f => ({ ...f, url: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Source Organisation</label>
-                    <p className="text-xs text-[#6B6B6D] mb-2">The organisation or website where this practice is published</p>
-                    <input type="text" required value={submitForm.brand} onChange={(e) => setSubmitForm(f => ({ ...f, brand: e.target.value }))} placeholder="e.g. TenneT, RTE, IUCN..." className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Theme</label>
-                    <select required value={submitForm.dim} onChange={(e) => setSubmitForm(f => ({ ...f, dim: e.target.value, topic: "" }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors">
-                      <option value="">Select...</option>
-                      <option value="Nature">Nature</option>
-                      <option value="Technology">Technology</option>
-                      <option value="People">People</option>
-                      <option value="Planning">Planning</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#424244] mb-1">Topic</label>
-                  <select required value={submitForm.topic} onChange={(e) => setSubmitForm(f => ({ ...f, topic: e.target.value }))} disabled={!submitForm.dim} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors disabled:opacity-50">
-                    <option value="">Select...</option>
-                    {submitFormTopics.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Infrastructure</label>
-                    <select required value={submitForm.inf} onChange={(e) => setSubmitForm(f => ({ ...f, inf: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors">
-                      <option value="">Select...</option>
-                      <option value="Grids">Grids</option>
-                      <option value="Solar">Solar</option>
-                      <option value="Onshore wind">Onshore Wind</option>
-                      <option value="Offshore wind">Offshore Wind</option>
-                      <option value="Energy system">Energy System</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Year</label>
-                    <input type="number" required min="2000" max="2030" value={submitForm.year} onChange={(e) => setSubmitForm(f => ({ ...f, year: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Country</label>
-                    <input type="text" required value={submitForm.country} onChange={(e) => setSubmitForm(f => ({ ...f, country: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#424244] mb-1">Organisation</label>
-                    <input type="text" required value={submitForm.org} onChange={(e) => setSubmitForm(f => ({ ...f, org: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#424244] mb-1">Description</label>
-                  <textarea required rows={4} value={submitForm.desc} onChange={(e) => setSubmitForm(f => ({ ...f, desc: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#424244] mb-1">Featured Image URL</label>
-                  <input type="url" value={submitForm.img} onChange={(e) => setSubmitForm(f => ({ ...f, img: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                </div>
-                <button type="submit" className="px-8 py-2.5 rounded-full bg-[#58044D] text-white text-sm font-medium hover:bg-[#58044D]/90 transition-colors">
-                  Submit Practice
-                </button>
-              </form>
-            )}
+                Get in touch
+              </a>
+            </div>
           </div>
         </section>
       )}
@@ -1613,64 +1633,33 @@ export default function EnergyTransitionAtlas() {
       {currentPage === "#contact" && (
         <section className="flex-1 bg-[#FFF8E5] px-6 py-12">
           <div className="max-w-4xl mx-auto">
-            <h2 className="font-['League_Gothic'] text-[#58044D] text-4xl lg:text-5xl uppercase tracking-wide mb-4">Contact</h2>
-            <div className="mb-8 p-4 rounded-xl bg-amber-50 border border-amber-300 text-sm text-amber-800">
-              <strong>Preview:</strong> This contact form is a demo and does not send messages. Please email <a href="mailto:info@gingr.org" className="underline font-medium">info@gingr.org</a> directly.
-            </div>
+            <h2 className="font-['League_Gothic'] text-[#6B21A8] text-4xl lg:text-5xl uppercase tracking-wide mb-4">Contact</h2>
             <div className="mb-8 p-5 bg-white rounded-xl border border-[#C9C9C9]">
-              <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide mb-2">Export Data</h3>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-2">Export Data</h3>
               <p className="text-[#424244] text-sm mb-4">Download the currently filtered practices as a CSV file for offline analysis.</p>
               <button
                 onClick={exportFilteredCSV}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#58044D] text-[#58044D] text-sm font-medium hover:bg-[#58044D] hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors"
               >
                 Download {filtered.length} practices as CSV
               </button>
             </div>
-            <div className="grid md:grid-cols-2 gap-10">
-              {/* Left: GINGR info */}
-              <div className="space-y-4 text-[#424244]">
-                <h3 className="font-['League_Gothic'] text-[#58044D] text-2xl uppercase tracking-wide">GINGR Secretariat</h3>
-                <p className="leading-relaxed">
+            <div className="bg-white rounded-xl border border-[#C9C9C9] p-8">
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">GINGR Secretariat</h3>
+              <p className="text-[#424244] text-sm mb-6">For questions about the Atlas, submitting practices, or partnership enquiries:</p>
+              <a
+                href="mailto:info@gingr.org"
+                className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                info@gingr.org
+              </a>
+              <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
+                <p>
                   c/o Renewables Grid Initiative<br />
                   Manfred-von-Richthofen-Str. 4<br />
                   12101 Berlin, Germany
                 </p>
-                <p>
-                  <a href="mailto:info@gingr.org" className="text-[#58044D] font-medium hover:underline">
-                    info@gingr.org
-                  </a>
-                </p>
-              </div>
-              {/* Right: Contact form */}
-              <div>
-                {contactSuccess ? (
-                  <div className="bg-white rounded-xl p-8 text-center border border-[#C9C9C9]">
-                    <p className="text-[#58044D] font-bold text-xl mb-2">Thank you!</p>
-                    <p className="text-[#424244] opacity-70">We will get back to you shortly.</p>
-                  </div>
-                ) : (
-                  <form
-                    onSubmit={(e) => { e.preventDefault(); setContactSuccess(true); }}
-                    className="space-y-4"
-                  >
-                    <div>
-                      <label className="block text-sm font-medium text-[#424244] mb-1">Name</label>
-                      <input type="text" required value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#424244] mb-1">Email</label>
-                      <input type="email" required value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} className="w-full px-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#424244] mb-1">Message</label>
-                      <textarea required rows={5} value={contactForm.message} onChange={(e) => setContactForm(f => ({ ...f, message: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#58044D] focus:ring-2 focus:ring-[#58044D]/20 transition-colors" />
-                    </div>
-                    <button type="submit" className="px-8 py-2.5 rounded-full bg-[#58044D] text-white text-sm font-medium hover:bg-[#58044D]/90 transition-colors">
-                      Send Message
-                    </button>
-                  </form>
-                )}
               </div>
             </div>
           </div>
@@ -1694,8 +1683,8 @@ export default function EnergyTransitionAtlas() {
                   aria-pressed={awardOnly}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                     awardOnly
-                      ? "bg-[#58044D] text-white border-[#58044D]"
-                      : "bg-white text-[#58044D] border-[#58044D]"
+                      ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                      : "bg-white text-[#6B21A8] border-[#6B21A8]"
                   }`}
                 >
                   <IconAward />
@@ -1706,8 +1695,8 @@ export default function EnergyTransitionAtlas() {
                   aria-label={moreOptions ? "Hide additional filters" : "Show additional filters"}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm transition-colors ${
                     moreOptions
-                      ? "bg-[#58044D] text-white border-[#58044D]"
-                      : "border-[#C9C9C9] text-[#424244] hover:border-[#58044D] bg-white"
+                      ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                      : "border-[#C9C9C9] text-[#424244] hover:border-[#6B21A8] bg-white"
                   }`}
                 >
                   {moreOptions ? <IconX /> : <IconSettings />}
@@ -1719,8 +1708,8 @@ export default function EnergyTransitionAtlas() {
                   aria-label="List view"
                   className={`p-2.5 rounded-full border transition-colors ${
                     viewMode === "list"
-                      ? "border-[#58044D] text-[#58044D] bg-white"
-                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
+                      ? "border-[#6B21A8] text-[#6B21A8] bg-white"
+                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#6B21A8]"
                   }`}
                 >
                   <IconListView />
@@ -1730,8 +1719,8 @@ export default function EnergyTransitionAtlas() {
                   aria-label="Grid view"
                   className={`p-2.5 rounded-full border transition-colors ${
                     viewMode === "grid"
-                      ? "border-[#58044D] text-[#58044D] bg-white"
-                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#58044D]"
+                      ? "border-[#6B21A8] text-[#6B21A8] bg-white"
+                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#6B21A8]"
                   }`}
                 >
                   <IconGridView />
@@ -1746,7 +1735,7 @@ export default function EnergyTransitionAtlas() {
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search practices..."
                     aria-label="Search practices"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#6B21A8] transition-colors"
                   />
                 </div>
               </div>
@@ -1773,8 +1762,8 @@ export default function EnergyTransitionAtlas() {
                     aria-label="Toggle additional filters"
                     className={`flex-shrink-0 p-2.5 rounded-full border text-sm font-medium transition-colors ${
                       filterPanelOpen
-                        ? "bg-[#58044D] text-white border-[#58044D]"
-                        : "bg-white text-[#58044D] border-[#58044D]"
+                        ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                        : "bg-white text-[#6B21A8] border-[#6B21A8]"
                     }`}
                   >
                     <IconSettings />
@@ -1796,7 +1785,7 @@ export default function EnergyTransitionAtlas() {
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search practices..."
                       aria-label="Search practices"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#58044D] transition-colors"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#6B21A8] transition-colors"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2 [&>.relative]:w-full [&>.relative>button]:w-full">
@@ -1807,8 +1796,8 @@ export default function EnergyTransitionAtlas() {
                       aria-pressed={awardOnly}
                       className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors w-full ${
                         awardOnly
-                          ? "bg-[#58044D] text-white border-[#58044D]"
-                          : "bg-white text-[#58044D] border-[#58044D]"
+                          ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                          : "bg-white text-[#6B21A8] border-[#6B21A8]"
                       }`}
                     >
                       <IconAward />
@@ -1822,8 +1811,8 @@ export default function EnergyTransitionAtlas() {
                         onClick={() => setViewMode("list")}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
                           viewMode === "list"
-                            ? "bg-[#58044D] text-white border-[#58044D]"
-                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#58044D]"
+                            ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#6B21A8]"
                         }`}
                       >
                         <IconListView />
@@ -1833,8 +1822,8 @@ export default function EnergyTransitionAtlas() {
                         onClick={() => setViewMode("grid")}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
                           viewMode === "grid"
-                            ? "bg-[#58044D] text-white border-[#58044D]"
-                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#58044D]"
+                            ? "bg-[#6B21A8] text-white border-[#6B21A8]"
+                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#6B21A8]"
                         }`}
                       >
                         <IconGridView />
@@ -1854,17 +1843,17 @@ export default function EnergyTransitionAtlas() {
                 {activeChips.map((chip, i) => (
                   <span
                     key={`${chip.label}-${chip.value}-${i}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#58044D]/10 text-[#58044D] text-xs font-medium"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#6B21A8]/10 text-[#6B21A8] text-xs font-medium"
                   >
-                    <span className="text-[#58044D]/60">{chip.label}:</span> {chip.value}
-                    <button onClick={chip.onRemove} aria-label={`Remove ${chip.label} filter: ${chip.value}`} className="ml-0.5 hover:text-[#58044D]/70 transition-colors">
+                    <span className="text-[#6B21A8]/60">{chip.label}:</span> {chip.value}
+                    <button onClick={chip.onRemove} aria-label={`Remove ${chip.label} filter: ${chip.value}`} className="ml-0.5 hover:text-[#6B21A8]/70 transition-colors">
                       <IconX />
                     </button>
                   </span>
                 ))}
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs text-[#58044D] font-medium hover:underline ml-2"
+                  className="text-xs text-[#6B21A8] font-medium hover:underline ml-2"
                 >
                   Clear all
                 </button>
@@ -1882,7 +1871,7 @@ export default function EnergyTransitionAtlas() {
 
               {filtered.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-full bg-[#58044D]/10 flex items-center justify-center mx-auto mb-4 text-[#58044D]">
+                  <div className="w-16 h-16 rounded-full bg-[#6B21A8]/10 flex items-center justify-center mx-auto mb-4 text-[#6B21A8]">
                     <IconSearch />
                   </div>
                   <p className="text-[#767676] text-lg">No practices match your current filters.</p>
@@ -1892,15 +1881,15 @@ export default function EnergyTransitionAtlas() {
                         <button
                           key={`${chip.label}-${chip.value}-${i}`}
                           onClick={chip.onRemove}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#58044D]/10 text-[#58044D] text-xs font-medium hover:bg-[#58044D]/20 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#6B21A8]/10 text-[#6B21A8] text-xs font-medium hover:bg-[#6B21A8]/20 transition-colors"
                         >
-                          <span className="text-[#58044D]/60">{chip.label}:</span> {chip.value}
+                          <span className="text-[#6B21A8]/60">{chip.label}:</span> {chip.value}
                           <IconX />
                         </button>
                       ))}
                     </div>
                   )}
-                  <button onClick={clearAllFilters} className="mt-4 text-sm text-[#58044D] font-medium hover:underline">
+                  <button onClick={clearAllFilters} className="mt-4 text-sm text-[#6B21A8] font-medium hover:underline">
                     Clear all filters
                   </button>
                 </div>
@@ -1923,7 +1912,7 @@ export default function EnergyTransitionAtlas() {
                           className="w-full h-48 object-cover bg-[#e2e2e2] transition-transform duration-300 group-hover:scale-105"
                         />
                         {p.award && (
-                          <span className="absolute top-2.5 right-2.5 bg-[#58044D] text-[#FFF8E5] rounded-full p-1.5 shadow-md" title="RGI Grid Awards Winner">
+                          <span className="absolute top-2.5 right-2.5 bg-[#6B21A8] text-[#FFF8E5] rounded-full p-1.5 shadow-md" title="RGI Grid Awards Winner">
                             <IconAward />
                           </span>
                         )}
@@ -1934,7 +1923,7 @@ export default function EnergyTransitionAtlas() {
                         {p.org && <span className="flex items-center gap-1"><IconBuilding />{p.org}</span>}
                         {p.inf && <span className="flex items-center gap-1"><IconLayers />{p.inf}</span>}
                       </div>
-                      <h3 className="mt-2 text-base font-bold text-[#424244] group-hover:text-[#58044D] transition-colors leading-snug">
+                      <h3 className="mt-2 text-base font-bold text-[#424244] group-hover:text-[#6B21A8] transition-colors leading-snug">
                         {p.title}
                       </h3>
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -1943,7 +1932,7 @@ export default function EnergyTransitionAtlas() {
                             {d}
                           </span>
                         ))}
-                        {p.topic && <span className="text-xs border border-[#58044D]/30 text-[#58044D] rounded-full px-3 py-0.5">
+                        {p.topic && <span className="text-xs border border-[#6B21A8]/30 text-[#6B21A8] rounded-full px-3 py-0.5">
                           {p.topic.split(", ")[0]}
                         </span>}
                       </div>
@@ -1962,11 +1951,11 @@ export default function EnergyTransitionAtlas() {
                       className="block py-4 px-3 -mx-3 rounded-lg group cursor-pointer hover:bg-white/60 transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-[#424244] group-hover:text-[#58044D] transition-colors">
+                        <h3 className="text-base font-bold text-[#424244] group-hover:text-[#6B21A8] transition-colors">
                           {p.title}
                         </h3>
                         {p.award && (
-                          <span className="text-[#58044D]" title="RGI Grid Awards Winner"><IconAward /></span>
+                          <span className="text-[#6B21A8]" title="RGI Grid Awards Winner"><IconAward /></span>
                         )}
                       </div>
                       <div className="mt-1.5 flex items-center gap-4 text-xs text-[#6B6B6D] flex-wrap">
@@ -1981,7 +1970,7 @@ export default function EnergyTransitionAtlas() {
                             {d}
                           </span>
                         ))}
-                        {p.topic && <span className="text-xs border border-[#58044D]/30 text-[#58044D] rounded-full px-2.5 py-0.5">
+                        {p.topic && <span className="text-xs border border-[#6B21A8]/30 text-[#6B21A8] rounded-full px-2.5 py-0.5">
                           {p.topic.split(", ")[0]}
                         </span>}
                       </div>
@@ -1995,7 +1984,7 @@ export default function EnergyTransitionAtlas() {
                 <div className="flex justify-center mt-10">
                   <button
                     onClick={() => setVisibleCount(prev => prev + LOAD_MORE_INCREMENT)}
-                    className="px-8 py-3 rounded-full border-2 border-[#58044D] text-[#58044D] font-semibold hover:bg-[#58044D] hover:text-white transition-colors"
+                    className="px-8 py-3 rounded-full border-2 border-[#6B21A8] text-[#6B21A8] font-semibold hover:bg-[#6B21A8] hover:text-white transition-colors"
                   >
                     Show More Practices ({remaining} remaining)
                   </button>
@@ -2062,7 +2051,7 @@ export default function EnergyTransitionAtlas() {
         <button
           onClick={scrollToTop}
           aria-label="Back to top"
-          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#58044D] text-white shadow-lg hover:bg-[#58044D]/90 transition-all flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#6B21A8] text-white shadow-lg hover:bg-[#6B21A8]/90 transition-all flex items-center justify-center"
         >
           <IconChevronUp />
         </button>

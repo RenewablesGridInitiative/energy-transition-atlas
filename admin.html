@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Energy Transition Atlas — Admin</title>
+  <link rel="icon" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Albert Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-[#FFF8E5] min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto px-6 py-12">
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+      <h1 class="font-bold text-[#6B21A8] text-3xl mb-2">Atlas Admin</h1>
+      <p class="text-[#424244] text-sm mb-6">Sign in with a GitHub Personal Access Token that has <code class="bg-white px-1.5 py-0.5 rounded text-xs border border-[#C9C9C9]">repo</code> scope.</p>
+      <div class="bg-white rounded-xl border border-[#C9C9C9] p-6 max-w-md">
+        <label class="block text-sm font-medium text-[#424244] mb-1">GitHub Personal Access Token</label>
+        <input id="pat-input" type="password" placeholder="ghp_..." class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20 mb-3" />
+        <p id="auth-error" class="text-red-600 text-xs mb-3 hidden"></p>
+        <button onclick="authenticate()" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+          Sign In
+        </button>
+        <details class="mt-4 text-xs text-[#6B6B6D]">
+          <summary class="cursor-pointer hover:text-[#424244]">How to create a token</summary>
+          <ol class="mt-2 space-y-1 pl-4 list-decimal">
+            <li>Go to GitHub &rarr; Settings &rarr; Developer Settings &rarr; Personal Access Tokens &rarr; Fine-grained tokens</li>
+            <li>Click "Generate new token"</li>
+            <li>Set repository access to <strong>beston54/energy-transition-atlas</strong></li>
+            <li>Under "Repository permissions", grant <strong>Contents: Read and write</strong></li>
+            <li>Generate and copy the token</li>
+          </ol>
+        </details>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard (hidden initially) -->
+    <div id="admin-dashboard" class="hidden">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="font-bold text-[#6B21A8] text-3xl">Atlas Admin</h1>
+          <p id="user-info" class="text-[#6B6B6D] text-sm mt-1"></p>
+        </div>
+        <button onclick="signOut()" class="px-4 py-2 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:bg-white transition-colors">
+          Sign Out
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-6">
+        <button onclick="switchTab('csv')" id="tab-csv" class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white">
+          Upload CSV
+        </button>
+        <button onclick="switchTab('about')" id="tab-about" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Edit About Page
+        </button>
+      </div>
+
+      <!-- CSV Upload Tab -->
+      <div id="panel-csv">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Upload Practices CSV</h2>
+          <p class="text-[#424244] text-sm mb-4">Upload a new <code class="bg-[#FFF8E5] px-1.5 py-0.5 rounded text-xs">practices_master.csv</code> to update the Atlas practices data. A GitHub Action will automatically regenerate the site.</p>
+
+          <div id="csv-dropzone" class="border-2 border-dashed border-[#C9C9C9] rounded-xl p-8 text-center cursor-pointer hover:border-[#6B21A8] transition-colors mb-4"
+               ondragover="event.preventDefault(); this.classList.add('border-[#6B21A8]','bg-[#6B21A8]/5')"
+               ondragleave="this.classList.remove('border-[#6B21A8]','bg-[#6B21A8]/5')"
+               ondrop="handleDrop(event)"
+               onclick="document.getElementById('csv-file').click()">
+            <svg class="mx-auto mb-3 text-[#C9C9C9]" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="text-[#424244] text-sm">Drag & drop a CSV file here, or click to browse</p>
+            <p class="text-[#6B6B6D] text-xs mt-1">Expected format: 13 columns (id, title, url, brand, theme, topic, inf, year, country, org, desc, img, award)</p>
+          </div>
+          <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleFileSelect(event)" />
+
+          <div id="csv-preview" class="hidden mb-4">
+            <h3 class="font-medium text-[#424244] text-sm mb-2">Preview</h3>
+            <div id="csv-preview-content" class="bg-[#FFF8E5] rounded-lg p-4 text-xs font-mono overflow-x-auto max-h-48 overflow-y-auto"></div>
+            <p id="csv-row-count" class="text-[#6B6B6D] text-xs mt-2"></p>
+          </div>
+
+          <p id="csv-error" class="text-red-600 text-xs mb-3 hidden"></p>
+          <p id="csv-success" class="text-emerald-600 text-xs mb-3 hidden"></p>
+
+          <button id="csv-upload-btn" onclick="uploadCSV()" disabled class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            Upload to Repository
+          </button>
+        </div>
+      </div>
+
+      <!-- About Edit Tab -->
+      <div id="panel-about" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit About Page Text</h2>
+          <p class="text-[#424244] text-sm mb-6">Changes are saved directly to the repository and appear on the live site immediately.</p>
+
+          <div id="about-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
+
+          <form id="about-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveAbout();">
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Vision Statement</label>
+              <textarea id="about-vision" rows="3" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Mission Statement</label>
+              <textarea id="about-mission" rows="4" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Values</label>
+              <p class="text-xs text-[#6B6B6D] mb-2">Edit the three value cards</p>
+              <div class="space-y-3" id="values-fields"></div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Collection Intro</label>
+              <textarea id="about-collection-intro" rows="2" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Collection CTA</label>
+              <input id="about-collection-cta" type="text" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Partner CTA Text</label>
+              <input id="about-partner-cta" type="text" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20" />
+            </div>
+
+            <p id="about-error" class="text-red-600 text-xs hidden"></p>
+            <p id="about-success" class="text-emerald-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OWNER = "beston54";
+    const REPO = "energy-transition-atlas";
+    const API = "https://api.github.com";
+
+    let token = null;
+    let csvContent = null;
+    let aboutData = null;
+    let aboutSha = null;
+
+    // ── Auth ──
+    async function authenticate() {
+      const pat = document.getElementById("pat-input").value.trim();
+      if (!pat) return showError("auth-error", "Please enter a token.");
+
+      try {
+        // Validate token
+        const userRes = await ghFetch("/user", pat);
+        if (!userRes.ok) throw new Error("Invalid token");
+        const user = await userRes.json();
+
+        // Check repo access
+        const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`, pat);
+        if (!repoRes.ok) throw new Error("No access to repository");
+        const repo = await repoRes.json();
+        if (!repo.permissions?.push) throw new Error("Token does not have write access to this repository");
+
+        token = pat;
+        sessionStorage.setItem("_eta_session", pat);
+        document.getElementById("user-info").textContent = `Signed in as ${user.login}`;
+        document.getElementById("auth-screen").classList.add("hidden");
+        document.getElementById("admin-dashboard").classList.remove("hidden");
+      } catch (e) {
+        showError("auth-error", e.message);
+      }
+    }
+
+    function signOut() {
+      token = null;
+      sessionStorage.removeItem("_eta_session");
+      document.getElementById("auth-screen").classList.remove("hidden");
+      document.getElementById("admin-dashboard").classList.add("hidden");
+      document.getElementById("pat-input").value = "";
+    }
+
+    // Auto-restore session
+    (function() {
+      const saved = sessionStorage.getItem("_eta_session");
+      if (saved) {
+        document.getElementById("pat-input").value = saved;
+        authenticate();
+      }
+    })();
+
+    // ── Tabs ──
+    function switchTab(tab) {
+      document.getElementById("panel-csv").classList.toggle("hidden", tab !== "csv");
+      document.getElementById("panel-about").classList.toggle("hidden", tab !== "about");
+      document.getElementById("tab-csv").className = tab === "csv"
+        ? "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white"
+        : "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
+      document.getElementById("tab-about").className = tab === "about"
+        ? "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white"
+        : "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
+
+      if (tab === "about" && !aboutData) loadAboutConfig();
+    }
+
+    // ── CSV Upload ──
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove("border-[#6B21A8]", "bg-[#6B21A8]/5");
+      const file = e.dataTransfer.files[0];
+      if (file) processCSVFile(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processCSVFile(file);
+    }
+
+    function processCSVFile(file) {
+      if (!file.name.endsWith(".csv")) {
+        showError("csv-error", "Please select a CSV file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        csvContent = e.target.result;
+        const lines = csvContent.trim().split("\n");
+        const headers = lines[0].split(",");
+
+        // Basic validation
+        const expectedCols = ["id", "title", "url", "brand", "theme", "topic", "inf", "year", "country", "org", "desc", "img", "award"];
+        if (headers.length < 13) {
+          showError("csv-error", `Expected at least 13 columns, found ${headers.length}.`);
+          csvContent = null;
+          return;
+        }
+
+        hideMsg("csv-error");
+        hideMsg("csv-success");
+
+        // Show preview
+        const preview = document.getElementById("csv-preview");
+        const content = document.getElementById("csv-preview-content");
+        preview.classList.remove("hidden");
+
+        const previewLines = lines.slice(0, 6).join("\n");
+        content.textContent = previewLines + (lines.length > 6 ? "\n..." : "");
+        document.getElementById("csv-row-count").textContent = `${lines.length - 1} practices found (${file.name}, ${(file.size / 1024).toFixed(1)} KB)`;
+        document.getElementById("csv-upload-btn").disabled = false;
+      };
+      reader.readAsText(file);
+    }
+
+    async function uploadCSV() {
+      if (!csvContent || !token) return;
+      const btn = document.getElementById("csv-upload-btn");
+      btn.disabled = true;
+      btn.textContent = "Uploading...";
+      hideMsg("csv-error");
+      hideMsg("csv-success");
+
+      try {
+        // Get current file SHA
+        const fileRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        const fileData = fileRes.ok ? await fileRes.json() : null;
+        const sha = fileData?.sha;
+
+        // Commit new CSV
+        const body = {
+          message: "Update practices_master.csv via Atlas Admin",
+          content: btoa(unescape(encodeURIComponent(csvContent))),
+          branch: "main",
+        };
+        if (sha) body.sha = sha;
+
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        });
+
+        if (!putRes.ok) {
+          const err = await putRes.json();
+          throw new Error(err.message || "Upload failed");
+        }
+
+        showSuccess("csv-success", "CSV uploaded successfully! The GitHub Action will regenerate the site data shortly.");
+        document.getElementById("csv-preview").classList.add("hidden");
+        csvContent = null;
+      } catch (e) {
+        showError("csv-error", e.message);
+        btn.disabled = false;
+      }
+      btn.textContent = "Upload to Repository";
+    }
+
+    // ── About Page Editor ──
+    async function loadAboutConfig() {
+      try {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token);
+        if (!res.ok) throw new Error("Could not load config");
+        const data = await res.json();
+        aboutSha = data.sha;
+        aboutData = JSON.parse(atob(data.content));
+
+        const about = aboutData.about;
+        document.getElementById("about-vision").value = about.vision || "";
+        document.getElementById("about-mission").value = about.mission || "";
+        document.getElementById("about-collection-intro").value = about.collection?.intro || "";
+        document.getElementById("about-collection-cta").value = about.collection?.cta || "";
+        document.getElementById("about-partner-cta").value = about.partnerCTA || "";
+
+        // Build value fields
+        const container = document.getElementById("values-fields");
+        container.innerHTML = "";
+        (about.values || []).forEach((v, i) => {
+          container.innerHTML += `
+            <div class="grid grid-cols-[120px_1fr] gap-2">
+              <input id="val-title-${i}" value="${escHtml(v.title)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+              <input id="val-text-${i}" value="${escHtml(v.text)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm" />
+            </div>`;
+        });
+
+        document.getElementById("about-loading").classList.add("hidden");
+        document.getElementById("about-form").classList.remove("hidden");
+      } catch (e) {
+        document.getElementById("about-loading").textContent = "Error: " + e.message;
+      }
+    }
+
+    async function saveAbout() {
+      hideMsg("about-error");
+      hideMsg("about-success");
+
+      // Gather values
+      const values = [];
+      let i = 0;
+      while (document.getElementById(`val-title-${i}`)) {
+        values.push({
+          title: document.getElementById(`val-title-${i}`).value,
+          text: document.getElementById(`val-text-${i}`).value,
+        });
+        i++;
+      }
+
+      aboutData.about.vision = document.getElementById("about-vision").value;
+      aboutData.about.mission = document.getElementById("about-mission").value;
+      aboutData.about.values = values;
+      aboutData.about.collection.intro = document.getElementById("about-collection-intro").value;
+      aboutData.about.collection.cta = document.getElementById("about-collection-cta").value;
+      aboutData.about.partnerCTA = document.getElementById("about-partner-cta").value;
+
+      try {
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(aboutData, null, 2) + "\n")));
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: "Update About page content via Atlas Admin",
+            content: content,
+            sha: aboutSha,
+            branch: "main",
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || "Save failed");
+        }
+
+        const result = await res.json();
+        aboutSha = result.content.sha;
+        showSuccess("about-success", "About page content updated! Changes will appear on the live site shortly.");
+      } catch (e) {
+        showError("about-error", e.message);
+      }
+    }
+
+    // ── Helpers ──
+    function ghFetch(path, pat, opts = {}) {
+      return fetch(API + path, {
+        ...opts,
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+          ...(opts.headers || {}),
+        },
+      });
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.remove("hidden");
+    }
+
+    function showSuccess(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.remove("hidden");
+    }
+
+    function hideMsg(id) {
+      document.getElementById(id).classList.add("hidden");
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>

@@ -6,8 +6,10 @@ import json
 import re
 import sys
 
-CSV_PATH = "/Users/intern/Desktop/ETA/practices_master.csv"
-JSX_PATH = "/Users/intern/Desktop/ETA/EnergyTransitionAtlas.jsx"
+import os as _os
+_DIR = _os.path.dirname(_os.path.abspath(__file__))
+CSV_PATH = _os.path.join(_DIR, "practices_master.csv")
+JSX_PATH = _os.path.join(_DIR, "EnergyTransitionAtlas.jsx")
 
 # Marker comments in the JSX that delimit the PRACTICES array
 ARRAY_START = "const PRACTICES = ["
