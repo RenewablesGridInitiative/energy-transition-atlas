@@ -30,6 +30,9 @@ The **Energy Transition Atlas** is a mobile-first single-page web application di
 | `classify_crosscutting.py` | Identifies and applies cross-cutting theme/topic classifications |
 | `logos/` | Partner logos: `gingr.svg`, `gingr-white.svg`, `rgi.svg`, `rgi-white.svg`, `ocean.svg`, `iucn.png`, `sl4b.svg`, `panorama.svg`, `grid-award.svg` |
 | `favicon.png` | Site favicon (GINGR brand asset) |
+| `admin.html` | Password-protected admin page (GitHub PAT auth, not linked from main nav) |
+| `admin-config.json` | Editable About page text, loaded at runtime by the JSX component |
+| `.github/workflows/update-practices.yml` | GitHub Action: auto-regenerates JSX PRACTICES array when CSV is pushed |
 
 ## Data Pipeline
 
@@ -82,7 +85,7 @@ OCEaN sitemap ──> scrape_ocean.py ──> CSV ──> csv_to_jsx.py
 
 ## Design Tokens
 
-- **Primary purple:** `#58044D`
+- **Primary purple:** `#6B21A8`
 - **Cream background:** `#FFF8E5`
 - **Charcoal text:** `#424244`
 - **Secondary text:** `#6B6B6D` (WCAG AA on cream)
@@ -130,6 +133,12 @@ git push origin main
 ### Add a practice manually
 Add a row to `practices_master.csv`, then run `python3.11 csv_to_jsx.py`.
 
+### Update practices via Admin page
+Navigate to `admin.html`, authenticate with a GitHub PAT that has `repo` scope, and upload a new CSV. A GitHub Action automatically runs `csv_to_jsx.py` and commits the regenerated JSX.
+
+### Edit About page text
+Use the Admin page's "Edit About Page" tab. Changes are saved to `admin-config.json` via GitHub API and appear on the live site immediately.
+
 ## Data Quality Notes
 
 - **323 practices:** 284 RGI + 20 OCEaN + 17 Panorama (2 Panorama are missing images)
@@ -158,6 +167,12 @@ Add a row to `practices_master.csv`, then run `python3.11 csv_to_jsx.py`.
 - **Modal body scroll lock.** `PracticeDetailModal` sets `document.body.style.overflow = 'hidden'` on open and restores on close. Without this, opening a modal from the top of the page causes scroll-to-bottom.
 - **RGI Grid Awards branding.** The ceremony is "RGI Grid Awards", the trophy is the "Golden Pylon", the award name is "Good Practice of the Year YYYY". Three categories: Nature-Positive, People-Positive, Innovation. Reference: https://renewables-grid.eu/award/
 - **About page tone.** Text should be Atlas-focused and partner-inclusive, not GINGR-specific. Leave room for new partners to join. Avoid overly prescriptive "Nature-Positive / People-Positive" framing in general Atlas copy (reserve for award categories).
+- **Admin page (`admin.html`).** Standalone page, not linked from main nav. Uses GitHub Personal Access Token for auth (stored in `sessionStorage` only). Commits files via GitHub Contents API. Token needs `repo` scope (or fine-grained "Contents: Read and write" on this repo).
+- **About page text is now dynamic.** Loaded from `admin-config.json` at runtime via `fetch()`. Falls back to inline defaults if the file is missing or fails to load. Editable through the admin page.
+- **Submit page is now informational.** No form — shows submission criteria inline and partner pathway cards with external links. The `SubmissionCriteriaModal` component was removed.
+- **Contact page has no form.** Just email link + address + CSV export. `contactForm`/`contactSuccess` states were removed.
+- **Hero graphic is desktop-only.** The `HeroGraphic` component renders an animated SVG (globe + topic icons). Hidden below `lg` breakpoint. Uses CSS `@keyframes` for rotation and floating animations.
+- **csv_to_jsx.py uses relative paths.** Updated from hardcoded `/Users/intern/Desktop/ETA/` to `os.path.dirname(__file__)`.
 
 ## Completed Sprints (Summary)
 
@@ -169,3 +184,4 @@ All sprints completed 2026-03-26/27. Key milestones:
 5. **14-task sprint:** Practice detail popup, CSV export, brand bar, mobile menu redesign, region groupings, description backfill, hero tagline, contact GINGR branding, submission criteria update, dead code removal
 6. **Mobile/brand fixes:** Brand bar hidden on mobile, filters wrap instead of scroll, white logos for desktop brand bar
 7. **8-fix sprint:** Modal scroll lock, equalised brand bar logos, About page rewrite (Atlas-focused, partner-inclusive), footer grid rebalance, Atlas Partner in popup, RGI Grid Awards branding (Golden Pylon, categories), favicon
+8. **Branding & admin sprint:** Primary color changed to `#6B21A8` (vivid purple), animated hero SVG (globe + topic icons, desktop only), Submit page redesigned as informational (no form, partner pathways), Contact page simplified (email only, no form), GitHub-native admin page (`admin.html`) with PAT auth for CSV upload + About text editing, About page text extracted to `admin-config.json` for runtime loading, GitHub Action for auto-regenerating JSX from CSV

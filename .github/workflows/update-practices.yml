@@ -1,0 +1,35 @@
+name: Regenerate practices from CSV
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - practices_master.csv
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run csv_to_jsx.py
+        run: python csv_to_jsx.py
+
+      - name: Commit updated JSX
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add EnergyTransitionAtlas.jsx
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-regenerate PRACTICES array from updated CSV"
+            git push
+          fi
