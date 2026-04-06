@@ -1835,7 +1835,7 @@ export default function EnergyTransitionAtlas() {
 
               {/* Mobile: Single row — Infrastructure, Theme, More, Sort */}
               <div className="md:hidden">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                   {[basicFilters[0], basicFilters[1]].map((f) => (
                     <div key={f.label}>
                       <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
