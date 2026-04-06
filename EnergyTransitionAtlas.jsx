@@ -652,13 +652,18 @@ function HeroGraphic() {
         @keyframes hero-float-2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes hero-float-3 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
         @keyframes hero-pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 0.55; } }
-        .hero-globe { animation: hero-spin 90s linear infinite; transform-origin: center; }
-        .hero-icon-1 { animation: hero-float-1 4s ease-in-out infinite; }
-        .hero-icon-2 { animation: hero-float-2 5s ease-in-out infinite 0.5s; }
-        .hero-icon-3 { animation: hero-float-3 4.5s ease-in-out infinite 1s; }
-        .hero-icon-4 { animation: hero-float-1 5.5s ease-in-out infinite 1.5s; }
-        .hero-icon-5 { animation: hero-float-2 4s ease-in-out infinite 2s; }
-        .hero-ring-pulse { animation: hero-pulse 6s ease-in-out infinite; }
+        @keyframes hero-dash { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -60; } }
+        .hero-globe { transform-origin: center; }
+        @media (prefers-reduced-motion: no-preference) {
+          .hero-globe { animation: hero-spin 90s linear infinite; }
+          .hero-icon-1 { animation: hero-float-1 4s ease-in-out infinite; }
+          .hero-icon-2 { animation: hero-float-2 5s ease-in-out infinite 0.5s; }
+          .hero-icon-3 { animation: hero-float-3 4.5s ease-in-out infinite 1s; }
+          .hero-icon-4 { animation: hero-float-1 5.5s ease-in-out infinite 1.5s; }
+          .hero-icon-5 { animation: hero-float-2 4s ease-in-out infinite 2s; }
+          .hero-ring-pulse { animation: hero-pulse 6s ease-in-out infinite; }
+          .hero-route { animation: hero-dash 20s linear infinite; }
+        }
       `}</style>
       <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         {/* Pulsing outer ring */}
@@ -749,9 +754,9 @@ function HeroGraphic() {
           </g>
         </g>
 
-        {/* Leaf — top left: larger leaf with veins and stem */}
+        {/* Leaf — left center: larger leaf with veins and stem */}
         <g className="hero-icon-4" opacity="0.9">
-          <g transform="translate(72, 88)">
+          <g transform="translate(42, 190)">
             {/* Leaf shape */}
             <path d="M0,20 Q-20,-2 0,-24 Q20,-2 0,20 Z" fill="none" stroke="#FFF8E5" strokeWidth="2.5" strokeLinejoin="round" />
             {/* Central vein */}
@@ -766,9 +771,9 @@ function HeroGraphic() {
           </g>
         </g>
 
-        {/* People — left center: three person silhouettes */}
+        {/* People — top left: three person silhouettes */}
         <g className="hero-icon-5" opacity="0.9">
-          <g transform="translate(42, 190)">
+          <g transform="translate(72, 88)">
             {/* Center person (front, larger) */}
             <circle cx="0" cy="-12" r="6" fill="none" stroke="#FFF8E5" strokeWidth="2.5" />
             <path d="M0,-6 L0,8" stroke="#FFF8E5" strokeWidth="2.5" strokeLinecap="round" />
@@ -788,6 +793,38 @@ function HeroGraphic() {
             <path d="M16,6 L21,15" stroke="#FFF8E5" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
           </g>
         </g>
+
+        {/* Arrow marker for navigation routes */}
+        <defs>
+          <marker id="nav-arrow" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="none" stroke="#FFF8E5" strokeWidth="1" opacity="0.25" />
+          </marker>
+        </defs>
+
+        {/* Animated dotted navigation routes */}
+        <path
+          d="M72,88 Q200,50 318,78 Q380,180 330,308"
+          fill="none" stroke="#FFF8E5" strokeWidth="1"
+          strokeDasharray="8 12" opacity="0.15"
+          markerEnd="url(#nav-arrow)"
+          className="hero-route"
+        />
+        <path
+          d="M68,315 Q120,200 200,160 Q280,120 318,78"
+          fill="none" stroke="#FFF8E5" strokeWidth="1"
+          strokeDasharray="8 12" opacity="0.12"
+          markerEnd="url(#nav-arrow)"
+          className="hero-route"
+          style={{ animationDuration: '25s', animationDirection: 'reverse' }}
+        />
+        <path
+          d="M42,190 Q140,260 250,355 Q340,340 345,190"
+          fill="none" stroke="#FFF8E5" strokeWidth="1"
+          strokeDasharray="8 12" opacity="0.13"
+          markerEnd="url(#nav-arrow)"
+          className="hero-route"
+          style={{ animationDuration: '30s' }}
+        />
 
         {/* Small decorative dots */}
         <circle cx="155" cy="65" r="2.5" fill="#FFF8E5" opacity="0.35" />
@@ -847,7 +884,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-3">
           <h2 id="practice-modal-title" className="font-['League_Gothic'] text-[#6B21A8] text-2xl lg:text-3xl uppercase tracking-wide pr-4">{p.title}</h2>
-          <button onClick={onClose} className="ml-4 mt-1 text-[#424244] hover:text-[#6B21A8] transition-colors text-2xl leading-none flex-shrink-0" aria-label="Close">×</button>
+          <button onClick={onClose} className="ml-4 mt-1 text-[#424244] hover:text-[#6B21A8] hover:bg-[#424244]/10 transition-colors text-2xl leading-none flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full" aria-label="Close">×</button>
         </div>
         <div className="px-6 pb-6">
           {/* Theme + ALL topic badges */}
@@ -1013,7 +1050,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
       key={String(opt)}
       role="option"
       aria-selected={selected.includes(opt)}
-      className="flex items-center gap-2 px-4 py-1.5 hover:bg-[#FFF8E5] cursor-pointer text-sm text-[#424244]"
+      className="flex items-center gap-2 px-4 py-2.5 hover:bg-[#FFF8E5] cursor-pointer text-sm text-[#424244]"
     >
       <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="accent-[#6B21A8] w-4 h-4" />
       <span>{String(opt)}</span>
@@ -1028,7 +1065,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
         aria-label={`Filter by ${label}`}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center justify-between gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+        className={`flex items-center justify-between gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
           active
             ? "bg-[#6B21A8] text-white border-[#6B21A8]"
             : "bg-white text-[#6B21A8] border-[#6B21A8]"
@@ -1059,7 +1096,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
                 <div key={region}>
                   <button
                     onClick={() => toggleGroup(available)}
-                    className={`w-full text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#6B21A8] bg-[#6B21A8]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#6B21A8] bg-[#6B21A8]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
                   >
                     {region} ({available.length})
                   </button>
@@ -1477,7 +1514,7 @@ export default function EnergyTransitionAtlas() {
                 ].map(s => (
                   <a key={s.id} href={`#${s.id}`}
                     onClick={(e) => { e.preventDefault(); document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" }); }}
-                    className="px-3 py-1 rounded-full border border-[#6B21A8]/30 text-[#6B21A8] text-xs font-medium hover:bg-[#6B21A8] hover:text-white transition-colors">
+                    className="px-3 py-2 rounded-full border border-[#6B21A8]/30 text-[#6B21A8] text-xs font-medium hover:bg-[#6B21A8] hover:text-white transition-colors">
                     {s.label}
                   </a>
                 ))}
@@ -1728,7 +1765,7 @@ export default function EnergyTransitionAtlas() {
                   onClick={() => setAwardOnly(!awardOnly)}
                   aria-label="Toggle award winners only"
                   aria-pressed={awardOnly}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
                     awardOnly
                       ? "bg-[#6B21A8] text-white border-[#6B21A8]"
                       : "bg-white text-[#6B21A8] border-[#6B21A8]"
@@ -1772,7 +1809,7 @@ export default function EnergyTransitionAtlas() {
                 >
                   <IconGridView />
                 </button>
-                <div className="ml-auto relative min-w-[200px] max-w-[220px]">
+                <div className="flex-1 relative min-w-[140px] max-w-[280px]">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#767676]">
                     <IconSearch />
                   </span>
@@ -1841,7 +1878,7 @@ export default function EnergyTransitionAtlas() {
                       onClick={() => setAwardOnly(!awardOnly)}
                       aria-label="Toggle award winners only"
                       aria-pressed={awardOnly}
-                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors w-full ${
+                      className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full border text-sm font-medium transition-colors w-full ${
                         awardOnly
                           ? "bg-[#6B21A8] text-white border-[#6B21A8]"
                           : "bg-white text-[#6B21A8] border-[#6B21A8]"
@@ -1948,8 +1985,11 @@ export default function EnergyTransitionAtlas() {
                   {pageItems.map((p) => (
                     <div
                       key={p.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedPractice(p)}
-                      className="group block cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 rounded-xl"
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedPractice(p); } }}
+                      className="group block cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
                     >
                       <div className="relative overflow-hidden rounded-xl">
                         <img
@@ -1994,8 +2034,11 @@ export default function EnergyTransitionAtlas() {
                   {pageItems.map((p) => (
                     <div
                       key={p.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedPractice(p)}
-                      className="block py-4 px-3 -mx-3 rounded-lg group cursor-pointer hover:bg-white/60 transition-colors"
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedPractice(p); } }}
+                      className="block py-4 px-3 -mx-3 rounded-lg group cursor-pointer hover:bg-white/60 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
                     >
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-bold text-[#424244] group-hover:text-[#6B21A8] transition-colors">
