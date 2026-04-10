@@ -1817,17 +1817,17 @@ export default function EnergyTransitionAtlas() {
               </button>
             </div>
             <div className="bg-white rounded-xl border border-[#C9C9C9] p-8">
-              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">{contactConfig?.orgName || "GINGR Secretariat"}</h3>
+              <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">{contactConfig?.orgName || "Renewables Grid Initiative (RGI)"}</h3>
               <p className="text-[#424244] text-sm mb-6">{contactConfig?.orgSubline || "For questions about the Atlas, submitting practices, or partnership enquiries:"}</p>
               <a
-                href={`mailto:${contactConfig?.email || "info@gingr.org"}`}
+                href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`}
                 className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-lg"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                {contactConfig?.email || "info@gingr.org"}
+                {contactConfig?.email || "communication@renewables-grid.eu"}
               </a>
               <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
-                {(contactConfig?.address || "c/o Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
+                {(contactConfig?.address || "Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
                   <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
                 ))}
               </div>
@@ -2190,14 +2190,14 @@ export default function EnergyTransitionAtlas() {
             <div>
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Contact</h4>
               <p className="text-[#C9C9C9] text-sm leading-relaxed">
-                {contactConfig?.orgName || "GINGR Secretariat"}<br />
-                {(contactConfig?.address || "c/o Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
+                {contactConfig?.orgName || "Renewables Grid Initiative (RGI)"}<br />
+                {(contactConfig?.address || "Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
                   <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
                 ))}
               </p>
               <p className="mt-2">
-                <a href={`mailto:${contactConfig?.email || "info@gingr.org"}`} className="text-[#FFF8E5] text-sm hover:text-white transition-colors">
-                  {contactConfig?.email || "info@gingr.org"}
+                <a href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`} className="text-[#FFF8E5] text-sm hover:text-white transition-colors">
+                  {contactConfig?.email || "communication@renewables-grid.eu"}
                 </a>
               </p>
             </div>
