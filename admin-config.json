@@ -31,5 +31,49 @@
       "cta": "The collection keeps growing. New partners and practices are added on a rolling basis. If your organisation documents energy transition practices, we'd love to hear from you."
     },
     "partnerCTA": "Interested in becoming a contributing partner?"
+  },
+  "contact": {
+    "email": "info@gingr.org",
+    "orgName": "GINGR Secretariat",
+    "orgSubline": "For questions about the Atlas, submitting practices, or partnership enquiries:",
+    "address": "c/o Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany"
+  },
+  "submit": {
+    "introText": "Practices in the Energy Transition Atlas are contributed by our Atlas Partners \u2014 organisations that document and share proven approaches to the energy transition. Each partner manages their own submission and review process.",
+    "criteria": [
+      { "title": "Publicly documented", "desc": "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference.", "highlight": false },
+      { "title": "Relevance to energy infrastructure", "desc": "The practice must relate to electricity grids, solar, onshore wind, offshore wind, or broader energy systems.", "highlight": false },
+      { "title": "Nature- or People-positive focus", "desc": "The practice must demonstrably address biodiversity, landscape integration, community engagement, social acceptance, or other environmental and social dimensions of the energy transition.", "highlight": false },
+      { "title": "Replicability", "desc": "The approach should be transferable to other projects, organisations, or geographies beyond the original context.", "highlight": false },
+      { "title": "Demonstrated outcomes", "desc": "Preference is given to practices with measurable, documented, or independently verified results, though emerging and innovative approaches are also considered.", "highlight": false },
+      { "title": "Recency", "desc": "Practices should generally date from 2000 onwards and reflect current standards and regulatory contexts.", "highlight": false },
+      { "title": "Joint approval by RGI and IUCN", "desc": "All submissions are reviewed by the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN). Both organisations must approve a practice before it is published in the Atlas.", "highlight": true }
+    ],
+    "pathways": [
+      { "name": "RGI Good Practice Database", "url": "https://renewables-grid.eu/activities/good-practice.html", "desc": "RGI\u2019s Good Practice Database has documented best practices in grid development and renewable energy since 2010, covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe. Contact RGI to submit a practice.", "color": "border-l-[#6B21A8]" },
+      { "name": "IUCN PANORAMA", "url": "https://panorama.solutions/en", "desc": "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Submit energy-relevant practices directly through the Panorama platform. Practices are reviewed for conservation relevance and documented outcomes.", "color": "border-l-emerald-500" },
+      { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together. Contact OCEaN to feature your offshore practice.", "color": "border-l-sky-500" },
+      { "name": "RGI Grid Awards", "url": "https://renewables-grid.eu/award/", "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.", "color": "border-l-amber-500" }
+    ]
+  },
+  "partners": [
+    { "name": "GINGR", "url": "https://gingr.org", "desc": "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that owns and manages the Energy Transition Atlas." },
+    { "name": "RGI", "url": "https://renewables-grid.eu", "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe." },
+    { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "desc": "The International Union for Conservation of Nature drives global action on nature-positive energy through its Green, Just Energy Transition programme and co-founded GINGR." },
+    { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature works to ensure offshore renewable energy and marine nature conservation develop in harmony." },
+    { "name": "SL4B", "url": "https://safelines4birds.eu", "desc": "Safe Lines for Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
+    { "name": "Panorama", "url": "https://panorama.solutions/en", "desc": "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas." }
+  ],
+  "brandBar": {
+    "owners": [
+      { "name": "GINGR", "url": "https://gingr.org" },
+      { "name": "RGI", "url": "https://renewables-grid.eu" },
+      { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition" }
+    ],
+    "partners": [
+      { "name": "OCEaN", "url": "https://offshore-coalition.eu" },
+      { "name": "SL4B", "url": "https://safelines4birds.eu" },
+      { "name": "Panorama", "url": "https://panorama.solutions/en" }
+    ]
   }
 }

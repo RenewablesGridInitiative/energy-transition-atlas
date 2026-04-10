@@ -50,12 +50,24 @@
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-2 mb-6">
+      <div class="flex gap-2 mb-6 flex-wrap">
         <button onclick="switchTab('csv')" id="tab-csv" class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white">
           Upload CSV
         </button>
         <button onclick="switchTab('about')" id="tab-about" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
-          Edit About Page
+          About Page
+        </button>
+        <button onclick="switchTab('contact')" id="tab-contact" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Contact Page
+        </button>
+        <button onclick="switchTab('submit')" id="tab-submit" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Submit Page
+        </button>
+        <button onclick="switchTab('partners')" id="tab-partners" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Partners
+        </button>
+        <button onclick="switchTab('brandbar')" id="tab-brandbar" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Brand Bar
         </button>
       </div>
 
@@ -99,7 +111,7 @@
 
           <div id="about-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
 
-          <form id="about-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveAbout();">
+          <form id="about-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('about');">
             <div>
               <label class="block text-sm font-medium text-[#424244] mb-1">Vision Statement</label>
               <textarea id="about-vision" rows="3" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
@@ -135,6 +147,133 @@
           </form>
         </div>
       </div>
+
+      <!-- Contact Page Tab -->
+      <div id="panel-contact" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Contact Page</h2>
+          <p class="text-[#424244] text-sm mb-6">Edit the contact information shown on the Contact page and in the footer.</p>
+
+          <div id="contact-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
+
+          <form id="contact-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('contact');">
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Email Address</label>
+              <input id="contact-email" type="email" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Organisation Name</label>
+              <input id="contact-orgName" type="text" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Subline Text</label>
+              <input id="contact-orgSubline" type="text" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Address (use line breaks)</label>
+              <textarea id="contact-address" rows="3" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
+            </div>
+
+            <p id="contact-error" class="text-red-600 text-xs hidden"></p>
+            <p id="contact-success" class="text-emerald-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Submit Page Tab -->
+      <div id="panel-submit" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Submit a Practice Page</h2>
+          <p class="text-[#424244] text-sm mb-6">Edit the submission criteria and partner pathway cards.</p>
+
+          <div id="submit-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
+
+          <form id="submit-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('submit');">
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Intro Text</label>
+              <textarea id="submit-introText" rows="3" class="w-full px-4 py-3 rounded-xl border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Submission Criteria</label>
+              <p class="text-xs text-[#6B6B6D] mb-2">Edit the list of criteria. Check "Highlight" to visually emphasise a criterion.</p>
+              <div class="space-y-3" id="criteria-fields"></div>
+              <button type="button" onclick="addCriterion()" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add criterion</button>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-1">Partner Pathways</label>
+              <p class="text-xs text-[#6B6B6D] mb-2">Edit the partner pathway cards shown below the criteria.</p>
+              <div class="space-y-4" id="pathway-fields"></div>
+              <button type="button" onclick="addPathway()" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add pathway</button>
+            </div>
+
+            <p id="submit-error" class="text-red-600 text-xs hidden"></p>
+            <p id="submit-success" class="text-emerald-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Partners Tab -->
+      <div id="panel-partners" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Contributing Partners</h2>
+          <p class="text-[#424244] text-sm mb-6">Edit the partner list shown on the About page. Partners are also used in the footer and brand bar.</p>
+
+          <div id="partners-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
+
+          <form id="partners-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('partners');">
+            <div class="space-y-4" id="partner-fields"></div>
+            <button type="button" onclick="addPartner()" class="text-sm text-[#6B21A8] font-medium hover:underline">+ Add partner</button>
+
+            <p id="partners-error" class="text-red-600 text-xs hidden"></p>
+            <p id="partners-success" class="text-emerald-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Brand Bar Tab -->
+      <div id="panel-brandbar" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Brand Bar</h2>
+          <p class="text-[#424244] text-sm mb-6">Edit the desktop brand bar shown at the top of every page. Split into "A platform by" (owners) and "with" (contributing partners).</p>
+
+          <div id="brandbar-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
+
+          <form id="brandbar-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('brandbar');">
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-2">A platform by</label>
+              <div class="space-y-2" id="bb-owners-fields"></div>
+              <button type="button" onclick="addBrandBarItem('owners')" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add owner</button>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#424244] mb-2">with</label>
+              <div class="space-y-2" id="bb-partners-fields"></div>
+              <button type="button" onclick="addBrandBarItem('partners')" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add partner</button>
+            </div>
+
+            <p id="brandbar-error" class="text-red-600 text-xs hidden"></p>
+            <p id="brandbar-success" class="text-emerald-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -142,11 +281,14 @@
     const OWNER = "RenewablesGridInitiative";
     const REPO = "energy-transition-atlas";
     const API = "https://api.github.com";
+    const ALL_TABS = ["csv", "about", "contact", "submit", "partners", "brandbar"];
+    const ACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white";
+    const INACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
 
     let token = null;
     let csvContent = null;
-    let aboutData = null;
-    let aboutSha = null;
+    let configData = null;
+    let configSha = null;
 
     // ── Auth ──
     async function authenticate() {
@@ -154,12 +296,10 @@
       if (!pat) return showError("auth-error", "Please enter a token.");
 
       try {
-        // Validate token
         const userRes = await ghFetch("/user", pat);
         if (!userRes.ok) throw new Error("Invalid token");
         const user = await userRes.json();
 
-        // Check repo access
         const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`, pat);
         if (!repoRes.ok) throw new Error("No access to repository");
         const repo = await repoRes.json();
@@ -177,33 +317,320 @@
 
     function signOut() {
       token = null;
+      configData = null;
+      configSha = null;
       sessionStorage.removeItem("_eta_session");
       document.getElementById("auth-screen").classList.remove("hidden");
       document.getElementById("admin-dashboard").classList.add("hidden");
       document.getElementById("pat-input").value = "";
     }
 
-    // Auto-restore session
     (function() {
       const saved = sessionStorage.getItem("_eta_session");
-      if (saved) {
-        document.getElementById("pat-input").value = saved;
-        authenticate();
-      }
+      if (saved) { document.getElementById("pat-input").value = saved; authenticate(); }
     })();
 
     // ── Tabs ──
     function switchTab(tab) {
-      document.getElementById("panel-csv").classList.toggle("hidden", tab !== "csv");
-      document.getElementById("panel-about").classList.toggle("hidden", tab !== "about");
-      document.getElementById("tab-csv").className = tab === "csv"
-        ? "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white"
-        : "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
-      document.getElementById("tab-about").className = tab === "about"
-        ? "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white"
-        : "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
+      ALL_TABS.forEach(t => {
+        const panel = document.getElementById(`panel-${t}`);
+        if (panel) panel.classList.toggle("hidden", t !== tab);
+        const btn = document.getElementById(`tab-${t}`);
+        if (btn) btn.className = t === tab ? ACTIVE_BTN : INACTIVE_BTN;
+      });
+      if (tab !== "csv" && !configData) loadConfig();
+    }
 
-      if (tab === "about" && !aboutData) loadAboutConfig();
+    // ── Config Loading ──
+    async function loadConfig() {
+      try {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token);
+        if (!res.ok) throw new Error("Could not load config");
+        const data = await res.json();
+        configSha = data.sha;
+        configData = JSON.parse(atob(data.content));
+        populateAllForms();
+      } catch (e) {
+        ALL_TABS.filter(t => t !== "csv").forEach(t => {
+          const loading = document.getElementById(`${t}-loading`);
+          if (loading) loading.textContent = "Error: " + e.message;
+        });
+      }
+    }
+
+    function populateAllForms() {
+      populateAboutForm();
+      populateContactForm();
+      populateSubmitForm();
+      populatePartnersForm();
+      populateBrandBarForm();
+    }
+
+    // ── About Form ──
+    function populateAboutForm() {
+      const about = configData.about || {};
+      document.getElementById("about-vision").value = about.vision || "";
+      document.getElementById("about-mission").value = about.mission || "";
+      document.getElementById("about-collection-intro").value = about.collection?.intro || "";
+      document.getElementById("about-collection-cta").value = about.collection?.cta || "";
+      document.getElementById("about-partner-cta").value = about.partnerCTA || "";
+
+      const container = document.getElementById("values-fields");
+      container.innerHTML = "";
+      (about.values || []).forEach((v, i) => {
+        container.innerHTML += `
+          <div class="grid grid-cols-[120px_1fr] gap-2">
+            <input id="val-title-${i}" value="${escHtml(v.title)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+            <input id="val-text-${i}" value="${escHtml(v.text)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm" />
+          </div>`;
+      });
+
+      document.getElementById("about-loading").classList.add("hidden");
+      document.getElementById("about-form").classList.remove("hidden");
+    }
+
+    // ── Contact Form ──
+    function populateContactForm() {
+      const c = configData.contact || {};
+      document.getElementById("contact-email").value = c.email || "";
+      document.getElementById("contact-orgName").value = c.orgName || "";
+      document.getElementById("contact-orgSubline").value = c.orgSubline || "";
+      document.getElementById("contact-address").value = (c.address || "").replace(/\\n/g, "\n");
+
+      document.getElementById("contact-loading").classList.add("hidden");
+      document.getElementById("contact-form").classList.remove("hidden");
+    }
+
+    // ── Submit Form ──
+    function populateSubmitForm() {
+      const s = configData.submit || {};
+      document.getElementById("submit-introText").value = s.introText || "";
+
+      const criteriaContainer = document.getElementById("criteria-fields");
+      criteriaContainer.innerHTML = "";
+      (s.criteria || []).forEach((c, i) => renderCriterion(criteriaContainer, c, i));
+
+      const pathwayContainer = document.getElementById("pathway-fields");
+      pathwayContainer.innerHTML = "";
+      (s.pathways || []).forEach((p, i) => renderPathway(pathwayContainer, p, i));
+
+      document.getElementById("submit-loading").classList.add("hidden");
+      document.getElementById("submit-form").classList.remove("hidden");
+    }
+
+    function renderCriterion(container, c, i) {
+      const div = document.createElement("div");
+      div.className = "bg-[#FFF8E5] rounded-lg p-3 space-y-2";
+      div.innerHTML = `
+        <div class="flex items-center gap-2">
+          <input id="crit-title-${i}" value="${escHtml(c.title)}" placeholder="Title" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+          <label class="flex items-center gap-1 text-xs text-[#6B6B6D]">
+            <input type="checkbox" id="crit-hl-${i}" ${c.highlight ? "checked" : ""} class="accent-[#6B21A8]" /> Highlight
+          </label>
+          <button type="button" onclick="this.closest('.bg-\\\\[\\\\#FFF8E5\\\\]').remove()" class="text-red-500 text-xs hover:underline">Remove</button>
+        </div>
+        <textarea id="crit-desc-${i}" rows="2" placeholder="Description" class="w-full px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm">${escHtml(c.desc)}</textarea>`;
+      container.appendChild(div);
+    }
+
+    function addCriterion() {
+      const container = document.getElementById("criteria-fields");
+      const i = container.children.length;
+      renderCriterion(container, { title: "", desc: "", highlight: false }, i);
+    }
+
+    function renderPathway(container, p, i) {
+      const div = document.createElement("div");
+      div.className = "bg-[#FFF8E5] rounded-lg p-3 space-y-2";
+      div.innerHTML = `
+        <div class="flex items-center gap-2">
+          <input id="pw-name-${i}" value="${escHtml(p.name)}" placeholder="Partner name" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+          <button type="button" onclick="this.closest('.bg-\\\\[\\\\#FFF8E5\\\\]').remove()" class="text-red-500 text-xs hover:underline">Remove</button>
+        </div>
+        <input id="pw-url-${i}" value="${escHtml(p.url)}" placeholder="URL" class="w-full px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm" />
+        <textarea id="pw-desc-${i}" rows="2" placeholder="Description" class="w-full px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm">${escHtml(p.desc)}</textarea>
+        <input id="pw-color-${i}" value="${escHtml(p.color)}" placeholder="Border color class (e.g. border-l-[#6B21A8])" class="w-full px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm text-[#6B6B6D]" />`;
+      container.appendChild(div);
+    }
+
+    function addPathway() {
+      const container = document.getElementById("pathway-fields");
+      const i = container.children.length;
+      renderPathway(container, { name: "", url: "", desc: "", color: "border-l-[#6B21A8]" }, i);
+    }
+
+    // ── Partners Form ──
+    function populatePartnersForm() {
+      const container = document.getElementById("partner-fields");
+      container.innerHTML = "";
+      (configData.partners || []).forEach((p, i) => renderPartner(container, p, i));
+
+      document.getElementById("partners-loading").classList.add("hidden");
+      document.getElementById("partners-form").classList.remove("hidden");
+    }
+
+    function renderPartner(container, p, i) {
+      const div = document.createElement("div");
+      div.className = "bg-[#FFF8E5] rounded-lg p-3 space-y-2";
+      div.innerHTML = `
+        <div class="flex items-center gap-2">
+          <input id="ptr-name-${i}" value="${escHtml(p.name)}" placeholder="Name" class="w-32 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+          <input id="ptr-url-${i}" value="${escHtml(p.url)}" placeholder="URL" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm" />
+          <button type="button" onclick="this.closest('.bg-\\\\[\\\\#FFF8E5\\\\]').remove()" class="text-red-500 text-xs hover:underline">Remove</button>
+        </div>
+        <textarea id="ptr-desc-${i}" rows="2" placeholder="Description" class="w-full px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm">${escHtml(p.desc)}</textarea>`;
+      container.appendChild(div);
+    }
+
+    function addPartner() {
+      const container = document.getElementById("partner-fields");
+      const i = container.children.length;
+      renderPartner(container, { name: "", url: "", desc: "" }, i);
+    }
+
+    // ── Brand Bar Form ──
+    function populateBrandBarForm() {
+      const bb = configData.brandBar || {};
+      renderBrandBarList("bb-owners-fields", bb.owners || []);
+      renderBrandBarList("bb-partners-fields", bb.partners || []);
+
+      document.getElementById("brandbar-loading").classList.add("hidden");
+      document.getElementById("brandbar-form").classList.remove("hidden");
+    }
+
+    function renderBrandBarList(containerId, items) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      items.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "flex items-center gap-2";
+        div.innerHTML = `
+          <input value="${escHtml(item.name)}" placeholder="Name" class="w-32 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium bb-name" />
+          <input value="${escHtml(item.url)}" placeholder="URL" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm bb-url" />
+          <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-xs hover:underline">Remove</button>`;
+        container.appendChild(div);
+      });
+    }
+
+    function addBrandBarItem(type) {
+      const containerId = type === "owners" ? "bb-owners-fields" : "bb-partners-fields";
+      const container = document.getElementById(containerId);
+      const div = document.createElement("div");
+      div.className = "flex items-center gap-2";
+      div.innerHTML = `
+        <input value="" placeholder="Name" class="w-32 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium bb-name" />
+        <input value="" placeholder="URL" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm bb-url" />
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-xs hover:underline">Remove</button>`;
+      container.appendChild(div);
+    }
+
+    // ── Unified Save ──
+    async function saveSection(section) {
+      hideMsg(`${section}-error`);
+      hideMsg(`${section}-success`);
+
+      // Gather data for the section
+      if (section === "about") {
+        const values = [];
+        let i = 0;
+        while (document.getElementById(`val-title-${i}`)) {
+          values.push({ title: document.getElementById(`val-title-${i}`).value, text: document.getElementById(`val-text-${i}`).value });
+          i++;
+        }
+        configData.about.vision = document.getElementById("about-vision").value;
+        configData.about.mission = document.getElementById("about-mission").value;
+        configData.about.values = values;
+        configData.about.collection.intro = document.getElementById("about-collection-intro").value;
+        configData.about.collection.cta = document.getElementById("about-collection-cta").value;
+        configData.about.partnerCTA = document.getElementById("about-partner-cta").value;
+      }
+
+      else if (section === "contact") {
+        configData.contact = {
+          email: document.getElementById("contact-email").value,
+          orgName: document.getElementById("contact-orgName").value,
+          orgSubline: document.getElementById("contact-orgSubline").value,
+          address: document.getElementById("contact-address").value,
+        };
+      }
+
+      else if (section === "submit") {
+        const criteria = [];
+        document.querySelectorAll("#criteria-fields > div").forEach((div, i) => {
+          const titleEl = div.querySelector(`[id^="crit-title-"]`);
+          const descEl = div.querySelector(`[id^="crit-desc-"]`);
+          const hlEl = div.querySelector(`[id^="crit-hl-"]`);
+          if (titleEl) criteria.push({ title: titleEl.value, desc: descEl?.value || "", highlight: hlEl?.checked || false });
+        });
+
+        const pathways = [];
+        document.querySelectorAll("#pathway-fields > div").forEach((div, i) => {
+          const nameEl = div.querySelector(`[id^="pw-name-"]`);
+          const urlEl = div.querySelector(`[id^="pw-url-"]`);
+          const descEl = div.querySelector(`[id^="pw-desc-"]`);
+          const colorEl = div.querySelector(`[id^="pw-color-"]`);
+          if (nameEl) pathways.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "", color: colorEl?.value || "" });
+        });
+
+        configData.submit = {
+          introText: document.getElementById("submit-introText").value,
+          criteria,
+          pathways,
+        };
+      }
+
+      else if (section === "partners") {
+        const partners = [];
+        document.querySelectorAll("#partner-fields > div").forEach((div) => {
+          const nameEl = div.querySelector(`[id^="ptr-name-"]`);
+          const urlEl = div.querySelector(`[id^="ptr-url-"]`);
+          const descEl = div.querySelector(`[id^="ptr-desc-"]`);
+          if (nameEl) partners.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "" });
+        });
+        configData.partners = partners;
+      }
+
+      else if (section === "brandbar") {
+        const readBBList = (containerId) => {
+          const items = [];
+          document.querySelectorAll(`#${containerId} > div`).forEach(div => {
+            const name = div.querySelector(".bb-name")?.value || "";
+            const url = div.querySelector(".bb-url")?.value || "";
+            if (name) items.push({ name, url });
+          });
+          return items;
+        };
+        configData.brandBar = {
+          owners: readBBList("bb-owners-fields"),
+          partners: readBBList("bb-partners-fields"),
+        };
+      }
+
+      // Save to GitHub
+      try {
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(configData, null, 2) + "\n")));
+        const sectionLabels = { about: "About page", contact: "Contact page", submit: "Submit page", partners: "Partners", brandbar: "Brand bar" };
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: `Update ${sectionLabels[section] || section} content via Atlas Admin`,
+            content,
+            sha: configSha,
+            branch: "main",
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || "Save failed");
+        }
+
+        const result = await res.json();
+        configSha = result.content.sha;
+        showSuccess(`${section}-success`, "Saved! Changes will appear on the live site shortly.");
+      } catch (e) {
+        showError(`${section}-error`, e.message);
+      }
     }
 
     // ── CSV Upload ──
@@ -220,35 +647,15 @@
     }
 
     function processCSVFile(file) {
-      if (!file.name.endsWith(".csv")) {
-        showError("csv-error", "Please select a CSV file.");
-        return;
-      }
-
+      if (!file.name.endsWith(".csv")) { showError("csv-error", "Please select a CSV file."); return; }
       const reader = new FileReader();
       reader.onload = (e) => {
         csvContent = e.target.result;
         const lines = csvContent.trim().split("\n");
-        const headers = lines[0].split(",");
-
-        // Basic validation
-        const expectedCols = ["id", "title", "url", "brand", "theme", "topic", "inf", "year", "country", "org", "desc", "img", "award"];
-        if (headers.length < 13) {
-          showError("csv-error", `Expected at least 13 columns, found ${headers.length}.`);
-          csvContent = null;
-          return;
-        }
-
-        hideMsg("csv-error");
-        hideMsg("csv-success");
-
-        // Show preview
-        const preview = document.getElementById("csv-preview");
-        const content = document.getElementById("csv-preview-content");
-        preview.classList.remove("hidden");
-
-        const previewLines = lines.slice(0, 6).join("\n");
-        content.textContent = previewLines + (lines.length > 6 ? "\n..." : "");
+        if (lines[0].split(",").length < 13) { showError("csv-error", `Expected at least 13 columns, found ${lines[0].split(",").length}.`); csvContent = null; return; }
+        hideMsg("csv-error"); hideMsg("csv-success");
+        document.getElementById("csv-preview").classList.remove("hidden");
+        document.getElementById("csv-preview-content").textContent = lines.slice(0, 6).join("\n") + (lines.length > 6 ? "\n..." : "");
         document.getElementById("csv-row-count").textContent = `${lines.length - 1} practices found (${file.name}, ${(file.size / 1024).toFixed(1)} KB)`;
         document.getElementById("csv-upload-btn").disabled = false;
       };
@@ -258,158 +665,31 @@
     async function uploadCSV() {
       if (!csvContent || !token) return;
       const btn = document.getElementById("csv-upload-btn");
-      btn.disabled = true;
-      btn.textContent = "Uploading...";
-      hideMsg("csv-error");
-      hideMsg("csv-success");
-
+      btn.disabled = true; btn.textContent = "Uploading...";
+      hideMsg("csv-error"); hideMsg("csv-success");
       try {
-        // Get current file SHA
         const fileRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
         const fileData = fileRes.ok ? await fileRes.json() : null;
-        const sha = fileData?.sha;
-
-        // Commit new CSV
-        const body = {
-          message: "Update practices_master.csv via Atlas Admin",
-          content: btoa(unescape(encodeURIComponent(csvContent))),
-          branch: "main",
-        };
-        if (sha) body.sha = sha;
-
-        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, {
-          method: "PUT",
-          body: JSON.stringify(body),
-        });
-
-        if (!putRes.ok) {
-          const err = await putRes.json();
-          throw new Error(err.message || "Upload failed");
-        }
-
+        const body = { message: "Update practices_master.csv via Atlas Admin", content: btoa(unescape(encodeURIComponent(csvContent))), branch: "main" };
+        if (fileData?.sha) body.sha = fileData.sha;
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, { method: "PUT", body: JSON.stringify(body) });
+        if (!putRes.ok) { const err = await putRes.json(); throw new Error(err.message || "Upload failed"); }
         showSuccess("csv-success", "CSV uploaded successfully! The GitHub Action will regenerate the site data shortly.");
         document.getElementById("csv-preview").classList.add("hidden");
         csvContent = null;
-      } catch (e) {
-        showError("csv-error", e.message);
-        btn.disabled = false;
-      }
+      } catch (e) { showError("csv-error", e.message); btn.disabled = false; }
       btn.textContent = "Upload to Repository";
-    }
-
-    // ── About Page Editor ──
-    async function loadAboutConfig() {
-      try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token);
-        if (!res.ok) throw new Error("Could not load config");
-        const data = await res.json();
-        aboutSha = data.sha;
-        aboutData = JSON.parse(atob(data.content));
-
-        const about = aboutData.about;
-        document.getElementById("about-vision").value = about.vision || "";
-        document.getElementById("about-mission").value = about.mission || "";
-        document.getElementById("about-collection-intro").value = about.collection?.intro || "";
-        document.getElementById("about-collection-cta").value = about.collection?.cta || "";
-        document.getElementById("about-partner-cta").value = about.partnerCTA || "";
-
-        // Build value fields
-        const container = document.getElementById("values-fields");
-        container.innerHTML = "";
-        (about.values || []).forEach((v, i) => {
-          container.innerHTML += `
-            <div class="grid grid-cols-[120px_1fr] gap-2">
-              <input id="val-title-${i}" value="${escHtml(v.title)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
-              <input id="val-text-${i}" value="${escHtml(v.text)}" class="px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm" />
-            </div>`;
-        });
-
-        document.getElementById("about-loading").classList.add("hidden");
-        document.getElementById("about-form").classList.remove("hidden");
-      } catch (e) {
-        document.getElementById("about-loading").textContent = "Error: " + e.message;
-      }
-    }
-
-    async function saveAbout() {
-      hideMsg("about-error");
-      hideMsg("about-success");
-
-      // Gather values
-      const values = [];
-      let i = 0;
-      while (document.getElementById(`val-title-${i}`)) {
-        values.push({
-          title: document.getElementById(`val-title-${i}`).value,
-          text: document.getElementById(`val-text-${i}`).value,
-        });
-        i++;
-      }
-
-      aboutData.about.vision = document.getElementById("about-vision").value;
-      aboutData.about.mission = document.getElementById("about-mission").value;
-      aboutData.about.values = values;
-      aboutData.about.collection.intro = document.getElementById("about-collection-intro").value;
-      aboutData.about.collection.cta = document.getElementById("about-collection-cta").value;
-      aboutData.about.partnerCTA = document.getElementById("about-partner-cta").value;
-
-      try {
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(aboutData, null, 2) + "\n")));
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
-          method: "PUT",
-          body: JSON.stringify({
-            message: "Update About page content via Atlas Admin",
-            content: content,
-            sha: aboutSha,
-            branch: "main",
-          }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.message || "Save failed");
-        }
-
-        const result = await res.json();
-        aboutSha = result.content.sha;
-        showSuccess("about-success", "About page content updated! Changes will appear on the live site shortly.");
-      } catch (e) {
-        showError("about-error", e.message);
-      }
     }
 
     // ── Helpers ──
     function ghFetch(path, pat, opts = {}) {
-      return fetch(API + path, {
-        ...opts,
-        headers: {
-          Authorization: `Bearer ${pat}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json",
-          ...(opts.headers || {}),
-        },
-      });
+      return fetch(API + path, { ...opts, headers: { Authorization: `Bearer ${pat}`, Accept: "application/vnd.github.v3+json", "Content-Type": "application/json", ...(opts.headers || {}) } });
     }
 
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove("hidden");
-    }
-
-    function showSuccess(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove("hidden");
-    }
-
-    function hideMsg(id) {
-      document.getElementById(id).classList.add("hidden");
-    }
-
-    function escHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    function showError(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.classList.remove("hidden"); }
+    function showSuccess(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.classList.remove("hidden"); }
+    function hideMsg(id) { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }
+    function escHtml(str) { return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   </script>
 </body>
 </html>

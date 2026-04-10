@@ -184,7 +184,7 @@ The site is hosted on GitHub Pages. To add a custom domain:
    - `185.199.109.153`
    - `185.199.110.153`
    - `185.199.111.153`
-   - Optionally add a CNAME for `www` → `beston54.github.io`
+   - Optionally add a CNAME for `www` → `renewablesgridinitiative.github.io`
 3. **GitHub Settings** — repo Settings → Pages → Custom domain → enter the domain → check "Enforce HTTPS"
 4. GitHub auto-creates a `CNAME` file in the repo. HTTPS certificate provisions within ~30 minutes.
 5. The admin page will be accessible at `https://yourdomain.com/admin.html`

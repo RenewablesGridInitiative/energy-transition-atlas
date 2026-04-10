@@ -4,13 +4,13 @@ Build master CSV of best practices for the Energy Transition Atlas.
 Sources: Excel spreadsheets + scraped WordPress pages.
 """
 
+import argparse
 import csv
 import re
 import time
 import urllib.parse
 from pathlib import Path
 
-import openpyxl
 import requests
 from bs4 import BeautifulSoup
 
@@ -464,31 +464,59 @@ def scrape_practice(url, session):
     }
 
 
-def main():
-    # ── Step 1: Read Excel data ──
-    print("Reading Excel data...")
-    wb = openpyxl.load_workbook(EXCEL_PATH)
-
-    new_website = read_excel_sheet(wb, "New Website")
-    print(f"  New Website: {len(new_website)} practices")
-
-    old_website = read_excel_sheet(wb, "Old Website(not accessible)")
-    print(f"  Old Website: {len(old_website)} practices")
-
-    # Deduplicate: prefer New Website version
+def load_existing_csv():
+    """Load existing practices_master.csv into a by-title dict."""
     by_title = {}
-    # Add old first so new overwrites
-    for p in old_website:
-        key = p["title"].lower().strip()
-        p["source"] = "old_website"
-        by_title[key] = p
-    for p in new_website:
-        key = p["title"].lower().strip()
-        p["source"] = "new_website"
-        by_title[key] = p
+    csv_path = Path(OUTPUT_PATH)
+    if not csv_path.exists():
+        print(f"  WARNING: {OUTPUT_PATH} not found — starting fresh")
+        return by_title
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            title = row.get("title", "").strip()
+            if not title:
+                continue
+            key = title.lower()
+            row["source"] = "existing_csv"
+            by_title[key] = row
+    print(f"  Loaded {len(by_title)} existing practices from CSV")
+    return by_title
 
-    # Build title index for dedup with scraped data
-    title_index = set(by_title.keys())
+
+def main():
+    parser = argparse.ArgumentParser(description="Build master CSV of best practices")
+    parser.add_argument("--scrape-only", action="store_true",
+                        help="Skip Excel reading; scrape sitemap and merge into existing CSV")
+    args = parser.parse_args()
+
+    if args.scrape_only:
+        # ── Scrape-only mode: start from existing CSV ──
+        print("Scrape-only mode: loading existing CSV...")
+        by_title = load_existing_csv()
+    else:
+        # ── Step 1: Read Excel data ──
+        import openpyxl
+        print("Reading Excel data...")
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+
+        new_website = read_excel_sheet(wb, "New Website")
+        print(f"  New Website: {len(new_website)} practices")
+
+        old_website = read_excel_sheet(wb, "Old Website(not accessible)")
+        print(f"  Old Website: {len(old_website)} practices")
+
+        # Deduplicate: prefer New Website version
+        by_title = {}
+        # Add old first so new overwrites
+        for p in old_website:
+            key = p["title"].lower().strip()
+            p["source"] = "old_website"
+            by_title[key] = p
+        for p in new_website:
+            key = p["title"].lower().strip()
+            p["source"] = "new_website"
+            by_title[key] = p
 
     print(f"  Combined unique (by title): {len(by_title)} practices")
 
