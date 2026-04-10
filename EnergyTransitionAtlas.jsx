@@ -1477,8 +1477,8 @@ export default function EnergyTransitionAtlas() {
         <div className="max-w-7xl mx-auto flex items-center gap-4 overflow-x-auto scrollbar-hide">
           <span className="text-[#C9C9C9] text-xs whitespace-nowrap flex-shrink-0">A platform by</span>
           {(brandBarConfig?.owners || [
-            { name: "GINGR", url: BRAND_LINKS.GINGR },
             { name: "RGI", url: BRAND_LINKS.RGI },
+            { name: "GINGR", url: BRAND_LINKS.GINGR },
             { name: "IUCN", url: BRAND_LINKS.IUCN },
           ]).map(b => (
             <a key={b.name} href={b.url} target="_blank" rel="noopener noreferrer" className="text-[#C9C9C9] text-xs font-medium hover:text-white transition-colors whitespace-nowrap flex-shrink-0">
@@ -1630,7 +1630,7 @@ export default function EnergyTransitionAtlas() {
               {(aboutConfig?.intro || [
                 "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
                 "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
-                'The Atlas is owned and managed by the <a href="https://gingr.org" target="_blank" rel="noopener noreferrer">Global Initiative for Nature, Grids and Renewables (GINGR)</a>, a joint initiative of the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN).',
+                'The Atlas is a joint project of the <a href="https://renewables-grid.eu" target="_blank" rel="noopener noreferrer">Renewables Grid Initiative (RGI)</a>, the <a href="https://www.iucn.org/our-work/topic/green-just-energy-transition" target="_blank" rel="noopener noreferrer">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href="https://gingr.org" target="_blank" rel="noopener noreferrer">GINGR</a> \u2013 the Global Initiative for Nature, Grids and Renewables.',
                 'The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a href="https://github.com/RenewablesGridInitiative/energy-transition-atlas" target="_blank" rel="noopener noreferrer">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself.',
               ]).map((text, i) => (
                 <p key={i} className="text-[#424244] [&_a]:text-[#6B21A8] [&_a]:underline [&_a:hover]:text-[#6B21A8]/80 [&_strong]:font-bold"
@@ -1668,6 +1668,7 @@ export default function EnergyTransitionAtlas() {
                   "RGI's Good Practice Database has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
                   "IUCN's PANORAMA platform contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
                   "OCEaN brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
+                  "Safe Lines for Birds (SL4B) contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe.",
                 ]).map((src, i) => (
                   <li key={i} dangerouslySetInnerHTML={{ __html: src }} />
                 ))}
@@ -1763,9 +1764,9 @@ export default function EnergyTransitionAtlas() {
             <p className="text-[#424244] text-sm leading-relaxed mb-6">Each Atlas Partner maintains its own submission process. Choose the platform that best fits your practice:</p>
             <div className="grid sm:grid-cols-2 gap-5 mb-10">
               {(submitConfig?.pathways || [
-                { name: "RGI Good Practice Database", url: BRAND_LINKS.RGI, desc: "RGI\u2019s Good Practice Database has documented best practices in grid development and renewable energy since 2010, covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe. Contact RGI to submit a practice.", color: "border-l-[#6B21A8]" },
                 { name: "IUCN PANORAMA", url: BRAND_LINKS.Panorama, desc: "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Submit energy-relevant practices directly through the Panorama platform. Practices are reviewed for conservation relevance and documented outcomes.", color: "border-l-emerald-500" },
                 { name: "OCEaN", url: BRAND_LINKS.OCEaN, desc: "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together. Contact OCEaN to feature your offshore practice.", color: "border-l-sky-500" },
+                { name: "Safe Lines for Birds (SL4B)", url: BRAND_LINKS.SL4B, desc: "The LIFE SafeLines4Birds project documents bird protection practices for power line infrastructure across Europe, including bird flight diverters, nesting platforms, and sensitivity mapping. Contact SL4B to feature your bird protection practice.", color: "border-l-orange-500" },
                 { name: "RGI Grid Awards", url: "https://renewables-grid.eu/award/", desc: "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.", color: "border-l-amber-500" },
               ]).map((partner) => (
                 <a
@@ -2176,11 +2177,13 @@ export default function EnergyTransitionAtlas() {
           <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-10">
             {/* Col 1: Logos + tagline */}
             <div>
-              <div className="flex flex-nowrap items-center gap-4">
+              <div className="flex flex-nowrap items-center gap-5">
+                <img src="logos/rgi-white.svg" alt="Renewables Grid Initiative (RGI)" className="h-[36px] w-auto opacity-80" />
                 <GreyscaleGINGRLogo />
+                <img src="logos/iucn.png" alt="International Union for Conservation of Nature (IUCN)" className="h-[36px] w-auto opacity-80" />
               </div>
               <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed">
-                The Energy Transition Atlas is managed by GINGR &ndash; Global Initiative for Nature, Grids and Renewables, a joint initiative of RGI and IUCN. It collects proven practices from a growing network of partners and makes them easy to find and share.
+                The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables.
               </p>
             </div>
             {/* Col 2: Links */}
@@ -2213,7 +2216,7 @@ export default function EnergyTransitionAtlas() {
           {/* Bottom bar */}
           <div className="mt-8 pt-6 border-t border-[#C9C9C9]/30 text-center">
             <p className="text-[#C9C9C9] text-xs">
-              &copy; 2026 GINGR &ndash; Global Initiative for Nature, Grids and Renewables
+              &copy; 2026 RGI, GINGR &amp; IUCN
             </p>
           </div>
         </div>
