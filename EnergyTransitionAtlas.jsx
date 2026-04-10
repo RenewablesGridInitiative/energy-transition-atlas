@@ -1827,7 +1827,7 @@ export default function EnergyTransitionAtlas() {
                 {contactConfig?.email || "communication@renewables-grid.eu"}
               </a>
               <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
-                {(contactConfig?.address || "Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
+                {(contactConfig?.address || "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
                   <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
                 ))}
               </div>
@@ -2178,11 +2178,11 @@ export default function EnergyTransitionAtlas() {
             {/* Col 1: Logos + tagline */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex flex-nowrap items-center gap-6">
-                <a href={BRAND_LINKS.RGI} target="_blank" rel="noopener noreferrer"><img src="logos/rgi-white.svg" alt="Renewables Grid Initiative (RGI)" className="h-[36px] md:h-[56px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
-                <a href={BRAND_LINKS.GINGR} target="_blank" rel="noopener noreferrer"><img src="gingr-logo-grey.svg" alt="GINGR (Global Initiative for Nature, Grids and Renewables)" className="h-[36px] md:h-[56px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
-                <a href={BRAND_LINKS.IUCN} target="_blank" rel="noopener noreferrer"><img src="logos/iucn.png" alt="International Union for Conservation of Nature (IUCN)" className="h-[36px] md:h-[56px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
+                <a href={BRAND_LINKS.RGI} target="_blank" rel="noopener noreferrer"><img src="logos/rgi-white.svg" alt="Renewables Grid Initiative (RGI)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
+                <a href={BRAND_LINKS.GINGR} target="_blank" rel="noopener noreferrer"><img src="gingr-logo-grey.svg" alt="GINGR (Global Initiative for Nature, Grids and Renewables)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
+                <a href={BRAND_LINKS.IUCN} target="_blank" rel="noopener noreferrer"><img src="logos/iucn.png" alt="International Union for Conservation of Nature (IUCN)" className="h-[44px] md:h-[68px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
               </div>
-              <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-fit">
+              <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md">
                 The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables.
               </p>
             </div>
@@ -2191,7 +2191,7 @@ export default function EnergyTransitionAtlas() {
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Contact</h4>
               <p className="text-[#C9C9C9] text-sm leading-relaxed">
                 {contactConfig?.orgName || "Renewables Grid Initiative (RGI)"}<br />
-                {(contactConfig?.address || "Renewables Grid Initiative\nManfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
+                {(contactConfig?.address || "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
                   <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
                 ))}
               </p>
