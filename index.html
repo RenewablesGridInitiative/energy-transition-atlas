@@ -45,7 +45,8 @@
     const { useState, useMemo, useRef, useEffect, useCallback } = React;
 
     // ── Fetch the JSX source, patch it, and run it ──
-    fetch("EnergyTransitionAtlas.jsx")
+    // cache: 'no-cache' — revalidate via If-Modified-Since so admin redeploys appear immediately
+    fetch("EnergyTransitionAtlas.jsx", { cache: "no-cache" })
       .then(r => {
         if (!r.ok) throw new Error("Failed to load JSX: " + r.status);
         return r.text();

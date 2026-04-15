@@ -73,6 +73,16 @@
 
       <!-- CSV Upload Tab -->
       <div id="panel-csv">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6 mb-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Download Master CSV</h2>
+          <p class="text-[#424244] text-sm mb-4">Download the current <code class="bg-[#FFF8E5] px-1.5 py-0.5 rounded text-xs">practices_master.csv</code> (all 13 columns, including photo URLs) so your team can edit it and re-upload using the form below.</p>
+          <button id="csv-download-btn" onclick="downloadMasterCSV()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download practices_master.csv
+          </button>
+          <p id="csv-download-error" class="text-red-600 text-xs mt-2 hidden"></p>
+        </div>
+
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
           <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Upload Practices CSV</h2>
           <p class="text-[#424244] text-sm mb-4">Upload a new <code class="bg-[#FFF8E5] px-1.5 py-0.5 rounded text-xs">practices_master.csv</code> to update the Atlas practices data. A GitHub Action will automatically regenerate the site.</p>
@@ -248,18 +258,19 @@
       <div id="panel-brandbar" class="hidden">
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
           <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Brand Bar</h2>
-          <p class="text-[#424244] text-sm mb-6">Edit the desktop brand bar shown at the top of every page. Split into "A platform by" (owners) and "with" (contributing partners).</p>
+          <p class="text-[#424244] text-sm mb-6">Edit the desktop brand bar shown at the top of every page. "A platform by" (owners) renders as white logos on the dark bar. "with" (contributing partners) renders as text links.</p>
 
           <div id="brandbar-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
 
           <form id="brandbar-form" class="hidden space-y-6" onsubmit="event.preventDefault(); saveSection('brandbar');">
             <div>
-              <label class="block text-sm font-medium text-[#424244] mb-2">A platform by</label>
-              <div class="space-y-2" id="bb-owners-fields"></div>
-              <button type="button" onclick="addBrandBarItem('owners')" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add owner</button>
+              <label class="block text-sm font-medium text-[#424244] mb-2">A platform by (owners — with logos)</label>
+              <p class="text-xs text-[#6B6B6D] mb-3">Any colour you upload will render as a white silhouette on the dark brand bar (applied automatically via CSS filter). SVG or PNG, max 900&nbsp;KB.</p>
+              <div class="space-y-3" id="bb-owners-fields"></div>
+              <button type="button" onclick="addBrandBarItem('owners')" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add owner slot</button>
             </div>
             <div>
-              <label class="block text-sm font-medium text-[#424244] mb-2">with</label>
+              <label class="block text-sm font-medium text-[#424244] mb-2">with (text-only partners)</label>
               <div class="space-y-2" id="bb-partners-fields"></div>
               <button type="button" onclick="addBrandBarItem('partners')" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add partner</button>
             </div>
@@ -268,8 +279,9 @@
             <p id="brandbar-success" class="text-emerald-600 text-xs hidden"></p>
 
             <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
-              Save Changes
+              Save Text Changes
             </button>
+            <p class="text-xs text-[#6B6B6D]">Logo uploads save and commit immediately — no need to click Save.</p>
           </form>
         </div>
       </div>
@@ -491,11 +503,47 @@
     // ── Brand Bar Form ──
     function populateBrandBarForm() {
       const bb = configData.brandBar || {};
-      renderBrandBarList("bb-owners-fields", bb.owners || []);
+      renderBrandBarOwners("bb-owners-fields", bb.owners || []);
       renderBrandBarList("bb-partners-fields", bb.partners || []);
 
       document.getElementById("brandbar-loading").classList.add("hidden");
       document.getElementById("brandbar-form").classList.remove("hidden");
+    }
+
+    function renderBrandBarOwners(containerId, owners) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      owners.forEach((item, i) => appendOwnerRow(container, item, i));
+    }
+
+    function appendOwnerRow(container, item, i) {
+      const logoVer = configData.brandBar?.logoVersion || 1;
+      const logoPath = item.logo || "";
+      const div = document.createElement("div");
+      div.className = "bg-[#FFF8E5] rounded-lg p-3 space-y-2";
+      div.dataset.slotIdx = i;
+      const preview = logoPath
+        ? `<img src="${escHtml(logoPath)}?v=${logoVer}" alt="${escHtml(item.name)}" class="h-6 w-auto" style="filter: brightness(0) invert(1);" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'text-[#C9C9C9] text-xs',textContent:'Not found'}));" />`
+        : `<span class="text-[#C9C9C9] text-xs">No logo</span>`;
+      div.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-24 h-10 rounded bg-[#424244] flex items-center justify-center shrink-0" title="Preview on dark background">
+            ${preview}
+          </div>
+          <input value="${escHtml(item.name)}" placeholder="Name" class="w-24 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium bb-name" />
+          <input value="${escHtml(item.url)}" placeholder="URL" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm bb-url" />
+          <input type="hidden" class="bb-logo" value="${escHtml(logoPath)}" />
+          <button type="button" onclick="this.closest('[data-slot-idx]').remove()" class="text-red-500 text-xs hover:underline">Remove</button>
+        </div>
+        <div class="flex items-center gap-3 text-xs flex-wrap">
+          <label class="cursor-pointer text-[#6B21A8] font-medium hover:underline">
+            Upload new logo (SVG or PNG, max 900 KB)
+            <input type="file" accept=".svg,.png,image/svg+xml,image/png" class="hidden" onchange="handleOwnerLogoUpload(event, ${i})" />
+          </label>
+          <span class="text-[#6B6B6D]">${logoPath ? escHtml(logoPath) : "No logo uploaded"}</span>
+        </div>
+        <p class="bb-logo-status text-xs hidden"></p>`;
+      container.appendChild(div);
     }
 
     function renderBrandBarList(containerId, items) {
@@ -513,8 +561,13 @@
     }
 
     function addBrandBarItem(type) {
-      const containerId = type === "owners" ? "bb-owners-fields" : "bb-partners-fields";
-      const container = document.getElementById(containerId);
+      if (type === "owners") {
+        const container = document.getElementById("bb-owners-fields");
+        const i = container.children.length;
+        appendOwnerRow(container, { name: "", url: "", logo: "" }, i);
+        return;
+      }
+      const container = document.getElementById("bb-partners-fields");
       const div = document.createElement("div");
       div.className = "flex items-center gap-2";
       div.innerHTML = `
@@ -591,7 +644,21 @@
       }
 
       else if (section === "brandbar") {
-        const readBBList = (containerId) => {
+        const readBBOwners = (containerId) => {
+          const items = [];
+          document.querySelectorAll(`#${containerId} > div`).forEach(div => {
+            const name = div.querySelector(".bb-name")?.value || "";
+            const url = div.querySelector(".bb-url")?.value || "";
+            const logo = div.querySelector(".bb-logo")?.value || "";
+            if (name) {
+              const item = { name, url };
+              if (logo) item.logo = logo;
+              items.push(item);
+            }
+          });
+          return items;
+        };
+        const readBBPartners = (containerId) => {
           const items = [];
           document.querySelectorAll(`#${containerId} > div`).forEach(div => {
             const name = div.querySelector(".bb-name")?.value || "";
@@ -600,9 +667,11 @@
           });
           return items;
         };
+        const existingLogoVersion = configData.brandBar?.logoVersion || 1;
         configData.brandBar = {
-          owners: readBBList("bb-owners-fields"),
-          partners: readBBList("bb-partners-fields"),
+          owners: readBBOwners("bb-owners-fields"),
+          partners: readBBPartners("bb-partners-fields"),
+          logoVersion: existingLogoVersion,
         };
       }
 
@@ -679,6 +748,204 @@
         csvContent = null;
       } catch (e) { showError("csv-error", e.message); btn.disabled = false; }
       btn.textContent = "Upload to Repository";
+    }
+
+    // ── Download Master CSV ──
+    async function downloadMasterCSV() {
+      const btn = document.getElementById("csv-download-btn");
+      const errEl = document.getElementById("csv-download-error");
+      errEl.classList.add("hidden");
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = "Downloading…";
+      try {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        if (!res.ok) throw new Error("Could not fetch master CSV");
+        const data = await res.json();
+        // GitHub returns base64-encoded content with embedded newlines
+        const b64 = data.content.replace(/\n/g, "");
+        const csvText = decodeURIComponent(escape(atob(b64)));
+        const blob = new Blob(["\uFEFF" + csvText], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "practices_master.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        showError("csv-download-error", e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // ── Owner Logo Upload ──
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result || "";
+          const idx = result.indexOf(",");
+          resolve(idx >= 0 ? result.substring(idx + 1) : result);
+        };
+        reader.onerror = () => reject(new Error("File read failed"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleOwnerLogoUpload(event, slotIdx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const ownerRow = document.querySelector(`#bb-owners-fields > [data-slot-idx="${slotIdx}"]`);
+      if (!ownerRow) return;
+      const statusEl = ownerRow.querySelector(".bb-logo-status");
+      const setStatus = (msg, cls) => {
+        statusEl.textContent = msg;
+        statusEl.className = `bb-logo-status text-xs ${cls}`;
+      };
+
+      // Validate extension
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      if (!["svg", "png"].includes(ext)) {
+        setStatus("Please choose an .svg or .png file.", "text-red-600");
+        event.target.value = "";
+        return;
+      }
+      // Validate size (900 KB client-side guard; GitHub Contents API hard limit is 1 MB)
+      if (file.size > 900 * 1024) {
+        setStatus(`File is ${(file.size / 1024).toFixed(0)} KB. Please use a file under 900 KB.`, "text-red-600");
+        event.target.value = "";
+        return;
+      }
+
+      const nameInput = ownerRow.querySelector(".bb-name");
+      const urlInput = ownerRow.querySelector(".bb-url");
+      const logoInput = ownerRow.querySelector(".bb-logo");
+      const name = (nameInput.value || "").trim();
+      if (!name) {
+        setStatus("Enter an owner name first (used for the filename).", "text-red-600");
+        event.target.value = "";
+        return;
+      }
+      const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      if (!safeName) {
+        setStatus("Owner name must contain letters or digits.", "text-red-600");
+        event.target.value = "";
+        return;
+      }
+      const targetPath = `logos/${safeName}.${ext}`;
+
+      setStatus("Uploading logo…", "text-[#6B6B6D]");
+
+      try {
+        const content = await readFileAsBase64(file);
+
+        // Fetch existing logo sha if present (404 means new file)
+        const existingRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token);
+        let existingSha = null;
+        if (existingRes.ok) {
+          const existing = await existingRes.json();
+          existingSha = existing.sha;
+        }
+
+        // PUT the logo file
+        const logoBody = {
+          message: `Update ${name} brand bar logo via Atlas Admin`,
+          content,
+          branch: "main",
+        };
+        if (existingSha) logoBody.sha = existingSha;
+
+        const logoPutRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token, {
+          method: "PUT",
+          body: JSON.stringify(logoBody),
+        });
+        if (!logoPutRes.ok) {
+          const err = await logoPutRes.json();
+          throw new Error(err.message || "Logo upload failed");
+        }
+
+        // Ensure brandBar exists
+        if (!configData.brandBar) configData.brandBar = { owners: [], partners: [], logoVersion: 1 };
+
+        // Pick up any unsaved text edits from the form BEFORE bumping this slot's logo,
+        // otherwise the merge would read the old logo path from the DOM and overwrite our update.
+        mergeCurrentBrandBarTextFields();
+
+        // Now update the target slot with the new logo path and bump the version
+        if (!configData.brandBar.owners) configData.brandBar.owners = [];
+        while (configData.brandBar.owners.length <= slotIdx) configData.brandBar.owners.push({ name: "", url: "" });
+        configData.brandBar.owners[slotIdx].name = name;
+        configData.brandBar.owners[slotIdx].url = urlInput.value || "";
+        configData.brandBar.owners[slotIdx].logo = targetPath;
+        configData.brandBar.logoVersion = (configData.brandBar.logoVersion || 1) + 1;
+
+        // Commit admin-config.json
+        const configContent = btoa(unescape(encodeURIComponent(JSON.stringify(configData, null, 2) + "\n")));
+        const configRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: `Update brand bar logo path for ${name} via Atlas Admin`,
+            content: configContent,
+            sha: configSha,
+            branch: "main",
+          }),
+        });
+        if (!configRes.ok) {
+          const err = await configRes.json();
+          throw new Error(err.message || "Config update failed");
+        }
+        const result = await configRes.json();
+        configSha = result.content.sha;
+
+        // Update hidden logo input in this row and re-render owners to refresh preview + cache-bust
+        logoInput.value = targetPath;
+        renderBrandBarOwners("bb-owners-fields", configData.brandBar.owners);
+
+        // Find the re-rendered row and display success
+        const refreshed = document.querySelector(`#bb-owners-fields > [data-slot-idx="${slotIdx}"] .bb-logo-status`);
+        if (refreshed) {
+          refreshed.textContent = `Uploaded as ${targetPath}. Changes may take up to 2 minutes to appear on the live site.`;
+          refreshed.className = "bb-logo-status text-xs text-emerald-600";
+        }
+      } catch (e) {
+        setStatus("Error: " + e.message, "text-red-600");
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    // Merge any unsaved text edits from the brand bar form into configData
+    // so the logo upload's config PUT doesn't wipe them.
+    function mergeCurrentBrandBarTextFields() {
+      const readOwners = () => {
+        const items = [];
+        document.querySelectorAll(`#bb-owners-fields > [data-slot-idx]`).forEach(div => {
+          const name = div.querySelector(".bb-name")?.value || "";
+          const url = div.querySelector(".bb-url")?.value || "";
+          const logo = div.querySelector(".bb-logo")?.value || "";
+          if (name) {
+            const item = { name, url };
+            if (logo) item.logo = logo;
+            items.push(item);
+          }
+        });
+        return items;
+      };
+      const readPartners = () => {
+        const items = [];
+        document.querySelectorAll(`#bb-partners-fields > div`).forEach(div => {
+          const name = div.querySelector(".bb-name")?.value || "";
+          const url = div.querySelector(".bb-url")?.value || "";
+          if (name) items.push({ name, url });
+        });
+        return items;
+      };
+      const currentOwners = readOwners();
+      const currentPartners = readPartners();
+      if (currentOwners.length > 0) configData.brandBar.owners = currentOwners;
+      if (currentPartners.length > 0) configData.brandBar.partners = currentPartners;
     }
 
     // ── Helpers ──

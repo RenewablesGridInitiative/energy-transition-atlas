@@ -25,10 +25,10 @@
     "collection": {
       "intro": "The Atlas draws on several complementary sources, each bringing a unique perspective to the energy transition:",
       "sources": [
-        "RGI's Good Practice Database has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
-        "IUCN's PANORAMA platform contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
-        "OCEaN brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
-        "SafeLines4Birds contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe."
+        "<strong>RGI's Good Practice Database</strong> has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
+        "<strong>IUCN's PANORAMA platform</strong> contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
+        "<strong>OCEaN</strong> brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
+        "<strong>SafeLines4Birds</strong> contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe."
       ],
       "cta": "The collection keeps growing. New partners and practices are added on a rolling basis. If your organisation documents energy transition practices, we'd love to hear from you."
     },
@@ -42,6 +42,10 @@
   },
   "submit": {
     "introText": "Practices in the Energy Transition Atlas are contributed by our Atlas Partners \u2014 organisations that document and share proven approaches to the energy transition. Each partner manages their own submission and review process.",
+    "overview": [
+      "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners \u2014 trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
+      "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to feature it. The best path into the Atlas is to submit it directly to the partner whose focus most closely matches your work \u2014 each pathway below goes straight to the right place."
+    ],
     "criteria": [
       { "title": "Publicly documented", "desc": "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference.", "highlight": false },
       { "title": "Relevance to energy infrastructure", "desc": "The practice must relate to electricity grids, solar, onshore wind, offshore wind, or broader energy systems.", "highlight": false },
@@ -68,14 +72,15 @@
   ],
   "brandBar": {
     "owners": [
-      { "name": "RGI", "url": "https://renewables-grid.eu" },
-      { "name": "GINGR", "url": "https://gingr.org" },
-      { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition" }
+      { "name": "RGI", "url": "https://renewables-grid.eu", "logo": "logos/rgi.svg" },
+      { "name": "GINGR", "url": "https://gingr.org", "logo": "logos/gingr.svg" },
+      { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "logo": "logos/iucn.png" }
     ],
     "partners": [
       { "name": "OCEaN", "url": "https://offshore-coalition.eu" },
       { "name": "SL4B", "url": "https://safelines4birds.eu" },
       { "name": "Panorama", "url": "https://panorama.solutions/en" }
-    ]
+    ],
+    "logoVersion": 1
   }
 }
