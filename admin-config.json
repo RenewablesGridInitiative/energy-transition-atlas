@@ -41,10 +41,10 @@
     "address": "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany"
   },
   "submit": {
-    "introText": "Practices in the Energy Transition Atlas are contributed by our Atlas Partners \u2014 organisations that document and share proven approaches to the energy transition. Each partner manages their own submission and review process.",
+    "introText": "Practices in the Energy Transition Atlas are contributed by our Atlas Partners. Each partner documents and shares their own work, and each manages their own submission and review process.",
     "overview": [
-      "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners \u2014 trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
-      "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to feature it. The best path into the Atlas is to submit it directly to the partner whose focus most closely matches your work \u2014 each pathway below goes straight to the right place."
+      "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
+      "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work."
     ],
     "criteria": [
       { "title": "Publicly documented", "desc": "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference.", "highlight": false },
@@ -57,9 +57,9 @@
     ],
     "pathways": [
       { "name": "RGI Grid Awards", "url": "https://renewables-grid.eu/award/", "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.", "color": "border-l-amber-500" },
-      { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together. Contact OCEaN to feature your offshore practice.", "color": "border-l-sky-500" },
-      { "name": "SafeLines4Birds", "url": "https://safelines4birds.eu", "desc": "The LIFE SafeLines4Birds project documents bird protection practices for power line infrastructure across Europe, including bird flight diverters, nesting platforms, and sensitivity mapping. Contact SafeLines4Birds to feature your bird protection practice.", "color": "border-l-orange-500" },
-      { "name": "IUCN PANORAMA", "url": "https://panorama.solutions/en", "desc": "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Submit energy-relevant practices directly through the Panorama platform. Practices are reviewed for conservation relevance and documented outcomes.", "color": "border-l-emerald-500" }
+      { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together.", "color": "border-l-sky-500" },
+      { "name": "SafeLines4Birds", "url": "https://safelines4birds.eu", "desc": "The LIFE SafeLines4Birds project documents bird protection practices for power line infrastructure across Europe, including bird flight diverters, nesting platforms, and sensitivity mapping.", "color": "border-l-orange-500" },
+      { "name": "IUCN PANORAMA", "url": "https://panorama.solutions/en", "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant practices reviewed for conservation relevance and documented outcomes.", "color": "border-l-emerald-500" }
     ]
   },
   "partners": [
@@ -73,7 +73,7 @@
   "brandBar": {
     "owners": [
       { "name": "RGI", "url": "https://renewables-grid.eu", "logo": "logos/rgi.svg" },
-      { "name": "GINGR", "url": "https://gingr.org", "logo": "logos/gingr.svg" },
+      { "name": "GINGR", "url": "https://gingr.org", "logo": "logos/gingr-white.svg" },
       { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "logo": "logos/iucn.png" }
     ],
     "partners": [
@@ -81,6 +81,6 @@
       { "name": "SL4B", "url": "https://safelines4birds.eu" },
       { "name": "Panorama", "url": "https://panorama.solutions/en" }
     ],
-    "logoVersion": 1
+    "logoVersion": 2
   }
 }
