@@ -112,8 +112,11 @@
         <button onclick="switchTab('submit')" id="tab-submit" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
           Submit Page
         </button>
+        <button onclick="switchTab('atlasPartners')" id="tab-atlasPartners" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          Atlas Partners
+        </button>
         <button onclick="switchTab('partners')" id="tab-partners" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
-          Partners
+          Contributing Partners
         </button>
         <button onclick="switchTab('brandbar')" id="tab-brandbar" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
           Brand Bar
@@ -196,7 +199,7 @@
                 <label class="block">
                   <span class="block text-xs font-medium text-[#424244] mb-1">Partner <span class="text-red-600">*</span></span>
                   <select id="pm-brand" class="w-full px-3 py-2 rounded-lg border border-[#C9C9C9] text-sm" required></select>
-                  <p class="text-[10px] text-[#6B6B6D] mt-1">To add a new partner to this list, open <strong>Site &amp; Nav</strong> → <em>Advanced: partner URLs &amp; display labels</em>.</p>
+                  <p class="text-[10px] text-[#6B6B6D] mt-1">To add a new option here, open the <strong>Atlas Partners</strong> tab.</p>
                 </label>
               </div>
               <label class="block">
@@ -320,6 +323,37 @@
           <button id="csv-upload-btn" onclick="uploadCSV()" disabled class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             Upload to Repository
           </button>
+        </div>
+      </div>
+
+      <!-- Atlas Partners Tab -->
+      <div id="panel-atlasPartners" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Atlas Partners</h2>
+          <p class="text-[#424244] text-sm">These are the data sources that contribute practices to the Atlas. Each partner has a <strong>short code</strong> (used as the <code>brand</code> in the CSV), a <strong>display name</strong> (shown on the live site's practice popup), and a <strong>URL</strong> (the clickable link).</p>
+          <p class="text-[#424244] text-sm mt-2">Adding or renaming a partner here updates: the Partner dropdown in <button type="button" onclick="switchTab('practices')" class="text-[#6B21A8] underline">Practices</button>, the brand filter, the practice popup label, and both CSV validators.</p>
+          <p class="text-[#6B6B6D] text-xs mb-6 mt-3">Not the same as:
+            <button type="button" onclick="switchTab('partners')" class="text-[#6B21A8] underline">Contributing Partners</button> (About page cards — may include owners like GINGR that have no practices) ·
+            <button type="button" onclick="switchTab('brandbar')" class="text-[#6B21A8] underline">Brand Bar</button> (the logo strip at the top of every page).
+          </p>
+
+          <div id="atlasPartners-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content…</div>
+
+          <form id="atlasPartners-form" class="hidden space-y-4" onsubmit="event.preventDefault(); saveSection('atlasPartners');">
+            <div class="grid grid-cols-[120px_1fr_1fr_auto] gap-2 text-xs font-medium text-[#6B6B6D] uppercase tracking-wider px-1">
+              <span>Code</span>
+              <span>Display name</span>
+              <span>URL</span>
+              <span></span>
+            </div>
+            <div id="atlasPartners-fields" class="space-y-2"></div>
+            <button type="button" onclick="addAtlasPartner()" class="text-sm text-[#6B21A8] font-medium hover:underline">+ Add Atlas Partner</button>
+
+            <p id="atlasPartners-error" class="text-red-600 text-xs hidden"></p>
+
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">Save Changes</button>
+            <p class="text-xs text-[#6B6B6D]">Removing a partner that's still used by existing practices will cause those rows to fail CSV validation. Check the Practices tab first.</p>
+          </form>
         </div>
       </div>
 
@@ -452,8 +486,12 @@
       <!-- Partners Tab -->
       <div id="panel-partners" class="hidden">
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
-          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Contributing Partners</h2>
-          <p class="text-[#424244] text-sm mb-6">Edit the partner list shown on the About page. Partners are also used in the footer and brand bar.</p>
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Contributing Partners</h2>
+          <p class="text-[#424244] text-sm">These are the cards shown on the <strong>About page</strong> in the "Contributing Partners" grid. They can include organisations that don't directly contribute practices to the CSV — for example an initiative owner like GINGR.</p>
+          <p class="text-[#6B6B6D] text-xs mb-6 mt-2">Not the same as:
+            <button type="button" onclick="switchTab('atlasPartners')" class="text-[#6B21A8] underline">Atlas Partners</button> (data sources for practices) ·
+            <button type="button" onclick="switchTab('brandbar')" class="text-[#6B21A8] underline">Brand Bar</button> (logo strip at the top of every page).
+          </p>
 
           <div id="partners-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
 
@@ -474,8 +512,12 @@
       <!-- Brand Bar Tab -->
       <div id="panel-brandbar" class="hidden">
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
-          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Edit Brand Bar</h2>
-          <p class="text-[#424244] text-sm mb-6">Edit the desktop brand bar shown at the top of every page. "A platform by" (owners) renders as white logos on the dark bar. "with" (contributing partners) renders as text links.</p>
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Brand Bar</h2>
+          <p class="text-[#424244] text-sm">The thin strip at the <strong>top of every page</strong>. "A platform by" (owners) renders as white logos; "with" (partners) renders as text links. This is purely branding display — changes here don't affect practices, filters, or the About page.</p>
+          <p class="text-[#6B6B6D] text-xs mb-6 mt-2">Not the same as:
+            <button type="button" onclick="switchTab('atlasPartners')" class="text-[#6B21A8] underline">Atlas Partners</button> (data sources for practices) ·
+            <button type="button" onclick="switchTab('partners')" class="text-[#6B21A8] underline">Contributing Partners</button> (About page cards).
+          </p>
 
           <div id="brandbar-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Loading current content...</div>
 
@@ -559,14 +601,7 @@
               <button type="button" onclick="addNavItem()" class="mt-2 text-sm text-[#6B21A8] font-medium hover:underline">+ Add menu item</button>
             </div>
 
-            <details class="border-t border-[#C9C9C9] pt-5">
-              <summary class="font-semibold text-[#424244] text-sm cursor-pointer">Advanced: partner URLs &amp; display labels</summary>
-              <p class="text-xs text-[#6B6B6D] mt-2 mb-3">Only change these if a partner renames itself or moves its website.</p>
-              <h4 class="text-sm font-medium text-[#424244] mb-1">Partner URLs</h4>
-              <div id="site-brandlinks-fields" class="space-y-2"></div>
-              <h4 class="text-sm font-medium text-[#424244] mt-4 mb-1">Atlas Partner display labels (shown in practice popups)</h4>
-              <div id="site-atlaslabels-fields" class="space-y-2"></div>
-            </details>
+            <p class="text-xs text-[#6B6B6D] border-t border-[#C9C9C9] pt-5">Looking to edit partner URLs or labels? Those live in the <button type="button" onclick="switchTab('atlasPartners')" class="text-[#6B21A8] underline">Atlas Partners</button> tab.</p>
 
             <p id="site-error" class="text-red-600 text-xs hidden"></p>
 
@@ -598,7 +633,7 @@
     const OWNER = "RenewablesGridInitiative";
     const REPO = "energy-transition-atlas";
     const API = "https://api.github.com";
-    const ALL_TABS = ["practices", "csv", "about", "contact", "submit", "partners", "brandbar", "site", "history"];
+    const ALL_TABS = ["practices", "csv", "atlasPartners", "about", "contact", "submit", "partners", "brandbar", "site", "history"];
     const ACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white";
     const INACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
 
@@ -842,6 +877,7 @@
       populatePartnersForm();
       populateBrandBarForm();
       populateSiteForm();
+      populateAtlasPartnersForm();
     }
 
     // ── About Form ──
@@ -1140,35 +1176,38 @@
       navContainer.innerHTML = "";
       nav.forEach((item) => renderNavRow(navContainer, item));
 
-      // Brand links: edit URLs for each well-known partner
-      const blContainer = document.getElementById("site-brandlinks-fields");
-      blContainer.innerHTML = "";
-      const defaultKeys = ["RGI", "OCEaN", "Panorama", "SL4B", "GINGR", "IUCN"];
-      const keys = Array.from(new Set([...defaultKeys, ...Object.keys(brandLinks)]));
-      keys.forEach((k) => {
-        const div = document.createElement("div");
-        div.className = "flex items-center gap-2";
-        div.innerHTML = `
-          <span class="w-24 text-xs font-medium text-[#424244]">${escHtml(k)}</span>
-          <input data-key="${escHtml(k)}" value="${escHtml(brandLinks[k] || "")}" placeholder="https://…" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm site-brandlink" />`;
-        blContainer.appendChild(div);
-      });
-
-      // Atlas partner labels
-      const alContainer = document.getElementById("site-atlaslabels-fields");
-      alContainer.innerHTML = "";
-      const labelKeys = ["RGI", "OCEaN", "Panorama", "SL4B"];
-      labelKeys.forEach((k) => {
-        const div = document.createElement("div");
-        div.className = "flex items-center gap-2";
-        div.innerHTML = `
-          <span class="w-24 text-xs font-medium text-[#424244]">${escHtml(k)}</span>
-          <input data-key="${escHtml(k)}" value="${escHtml(atlasLabels[k] || "")}" placeholder="Display name…" class="flex-1 px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm site-atlaslabel" />`;
-        alContainer.appendChild(div);
-      });
-
       document.getElementById("site-loading").classList.add("hidden");
       document.getElementById("site-form").classList.remove("hidden");
+    }
+
+    // ── Atlas Partners Form ──
+    function populateAtlasPartnersForm() {
+      const labels = configData.atlasPartnerLabels || { RGI: "Renewables Grid Initiative (RGI)", OCEaN: "Offshore Coalition for Energy and Nature (OCEaN)", Panorama: "IUCN PANORAMA – Solutions for a Healthy Planet", SL4B: "LIFE SafeLines4Birds (SL4B)" };
+      const urls = configData.brandLinks || {};
+      const container = document.getElementById("atlasPartners-fields");
+      container.innerHTML = "";
+      Object.keys(labels).forEach((code) => renderAtlasPartnerRow(container, code, labels[code], urls[code] || ""));
+      document.getElementById("atlasPartners-loading").classList.add("hidden");
+      document.getElementById("atlasPartners-form").classList.remove("hidden");
+    }
+
+    function renderAtlasPartnerRow(container, code, label, url) {
+      const div = document.createElement("div");
+      div.className = "grid grid-cols-[120px_1fr_1fr_auto] gap-2";
+      div.innerHTML = `
+        <input value="${escHtml(code)}" placeholder="CODE" class="ap-code px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm font-medium" />
+        <input value="${escHtml(label)}" placeholder="Display name" class="ap-label px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm" />
+        <input value="${escHtml(url)}" placeholder="https://…" class="ap-url px-3 py-1.5 rounded-lg border border-[#C9C9C9] text-sm" />
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-xs hover:underline px-2">Remove</button>`;
+      container.appendChild(div);
+    }
+
+    function addAtlasPartner() {
+      renderAtlasPartnerRow(document.getElementById("atlasPartners-fields"), "", "", "");
+      // Focus the new CODE input
+      const rows = document.querySelectorAll("#atlasPartners-fields > div");
+      const last = rows[rows.length - 1];
+      last?.querySelector(".ap-code")?.focus();
     }
 
     function renderNavRow(container, item) {
@@ -1280,22 +1319,38 @@
           if (label && href) nav.push({ label, href });
         });
         configData.nav = nav;
+      }
 
-        const brandLinks = {};
-        document.querySelectorAll(".site-brandlink").forEach((inp) => {
-          const k = inp.dataset.key;
-          const v = inp.value.trim();
-          if (k && v) brandLinks[k] = v;
-        });
-        if (Object.keys(brandLinks).length > 0) configData.brandLinks = brandLinks;
+      else if (section === "atlasPartners") {
+        // Gather rows; validate codes are unique and non-empty.
+        const rows = Array.from(document.querySelectorAll("#atlasPartners-fields > div")).map((div) => ({
+          code: div.querySelector(".ap-code")?.value.trim() || "",
+          label: div.querySelector(".ap-label")?.value.trim() || "",
+          url: div.querySelector(".ap-url")?.value.trim() || "",
+        })).filter((r) => r.code || r.label || r.url);
+        const seen = new Set();
+        for (const r of rows) {
+          if (!r.code) {
+            showError("atlasPartners-error", `Every partner row needs a code. The "${r.label || r.url || "blank"}" row is missing one.`);
+            return;
+          }
+          if (seen.has(r.code)) {
+            showError("atlasPartners-error", `Duplicate code "${r.code}" — each Atlas Partner code must be unique.`);
+            return;
+          }
+          seen.add(r.code);
+        }
+        const newLabels = {};
+        rows.forEach((r) => { if (r.label) newLabels[r.code] = r.label; });
+        configData.atlasPartnerLabels = newLabels;
 
-        const labels = {};
-        document.querySelectorAll(".site-atlaslabel").forEach((inp) => {
-          const k = inp.dataset.key;
-          const v = inp.value.trim();
-          if (k && v) labels[k] = v;
-        });
-        if (Object.keys(labels).length > 0) configData.atlasPartnerLabels = labels;
+        // Merge URLs into brandLinks: preserve existing keys for non-Atlas-Partner
+        // orgs (e.g. GINGR, IUCN that live in the Brand Bar), update the rest.
+        const existing = configData.brandLinks || {};
+        const newBrandLinks = {};
+        Object.keys(existing).forEach((k) => { if (!seen.has(k)) newBrandLinks[k] = existing[k]; });
+        rows.forEach((r) => { if (r.url) newBrandLinks[r.code] = r.url; });
+        configData.brandLinks = newBrandLinks;
       }
 
       else if (section === "brandbar") {
@@ -1331,7 +1386,7 @@
       }
 
       // Save to GitHub
-      const sectionLabels = { about: "About page", contact: "Contact page", submit: "Submit page", partners: "Partners", brandbar: "Brand bar", site: "Site text" };
+      const sectionLabels = { about: "About page", contact: "Contact page", submit: "Submit page", partners: "Contributing Partners", brandbar: "Brand bar", site: "Site text", atlasPartners: "Atlas Partners" };
       const label = sectionLabels[section] || section;
       try {
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(configData, null, 2) + "\n")));
@@ -1355,6 +1410,11 @@
         const result = await res.json();
         configSha = result.content.sha;
         toastSaved(label);
+        // If the Atlas Partners list changed, refresh the dropdowns that read it
+        if (section === "atlasPartners") {
+          populateBrandFilter();
+          populateAtlasPartnersForm();
+        }
       } catch (e) {
         const msg = `Couldn't reach GitHub: ${e.message}. Check your connection and try again.`;
         showError(`${section}-error`, msg);
@@ -1519,6 +1579,23 @@
           if (nameEl) partners.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "" });
         });
         if (partners.length > 0) configData.partners = partners;
+      }
+      // Atlas Partners
+      if (document.getElementById("atlasPartners-fields")) {
+        const rows = Array.from(document.querySelectorAll("#atlasPartners-fields > div")).map((div) => ({
+          code: div.querySelector(".ap-code")?.value.trim() || "",
+          label: div.querySelector(".ap-label")?.value.trim() || "",
+          url: div.querySelector(".ap-url")?.value.trim() || "",
+        })).filter((r) => r.code);
+        const seen = new Set(rows.map((r) => r.code));
+        const newLabels = {};
+        rows.forEach((r) => { if (r.label) newLabels[r.code] = r.label; });
+        if (Object.keys(newLabels).length > 0) configData.atlasPartnerLabels = newLabels;
+        const existing = configData.brandLinks || {};
+        const newBrandLinks = {};
+        Object.keys(existing).forEach((k) => { if (!seen.has(k)) newBrandLinks[k] = existing[k]; });
+        rows.forEach((r) => { if (r.url) newBrandLinks[r.code] = r.url; });
+        configData.brandLinks = newBrandLinks;
       }
       // Site
       if (document.getElementById("site-hero-title")) {
