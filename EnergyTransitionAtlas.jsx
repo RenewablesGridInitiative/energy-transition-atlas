@@ -1232,6 +1232,16 @@ export default function EnergyTransitionAtlas() {
 
   /* ── Load editable site config ── */
   useEffect(() => {
+    // Admin preview: if ?configOverride=<base64-json> is on the URL, use that
+    // instead of fetching admin-config.json. Lets the admin preview unsaved edits.
+    try {
+      const override = new URLSearchParams(window.location.search).get("configOverride");
+      if (override) {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(override))));
+        setSiteConfig(decoded);
+        return;
+      }
+    } catch (e) { console.warn("configOverride parse failed", e); }
     // cache: 'no-cache' — revalidate with server so admin edits appear immediately
     fetch("admin-config.json", { cache: "no-cache" })
       .then(r => r.ok ? r.json() : null)
@@ -2147,9 +2157,21 @@ export default function EnergyTransitionAtlas() {
             {/* Col 1: Logos + tagline */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex flex-nowrap items-center gap-6">
-                <a href={brandLinks.RGI} target="_blank" rel="noopener noreferrer"><img src="logos/rgi-white.svg" alt="Renewables Grid Initiative (RGI)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
-                <a href={brandLinks.GINGR} target="_blank" rel="noopener noreferrer"><img src="logos/gingr-white.svg" alt="GINGR (Global Initiative for Nature, Grids and Renewables)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
-                <a href={brandLinks.IUCN} target="_blank" rel="noopener noreferrer"><img src="logos/iucn.png" alt="International Union for Conservation of Nature (IUCN)" className="h-[44px] md:h-[68px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
+                {(brandBarConfig?.owners || [
+                  { name: "RGI", url: brandLinks.RGI, logo: "logos/rgi-white.svg" },
+                  { name: "GINGR", url: brandLinks.GINGR, logo: "logos/gingr-white.svg" },
+                  { name: "IUCN", url: brandLinks.IUCN, logo: "logos/iucn.png" },
+                ]).map((owner) => {
+                  if (!owner.logo) return null;
+                  const logoVer = brandBarConfig?.logoVersion || 1;
+                  const src = owner.logo.startsWith("logos/") ? `${owner.logo}?v=${logoVer}` : owner.logo;
+                  const heightClass = owner.name === "IUCN" ? "h-[44px] md:h-[68px]" : "h-[36px] md:h-[52px]";
+                  return (
+                    <a key={owner.name} href={owner.url || brandLinks[owner.name] || "#"} target="_blank" rel="noopener noreferrer">
+                      <img src={src} alt={owner.name} className={`${heightClass} w-auto opacity-80 hover:opacity-100 transition-opacity`} style={{ filter: "brightness(0) invert(1)" }} />
+                    </a>
+                  );
+                })}
               </div>
               <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md" dangerouslySetInnerHTML={{
                 __html: siteCopy?.footerTagline || "The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables."

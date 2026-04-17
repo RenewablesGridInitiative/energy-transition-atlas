@@ -81,9 +81,13 @@
           <p id="user-info" class="text-[#6B6B6D] text-sm mt-1"></p>
         </div>
         <div class="flex items-center gap-3">
-          <a href="index.html" class="px-4 py-2 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors inline-flex items-center gap-1.5">
+          <button onclick="previewWithOverride()" class="px-4 py-2 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors inline-flex items-center gap-1.5" title="Open the Atlas in a new tab with your unsaved edits applied.">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+            Preview changes
+          </button>
+          <a href="index.html" class="px-4 py-2 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:bg-white transition-colors inline-flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            View Site
+            View Live
           </a>
           <button onclick="signOut()" class="px-4 py-2 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:bg-white transition-colors">
             Sign Out
@@ -116,6 +120,9 @@
         </button>
         <button onclick="switchTab('site')" id="tab-site" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
           Site & Nav
+        </button>
+        <button onclick="switchTab('history')" id="tab-history" class="px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white">
+          History
         </button>
       </div>
 
@@ -572,6 +579,22 @@
         </div>
       </div>
 
+      <!-- History Tab -->
+      <div id="panel-history" class="hidden">
+        <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
+          <h2 class="font-bold text-[#6B21A8] text-xl mb-2">Recent changes</h2>
+          <p class="text-[#424244] text-sm mb-4">The last 20 saves to each file. Click <strong>Revert</strong> to restore that file to the state it was in right before that commit. Reverts trigger the same deploy pipeline.</p>
+
+          <div class="flex gap-2 mb-4 flex-wrap">
+            <button onclick="loadHistory('admin-config.json')" id="history-btn-config" class="px-4 py-2 rounded-full text-sm font-medium bg-[#6B21A8] text-white">Site content (admin-config.json)</button>
+            <button onclick="loadHistory('practices_master.csv')" id="history-btn-csv" class="px-4 py-2 rounded-full text-sm font-medium border border-[#C9C9C9] text-[#424244] hover:bg-[#FFF8E5]">Practices (CSV)</button>
+          </div>
+
+          <div id="history-loading" class="text-[#6B6B6D] text-sm py-8 text-center">Select a file above to load its history.</div>
+          <ul id="history-list" class="space-y-2 hidden"></ul>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -579,7 +602,7 @@
     const OWNER = "RenewablesGridInitiative";
     const REPO = "energy-transition-atlas";
     const API = "https://api.github.com";
-    const ALL_TABS = ["practices", "csv", "about", "contact", "submit", "partners", "brandbar", "site"];
+    const ALL_TABS = ["practices", "csv", "about", "contact", "submit", "partners", "brandbar", "site", "history"];
     const ACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white";
     const INACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
 
@@ -1216,14 +1239,7 @@
           if (nameEl) pathways.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "", color: colorEl?.value || "" });
         });
 
-        // Preserve any orphaned fields (introText, criteria) so we don't delete
-        // data the admin can no longer see but might still want in the JSON.
-        const existing = configData.submit || {};
-        configData.submit = {
-          ...existing,
-          overview,
-          pathways,
-        };
+        configData.submit = { overview, pathways };
       }
 
       else if (section === "partners") {
@@ -1336,6 +1352,203 @@
         const msg = `Couldn't reach GitHub: ${e.message}. Check your connection and try again.`;
         showError(`${section}-error`, msg);
         toastError(`${label} not saved`, msg);
+      }
+    }
+
+    // ── History & rollback ──
+    let historyCurrentPath = null;
+
+    async function loadHistory(path) {
+      historyCurrentPath = path;
+      // Update button styles
+      document.getElementById("history-btn-config").className = path === "admin-config.json"
+        ? "px-4 py-2 rounded-full text-sm font-medium bg-[#6B21A8] text-white"
+        : "px-4 py-2 rounded-full text-sm font-medium border border-[#C9C9C9] text-[#424244] hover:bg-[#FFF8E5]";
+      document.getElementById("history-btn-csv").className = path === "practices_master.csv"
+        ? "px-4 py-2 rounded-full text-sm font-medium bg-[#6B21A8] text-white"
+        : "px-4 py-2 rounded-full text-sm font-medium border border-[#C9C9C9] text-[#424244] hover:bg-[#FFF8E5]";
+
+      const listEl = document.getElementById("history-list");
+      const loadingEl = document.getElementById("history-loading");
+      listEl.classList.add("hidden");
+      loadingEl.classList.remove("hidden");
+      loadingEl.textContent = "Loading history…";
+
+      try {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/commits?path=${encodeURIComponent(path)}&per_page=20`, token);
+        if (!res.ok) throw new Error(await translateGhError(res, "Could not load history"));
+        const commits = await res.json();
+        if (!commits.length) {
+          loadingEl.textContent = "No commits found for this file.";
+          return;
+        }
+        listEl.innerHTML = "";
+        commits.forEach((c, idx) => {
+          const shortSha = c.sha.substring(0, 7);
+          const when = new Date(c.commit.author.date).toLocaleString();
+          const author = c.commit.author.name;
+          const msg = escHtml(c.commit.message.split("\n")[0]);
+          const li = document.createElement("li");
+          li.className = "bg-[#FFF8E5] rounded-lg p-3 flex items-start justify-between gap-3";
+          li.innerHTML = `
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-[#424244] truncate" title="${msg}">${msg}</p>
+              <p class="text-xs text-[#6B6B6D] mt-0.5">${escHtml(author)} · ${escHtml(when)} · <code>${shortSha}</code></p>
+            </div>
+            <div class="shrink-0">
+              ${idx === 0 ? '<span class="text-xs text-[#6B6B6D] italic px-2 py-1">Current</span>' : `<button type="button" onclick="rollbackTo('${c.sha}')" class="text-xs px-3 py-1 rounded-full border border-red-400 text-red-600 hover:bg-red-50 transition-colors">Revert to this</button>`}
+            </div>`;
+          listEl.appendChild(li);
+        });
+        loadingEl.classList.add("hidden");
+        listEl.classList.remove("hidden");
+      } catch (e) {
+        loadingEl.textContent = e.message;
+      }
+    }
+
+    async function rollbackTo(sha) {
+      if (!historyCurrentPath) return;
+      const label = historyCurrentPath === "admin-config.json" ? "site content" : "practices CSV";
+      if (!confirm(`Revert the ${label} to the state at commit ${sha.substring(0, 7)}? This will create a new commit and trigger a redeploy.`)) return;
+      try {
+        // Fetch the file contents at the target commit
+        const atRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}?ref=${sha}`, token);
+        if (!atRes.ok) throw new Error(await translateGhError(atRes, "Could not fetch the historical version"));
+        const atData = await atRes.json();
+
+        // Fetch the current sha so we can PUT on top of it
+        const curRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`, token);
+        if (!curRes.ok) throw new Error(await translateGhError(curRes, "Could not fetch the current version"));
+        const curData = await curRes.json();
+
+        // PUT the historical content back
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`, token, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: `Revert ${historyCurrentPath} to ${sha.substring(0, 7)} via Atlas Admin`,
+            content: atData.content.replace(/\n/g, ""),
+            sha: curData.sha,
+            branch: "main",
+          }),
+        });
+        if (!putRes.ok) throw new Error(await translateGhError(putRes, "Rollback failed"));
+
+        // Refresh in-memory state for the admin
+        if (historyCurrentPath === "admin-config.json") {
+          await loadConfig();
+        } else {
+          await loadPractices(true);
+        }
+        await loadHistory(historyCurrentPath);
+        toast(`Reverted ${label} to ${sha.substring(0, 7)}. GitHub is rebuilding — give it 1–2 minutes.`, {
+          level: "success",
+          linkUrl: ACTIONS_URL,
+          linkLabel: "Watch the build progress",
+        });
+      } catch (e) {
+        toastError("Rollback failed", e.message);
+      }
+    }
+
+    // ── Preview with unsaved edits ──
+    // Collect the current state of every form into configData without committing.
+    // Mirrors what saveSection gathers for each section.
+    function collectAllPendingEdits() {
+      if (!configData) return;
+      // About
+      if (document.getElementById("about-form") && !document.getElementById("about-form").classList.contains("hidden")) {
+        const values = [];
+        let i = 0;
+        while (document.getElementById(`val-title-${i}`)) {
+          values.push({ title: document.getElementById(`val-title-${i}`).value, text: document.getElementById(`val-text-${i}`).value });
+          i++;
+        }
+        const introParas = [];
+        document.querySelectorAll("#about-intro-fields .about-intro-quill").forEach((h) => { const v = getQuillHTML(h); if (v) introParas.push(v); });
+        const sources = [];
+        document.querySelectorAll("#about-sources-fields .about-source-quill").forEach((h) => { const v = getQuillHTML(h); if (v) sources.push(v); });
+        if (!configData.about) configData.about = {};
+        configData.about.intro = introParas;
+        configData.about.vision = document.getElementById("about-vision")?.value || "";
+        configData.about.mission = document.getElementById("about-mission")?.value || "";
+        configData.about.values = values;
+        if (!configData.about.collection) configData.about.collection = {};
+        configData.about.collection.intro = document.getElementById("about-collection-intro")?.value || "";
+        configData.about.collection.sources = sources;
+        configData.about.collection.cta = document.getElementById("about-collection-cta")?.value || "";
+        configData.about.partnerCTA = document.getElementById("about-partner-cta")?.value || "";
+      }
+      // Contact
+      if (document.getElementById("contact-email")) {
+        configData.contact = {
+          email: document.getElementById("contact-email").value,
+          orgName: document.getElementById("contact-orgName").value,
+          orgSubline: document.getElementById("contact-orgSubline").value,
+          address: document.getElementById("contact-address").value,
+        };
+      }
+      // Submit
+      if (document.getElementById("submit-overview-fields")) {
+        const overview = [];
+        document.querySelectorAll("#submit-overview-fields .submit-overview-quill").forEach((h) => { const v = getQuillHTML(h); if (v) overview.push(v); });
+        const pathways = [];
+        document.querySelectorAll("#pathway-fields > div").forEach((div) => {
+          const nameEl = div.querySelector(`[id^="pw-name-"]`);
+          const urlEl = div.querySelector(`[id^="pw-url-"]`);
+          const descEl = div.querySelector(`[id^="pw-desc-"]`);
+          const colorEl = div.querySelector(`[id^="pw-color-"]`);
+          if (nameEl) pathways.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "", color: colorEl?.value || "" });
+        });
+        configData.submit = { overview, pathways };
+      }
+      // Partners
+      if (document.getElementById("partner-fields")) {
+        const partners = [];
+        document.querySelectorAll("#partner-fields > div").forEach((div) => {
+          const nameEl = div.querySelector(`[id^="ptr-name-"]`);
+          const urlEl = div.querySelector(`[id^="ptr-url-"]`);
+          const descEl = div.querySelector(`[id^="ptr-desc-"]`);
+          if (nameEl) partners.push({ name: nameEl.value, url: urlEl?.value || "", desc: descEl?.value || "" });
+        });
+        if (partners.length > 0) configData.partners = partners;
+      }
+      // Site
+      if (document.getElementById("site-hero-title")) {
+        configData.site = {
+          heroTitle: document.getElementById("site-hero-title").value.trim(),
+          heroSubtitle: document.getElementById("site-hero-subtitle").value.trim(),
+          footerTagline: getQuillHTML(document.getElementById("site-footer-quill-host")),
+          copyrightOrgs: document.getElementById("site-copyright").value.trim(),
+          awards: {
+            heading: document.getElementById("site-awards-heading").value.trim(),
+            body: getQuillHTML(document.getElementById("site-awards-quill-host")),
+            linkLabel: document.getElementById("site-awards-linklabel").value.trim(),
+            linkHref: document.getElementById("site-awards-linkhref").value.trim(),
+          },
+        };
+        const nav = [];
+        document.querySelectorAll("#site-nav-fields > div").forEach((div) => {
+          const label = div.querySelector(".site-nav-label")?.value.trim() || "";
+          const href = div.querySelector(".site-nav-href")?.value.trim() || "";
+          if (label && href) nav.push({ label, href });
+        });
+        configData.nav = nav;
+      }
+    }
+
+    function previewWithOverride() {
+      if (!configData) {
+        toast("Still loading admin config. Try again in a moment.", { level: "info" });
+        return;
+      }
+      collectAllPendingEdits();
+      try {
+        const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(configData))));
+        const url = `index.html?configOverride=${encodeURIComponent(b64)}`;
+        window.open(url, "_blank", "noopener");
+      } catch (e) {
+        toastError("Preview failed", e.message);
       }
     }
 

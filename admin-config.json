@@ -41,19 +41,9 @@
     "address": "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany"
   },
   "submit": {
-    "introText": "Practices in the Energy Transition Atlas are contributed by our Atlas Partners. Each partner documents and shares their own work, and each manages their own submission and review process.",
     "overview": [
       "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
       "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work."
-    ],
-    "criteria": [
-      { "title": "Publicly documented", "desc": "The practice must be accessible via a public URL: a webpage, case study, report, or guidance document that others can view and reference.", "highlight": false },
-      { "title": "Relevance to energy infrastructure", "desc": "The practice must relate to electricity grids, solar, onshore wind, offshore wind, or broader energy systems.", "highlight": false },
-      { "title": "Nature- or People-positive focus", "desc": "The practice must demonstrably address biodiversity, landscape integration, community engagement, social acceptance, or other environmental and social dimensions of the energy transition.", "highlight": false },
-      { "title": "Replicability", "desc": "The approach should be transferable to other projects, organisations, or geographies beyond the original context.", "highlight": false },
-      { "title": "Demonstrated outcomes", "desc": "Preference is given to practices with measurable, documented, or independently verified results, though emerging and innovative approaches are also considered.", "highlight": false },
-      { "title": "Recency", "desc": "Practices should generally date from 2000 onwards and reflect current standards and regulatory contexts.", "highlight": false },
-      { "title": "Joint approval by RGI and IUCN", "desc": "All submissions are reviewed by the Renewables Grid Initiative (RGI) and the International Union for Conservation of Nature (IUCN). Both organisations must approve a practice before it is published in the Atlas.", "highlight": true }
     ],
     "pathways": [
       { "name": "RGI Grid Awards", "url": "https://renewables-grid.eu/award/", "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.", "color": "border-l-amber-500" },
