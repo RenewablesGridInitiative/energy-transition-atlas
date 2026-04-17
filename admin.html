@@ -131,8 +131,8 @@
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
           <div class="flex items-center justify-between gap-3 mb-2 flex-wrap">
             <div>
-              <h2 class="font-bold text-[#6B21A8] text-xl">Edit a Practice</h2>
-              <p class="text-[#424244] text-sm mt-1">Search for any of the 355 practices and update a single row without re-uploading the whole CSV.</p>
+              <h2 class="font-bold text-[#6B21A8] text-xl">Practices</h2>
+              <p class="text-[#424244] text-sm mt-1">Add a new practice, or edit any existing one without re-uploading the whole CSV.</p>
             </div>
             <button onclick="loadPractices(true)" class="px-4 py-2 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:bg-[#FFF8E5] transition-colors inline-flex items-center gap-1.5" id="practices-refresh">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -152,6 +152,10 @@
                 <option value="Panorama">Panorama</option>
                 <option value="SL4B">SL4B</option>
               </select>
+              <button type="button" onclick="openNewPracticeModal()" class="px-4 py-2 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors inline-flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add new practice
+              </button>
               <span id="practices-count" class="text-xs text-[#6B6B6D]"></span>
             </div>
 
@@ -1795,9 +1799,11 @@
     function openPracticeModal(id) {
       const row = practicesState.rows.find((r) => String(r.id) === String(id));
       if (!row) return;
-      practicesState.editing = { id: row.id };
+      practicesState.editing = { id: row.id, isNew: false };
       document.getElementById("pmodal-id-badge").textContent = `#${row.id}`;
       document.getElementById("pmodal-title-sub").textContent = row.title;
+      document.getElementById("pmodal-save-btn").textContent = "Save this practice";
+      document.querySelector("#practice-modal h3").firstChild.textContent = "Edit practice ";
       document.getElementById("pm-id").value = row.id || "";
       document.getElementById("pm-title").value = row.title || "";
       document.getElementById("pm-url").value = row.url || "";
@@ -1811,6 +1817,44 @@
       document.getElementById("pm-desc").value = row.desc || "";
       document.getElementById("pm-img").value = row.img || "";
       document.getElementById("pm-award").checked = (row.award || "").toLowerCase() === "true";
+      refreshImagePreview();
+      hideMsg("pmodal-error");
+      hideMsg("pm-img-status");
+      const modal = document.getElementById("practice-modal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+      setTimeout(() => document.getElementById("pm-title").focus(), 50);
+    }
+
+    function openNewPracticeModal() {
+      if (!practicesState.rows) {
+        toast("Still loading practices. Try again in a moment.", { level: "info" });
+        return;
+      }
+      // Auto-assign the next id: max existing + 1
+      const maxId = practicesState.rows.reduce((m, r) => {
+        const n = parseInt(r.id, 10);
+        return isNaN(n) ? m : Math.max(m, n);
+      }, 0);
+      const newId = maxId + 1;
+      practicesState.editing = { id: String(newId), isNew: true };
+      document.getElementById("pmodal-id-badge").textContent = `#${newId} (new)`;
+      document.getElementById("pmodal-title-sub").textContent = "This practice will be added to the CSV.";
+      document.getElementById("pmodal-save-btn").textContent = "Create practice";
+      document.querySelector("#practice-modal h3").firstChild.textContent = "Add a new practice ";
+      document.getElementById("pm-id").value = newId;
+      document.getElementById("pm-title").value = "";
+      document.getElementById("pm-url").value = "";
+      document.getElementById("pm-brand").value = "RGI";
+      document.getElementById("pm-theme").value = "";
+      document.getElementById("pm-topic").value = "";
+      document.getElementById("pm-inf").value = "";
+      document.getElementById("pm-year").value = new Date().getFullYear();
+      document.getElementById("pm-country").value = "";
+      document.getElementById("pm-org").value = "";
+      document.getElementById("pm-desc").value = "";
+      document.getElementById("pm-img").value = "";
+      document.getElementById("pm-award").checked = false;
       refreshImagePreview();
       hideMsg("pmodal-error");
       hideMsg("pm-img-status");
@@ -1875,41 +1919,57 @@
         return;
       }
 
+      const isNew = !!practicesState.editing.isNew;
+
+      // Guard against a rare race: id collision with an existing row on a create.
+      if (isNew && practicesState.rows.some((r) => String(r.id) === String(updated.id))) {
+        errEl.textContent = `A practice with id ${updated.id} already exists. Click Cancel and reopen to get the next available id.`;
+        errEl.classList.remove("hidden");
+        return;
+      }
+
       btn.disabled = true;
-      btn.textContent = "Saving…";
+      btn.textContent = isNew ? "Creating…" : "Saving…";
+      const originalBtnLabel = isNew ? "Create practice" : "Save this practice";
 
       try {
-        // Build new CSV from the rows array, swapping in the updated row.
-        const newRows = practicesState.rows.map((r) => (String(r.id) === String(updated.id) ? { ...r, ...updated } : r));
+        // Build new CSV: append on create, swap-in on update.
+        const newRows = isNew
+          ? [...practicesState.rows, updated]
+          : practicesState.rows.map((r) => (String(r.id) === String(updated.id) ? { ...r, ...updated } : r));
         const csv = Papa.unparse(newRows, { columns: CSV_HEADERS, newline: "\n" }) + "\n";
         const content = btoa(unescape(encodeURIComponent(csv)));
+        const commitMsg = isNew
+          ? `Add practice #${updated.id} (${updated.title.slice(0, 50)}) via Atlas Admin`
+          : `Update practice #${updated.id} (${updated.title.slice(0, 50)}) via Atlas Admin`;
         const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, {
           method: "PUT",
           body: JSON.stringify({
-            message: `Update practice #${updated.id} (${updated.title.slice(0, 50)}) via Atlas Admin`,
+            message: commitMsg,
             content,
             sha: practicesState.sha,
             branch: "main",
           }),
         });
-        if (!res.ok) throw new Error(await translateGhError(res, "Save failed"));
+        if (!res.ok) throw new Error(await translateGhError(res, isNew ? "Create failed" : "Save failed"));
         const result = await res.json();
         practicesState.sha = result.content.sha;
         practicesState.rows = newRows;
         csvServerRows = newRows;
         closePracticeModal();
         renderPracticesTable();
-        toast(`Practice #${updated.id} saved. GitHub is rebuilding — changes appear in 1–2 minutes.`, {
-          level: "success",
-          linkUrl: ACTIONS_URL,
-          linkLabel: "Watch the build progress",
-        });
+        toast(
+          isNew
+            ? `Practice #${updated.id} created. GitHub is rebuilding — it will appear on the site in 1–2 minutes.`
+            : `Practice #${updated.id} saved. GitHub is rebuilding — changes appear in 1–2 minutes.`,
+          { level: "success", linkUrl: ACTIONS_URL, linkLabel: "Watch the build progress" }
+        );
       } catch (e) {
         errEl.textContent = e.message;
         errEl.classList.remove("hidden");
       } finally {
         btn.disabled = false;
-        btn.textContent = "Save this practice";
+        btn.textContent = originalBtnLabel;
       }
     }
 
