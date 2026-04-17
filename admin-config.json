@@ -67,7 +67,7 @@
     { "name": "RGI", "url": "https://renewables-grid.eu", "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe." },
     { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "desc": "The International Union for Conservation of Nature drives global action on nature-positive energy through its Green, Just Energy Transition programme and co-founded GINGR." },
     { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature works to ensure offshore renewable energy and marine nature conservation develop in harmony." },
-    { "name": "SL4B", "url": "https://safelines4birds.eu", "desc": "Safe Lines for Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
+    { "name": "SL4B", "url": "https://safelines4birds.eu", "desc": "LIFE SafeLines4Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
     { "name": "Panorama", "url": "https://panorama.solutions/en", "desc": "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas." }
   ],
   "brandBar": {

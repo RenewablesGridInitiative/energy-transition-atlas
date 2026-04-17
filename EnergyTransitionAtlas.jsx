@@ -978,7 +978,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses 
           {/* Atlas Partner */}
           {p.brand && (
             <p className="text-xs text-[#6B6B6D] mb-6">
-              Atlas Partner: <a href={BRAND_LINKS[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#6B21A8] font-medium hover:underline">{{ RGI: "Renewables Grid Initiative (RGI)", OCEaN: "Offshore Coalition for Energy and Nature (OCEaN)", Panorama: "IUCN PANORAMA – Solutions for a Healthy Planet", SL4B: "Safe Lines for Birds (SL4B)" }[p.brand] || p.brand}</a>
+              Atlas Partner: <a href={BRAND_LINKS[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#6B21A8] font-medium hover:underline">{{ RGI: "Renewables Grid Initiative (RGI)", OCEaN: "Offshore Coalition for Energy and Nature (OCEaN)", Panorama: "IUCN PANORAMA – Solutions for a Healthy Planet", SL4B: "LIFE SafeLines4Birds (SL4B)" }[p.brand] || p.brand}</a>
             </p>
           )}
           {/* Actions */}
@@ -1672,7 +1672,7 @@ export default function EnergyTransitionAtlas() {
                   { name: "RGI", url: BRAND_LINKS.RGI, desc: "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe." },
                   { name: "IUCN", url: BRAND_LINKS.IUCN, desc: "The International Union for Conservation of Nature drives global action on nature-positive energy through its Green, Just Energy Transition programme and co-founded GINGR." },
                   { name: "OCEaN", url: BRAND_LINKS.OCEaN, desc: "The Offshore Coalition for Energy and Nature works to ensure offshore renewable energy and marine nature conservation develop in harmony." },
-                  { name: "SL4B", url: BRAND_LINKS.SL4B, desc: "Safe Lines for Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
+                  { name: "SL4B", url: BRAND_LINKS.SL4B, desc: "LIFE SafeLines4Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
                   { name: "Panorama", url: BRAND_LINKS.Panorama, desc: "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas." },
                 ]).map((partner) => (
                   <a
@@ -2136,7 +2136,7 @@ export default function EnergyTransitionAtlas() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex flex-nowrap items-center gap-6">
                 <a href={BRAND_LINKS.RGI} target="_blank" rel="noopener noreferrer"><img src="logos/rgi-white.svg" alt="Renewables Grid Initiative (RGI)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
-                <a href={BRAND_LINKS.GINGR} target="_blank" rel="noopener noreferrer"><img src="gingr-logo-grey.svg" alt="GINGR (Global Initiative for Nature, Grids and Renewables)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
+                <a href={BRAND_LINKS.GINGR} target="_blank" rel="noopener noreferrer"><img src="logos/gingr-white.svg" alt="GINGR (Global Initiative for Nature, Grids and Renewables)" className="h-[36px] md:h-[52px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
                 <a href={BRAND_LINKS.IUCN} target="_blank" rel="noopener noreferrer"><img src="logos/iucn.png" alt="International Union for Conservation of Nature (IUCN)" className="h-[44px] md:h-[68px] w-auto opacity-80 hover:opacity-100 transition-opacity" /></a>
               </div>
               <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md">
