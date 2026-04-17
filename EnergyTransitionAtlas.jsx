@@ -706,7 +706,7 @@ function HeroGraphic() {
     });
   };
   return (
-    <div className="relative w-full max-w-[520px] mx-auto" style={{ aspectRatio: "500/440" }}>
+    <div className="relative w-full max-w-[360px] mx-auto" style={{ aspectRatio: "500/440" }}>
       <style>{`
         @keyframes hero-blade-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes hero-cloud-drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
@@ -739,7 +739,7 @@ function HeroGraphic() {
         .hero-el { transition: filter 0.3s ease, transform 0.3s ease; }
         .hero-el:hover { filter: drop-shadow(0 0 8px rgba(255,248,229,0.5)); }
       `}</style>
-      <svg ref={svgRef} viewBox="55 75 390 360" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" overflow="visible" aria-hidden="true">
+      <svg ref={svgRef} viewBox="55 14 390 360" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" overflow="visible" aria-hidden="true">
 
         {/* ── Sun (upper-right) ── */}
         <g className="hero-sun hero-el hero-enter" style={{ animationDelay: "1.2s" }} opacity="0.7">
@@ -1448,8 +1448,9 @@ export default function EnergyTransitionAtlas() {
             { name: "GINGR", url: BRAND_LINKS.GINGR, logo: "logos/gingr-official-white.svg" },
             { name: "IUCN", url: BRAND_LINKS.IUCN, logo: "logos/iucn.png" },
           ]).map(b => {
-            // Optical sizing: GINGR is wider, IUCN has more internal padding — match footer visual weight
-            const heightClass = b.name === "IUCN" ? "h-[34px]" : b.name === "GINGR" ? "h-[34px]" : "h-[26px]";
+            // Optical sizing: equalise visible content height across logos.
+            // GINGR fills ~95% of its box, RGI ~90%, IUCN ~73% → IUCN needs more box to match.
+            const heightClass = b.name === "IUCN" ? "h-[34px]" : "h-[26px]";
             const logoVer = brandBarConfig?.logoVersion || 1;
             return b.logo ? (
               <a key={b.name} href={b.url} target="_blank" rel="noopener noreferrer" aria-label={b.name} className="flex-shrink-0 opacity-80 hover:opacity-100 transition-opacity">
