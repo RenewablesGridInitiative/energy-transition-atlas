@@ -16,6 +16,14 @@ ARRAY_START = "const PRACTICES = ["
 ARRAY_END_LINE = "];"
 
 
+def _split_composite(value):
+    """Split a composite CSV cell (e.g. "Nature, Technology") into a list.
+    Trims whitespace; empty input becomes []. Single values become [value]."""
+    if not value:
+        return []
+    return [part.strip() for part in str(value).split(",") if part.strip()]
+
+
 def csv_to_js_array(csv_path):
     """Read CSV and produce JS array literal lines.
 
@@ -47,8 +55,12 @@ def csv_to_js_array(csv_path):
         title = json.dumps(field("title"), ensure_ascii=False)
         url = json.dumps(field("url"), ensure_ascii=False)
         brand = json.dumps(field("brand"), ensure_ascii=False)
-        dim = json.dumps(field("theme"), ensure_ascii=False)
-        topic = json.dumps(field("topic"), ensure_ascii=False)
+        # Composite fields (theme, topic) are delimited in the CSV with ", ".
+        # We parse them here at build time so the runtime JSX receives arrays
+        # and never has to call `.split(", ")` — eliminating the ambiguity of a
+        # literal comma-space inside a single value.
+        dim = json.dumps(_split_composite(field("theme")), ensure_ascii=False)
+        topic = json.dumps(_split_composite(field("topic")), ensure_ascii=False)
         inf = json.dumps(field("inf"), ensure_ascii=False)
 
         year_raw = (field("year") or "").strip()

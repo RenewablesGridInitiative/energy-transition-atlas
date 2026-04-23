@@ -1,0 +1,10 @@
+name = "eta-gh-auth"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# Deploy with:
+#   wrangler secret put CLIENT_ID     # paste the GitHub App client_id, then enter
+#   wrangler deploy
+#
+# The deployed URL (e.g. https://eta-gh-auth.<acct>.workers.dev) goes into
+# admin.html at the DEVICE_AUTH_WORKER constant.

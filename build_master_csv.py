@@ -6,7 +6,9 @@ Sources: Excel spreadsheets + scraped WordPress pages.
 
 import argparse
 import csv
+import os
 import re
+import sys
 import time
 import urllib.parse
 from pathlib import Path
@@ -15,12 +17,10 @@ import requests
 from bs4 import BeautifulSoup
 
 # ── Paths ──
-EXCEL_PATH = (
-    "/Users/intern/Library/CloudStorage/OneDrive-SharedLibraries-RenewablesGridInitiative/"
-    "RGI - Documents/WP3_Social Dimension/2_Communications/Website/"
-    "Energy Transition Atlas/ETA_New DB_filled_Final.xlsx"
-)
-OUTPUT_PATH = "/Users/intern/Desktop/ETA/practices_master.csv"
+# EXCEL_PATH is resolved inside main() from (in order): --excel flag, $ETA_EXCEL_PATH.
+# It's required only when reading Excel (not in --scrape-only mode).
+# OUTPUT_PATH defaults to practices_master.csv beside this script; override with $ETA_CSV_PATH.
+OUTPUT_PATH = Path(os.environ.get("ETA_CSV_PATH", Path(__file__).parent / "practices_master.csv")).expanduser()
 
 # ── Sitemap URLs (extracted earlier) ──
 SITEMAP_URL = "https://renewables-grid.eu/database-sitemap.xml"
@@ -488,6 +488,8 @@ def main():
     parser = argparse.ArgumentParser(description="Build master CSV of best practices")
     parser.add_argument("--scrape-only", action="store_true",
                         help="Skip Excel reading; scrape sitemap and merge into existing CSV")
+    parser.add_argument("--excel", default=os.environ.get("ETA_EXCEL_PATH"),
+                        help="Path to the source .xlsx workbook (or set $ETA_EXCEL_PATH). Required unless --scrape-only.")
     args = parser.parse_args()
 
     if args.scrape_only:
@@ -496,9 +498,17 @@ def main():
         by_title = load_existing_csv()
     else:
         # ── Step 1: Read Excel data ──
+        if not args.excel:
+            sys.exit(
+                "No source spreadsheet. Pass --excel /path/to/workbook.xlsx or set $ETA_EXCEL_PATH. "
+                "Use --scrape-only to skip Excel and only re-scrape the live RGI site."
+            )
+        excel_path = Path(args.excel).expanduser()
+        if not excel_path.is_file():
+            sys.exit(f"Excel file not found: {excel_path}")
         import openpyxl
-        print("Reading Excel data...")
-        wb = openpyxl.load_workbook(EXCEL_PATH)
+        print(f"Reading Excel data from {excel_path}...")
+        wb = openpyxl.load_workbook(excel_path)
 
         new_website = read_excel_sheet(wb, "New Website")
         print(f"  New Website: {len(new_website)} practices")

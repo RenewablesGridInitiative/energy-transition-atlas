@@ -19,7 +19,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-CSV_PATH = "practices_master.csv"
+from pathlib import Path
+CSV_PATH = Path(__file__).resolve().parent / "practices_master.csv"
 DRY_RUN = "--dry-run" in sys.argv
 
 HEADERS = {

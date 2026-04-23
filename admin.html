@@ -3,12 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' https://api.github.com https://eta-gh-auth.communication-a9f.workers.dev https://raw.githubusercontent.com;
+    frame-ancestors 'none';
+    base-uri 'self';
+  " />
   <title>Energy Transition Atlas — Admin</title>
   <link rel="icon" href="favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" integrity="sha384-D/t0ZMqQW31H3az8ktEiNb39wyKnS82iFY52QPACM+IjKW3jDUhyIgh2PApRqJZs" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" integrity="sha384-VvSC4PGxeMkOaAmyuDGZECjY2dkqdO/IdBYBUK+BCYNc3WIvRxHLUzQ5OSgUaMA7" crossorigin="anonymous" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" integrity="sha384-hcxmSutM10NL6iGBAA0LStIhy+kWJxfrhqWVMRuABZH5Vqztexq2nBz/Xnfllly9" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" integrity="sha384-XQqX/4yiUGu+oyr87jvWzRuqBUK/adrY0DunhL+tID9m/9dwSpV8h9Fk/Sg6ifVQ" crossorigin="anonymous"></script>
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     /* Keep Quill inside form rhythm */
@@ -33,42 +44,50 @@
         Back to Atlas
       </a>
       <h1 class="font-bold text-[#6B21A8] text-3xl mb-2">Atlas Admin</h1>
-      <p class="text-[#424244] text-sm mb-6 max-w-xl">Sign in with a GitHub access token to update practices and site content.</p>
+      <p class="text-[#424244] text-sm mb-6 max-w-xl">Sign in with GitHub to update practices and site content.</p>
 
       <div class="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 max-w-4xl">
-        <!-- Sign-in form -->
+        <!-- Sign-in card -->
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6 h-fit">
           <h2 class="font-semibold text-[#424244] text-base mb-1">Sign in</h2>
-          <p class="text-xs text-[#6B6B6D] mb-4">Paste your token below. It's kept only in this browser tab and forgotten when you close it.</p>
-          <label class="block text-sm font-medium text-[#424244] mb-1" for="pat-input">GitHub access token</label>
-          <input id="pat-input" type="password" autocomplete="off" placeholder="github_pat_… or ghp_…" class="w-full px-4 py-2.5 rounded-lg border border-[#C9C9C9] bg-white text-sm text-[#424244] focus:outline-none focus:border-[#6B21A8] focus:ring-2 focus:ring-[#6B21A8]/20 mb-3" />
-          <p id="auth-error" class="text-red-600 text-xs mb-3 hidden"></p>
-          <p id="token-test-result" class="text-xs mb-3 hidden"></p>
-          <div class="flex gap-2 flex-wrap">
-            <button onclick="authenticate()" class="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors">
-              Sign In
+          <p class="text-xs text-[#6B6B6D] mb-4">You'll authorise the Atlas Admin app on github.com. Your GitHub session is kept only in memory — closing or reloading this tab signs you out.</p>
+
+          <!-- IDLE: Sign-in button -->
+          <div id="auth-idle">
+            <button id="signin-btn" onclick="startDeviceFlow()" class="w-full px-6 py-2.5 rounded-full bg-[#24292f] text-white text-sm font-medium hover:bg-[#24292f]/90 transition-colors inline-flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .296a12 12 0 0 0-3.792 23.398c.6.108.823-.26.823-.577v-2.234c-3.34.726-4.043-1.416-4.043-1.416-.547-1.387-1.334-1.756-1.334-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.236 1.84 1.236 1.071 1.834 2.807 1.304 3.492.996.108-.776.42-1.305.762-1.605-2.665-.303-5.467-1.332-5.467-5.93 0-1.31.467-2.381 1.236-3.22-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3-.404c1.02.005 2.047.138 3 .404 2.29-1.552 3.297-1.23 3.297-1.23.655 1.652.243 2.873.12 3.176.77.839 1.235 1.91 1.235 3.22 0 4.61-2.807 5.624-5.48 5.92.43.372.824 1.102.824 2.222v3.293c0 .32.22.694.825.576A12 12 0 0 0 12 .296z"/></svg>
+              <span id="signin-btn-label">Sign in with GitHub</span>
             </button>
-            <button onclick="testToken()" class="px-6 py-2.5 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:bg-[#FFF8E5] transition-colors">
-              Test my token
-            </button>
+            <p id="auth-error" class="text-red-600 text-xs mt-3 hidden"></p>
+            <p id="auth-countdown" class="text-[#6B6B6D] text-xs mt-2 hidden"></p>
+          </div>
+
+          <!-- AWAITING_USER / POLLING: show user_code + link -->
+          <div id="auth-pending" class="hidden">
+            <p class="text-sm text-[#424244] mb-2">Step 1 — copy this code:</p>
+            <div class="flex items-center gap-2 mb-3">
+              <code id="auth-user-code" class="block flex-1 px-3 py-3 bg-[#FFF8E5] border border-[#C9C9C9] rounded-lg text-center text-2xl font-mono font-bold tracking-widest text-[#6B21A8] select-all">----&ndash;&ndash;----</code>
+              <button id="auth-copy-btn" onclick="copyUserCode()" class="px-3 py-2.5 rounded-lg border border-[#C9C9C9] text-[#424244] text-xs hover:bg-[#FFF8E5] transition-colors" title="Copy code">Copy</button>
+            </div>
+            <p class="text-sm text-[#424244] mb-2">Step 2 — open GitHub and paste the code:</p>
+            <a id="auth-verification-link" href="https://github.com/login/device" target="_blank" rel="noopener noreferrer" class="block w-full text-center px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors mb-3">Open github.com/login/device</a>
+            <p id="auth-status" class="text-xs text-[#6B6B6D] mb-3">Waiting for authorisation…</p>
+            <button onclick="cancelDeviceFlow()" class="text-xs text-[#6B6B6D] hover:text-[#424244] underline">Cancel</button>
           </div>
         </div>
 
-        <!-- Getting a token -->
+        <!-- Help panel -->
         <div class="bg-white rounded-xl border border-[#C9C9C9] p-6">
-          <h2 class="font-semibold text-[#424244] text-base mb-2">Don't have a token yet?</h2>
-          <p class="text-xs text-[#6B6B6D] mb-3">A token is like a one-time password for this computer. It lets the Atlas save your edits back to GitHub.</p>
+          <h2 class="font-semibold text-[#424244] text-base mb-2">How this works</h2>
           <ol class="text-xs text-[#424244] space-y-2 pl-4 list-decimal">
-            <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer" class="text-[#6B21A8] underline font-medium">github.com/settings/personal-access-tokens/new</a> in a new tab (sign in to GitHub if asked).</li>
-            <li><strong>Token name</strong>: something you'll recognise, e.g. "Atlas Admin — my laptop".</li>
-            <li><strong>Expiration</strong>: 90 days is a good default. You'll need to repeat these steps to renew it.</li>
-            <li><strong>Repository access</strong>: choose <em>Only select repositories</em> and pick <code class="bg-[#FFF8E5] px-1 rounded">RenewablesGridInitiative/energy-transition-atlas</code>.</li>
-            <li>Scroll to <strong>Permissions &rarr; Repository permissions</strong> and set <strong>Contents</strong> to <em>Read and write</em>.</li>
-            <li>Scroll to the bottom, click <strong>Generate token</strong>, then copy the token (starts with <code>github_pat_</code>).</li>
-            <li>Paste it into the field on the left and click <strong>Sign In</strong>.</li>
+            <li>Click <strong>Sign in with GitHub</strong>.</li>
+            <li>A code appears here — click <strong>Copy</strong> and open GitHub.</li>
+            <li>On github.com, paste the code and click <strong>Continue</strong>, then <strong>Authorize</strong>.</li>
+            <li>Come back to this tab. You'll be signed in automatically within a few seconds.</li>
           </ol>
-          <p class="text-xs text-[#6B6B6D] mt-3"><strong>Lost your token?</strong> GitHub can't show it again — you'll need to generate a new one. That's fine, just repeat these steps.</p>
-          <p class="text-xs text-[#6B6B6D] mt-2">If none of this looks familiar, ask whoever set up the Atlas for help — don't guess.</p>
+          <p class="text-xs text-[#6B6B6D] mt-3"><strong>First time?</strong> GitHub will ask you once to approve the Atlas Admin app. You only do this once per account.</p>
+          <p class="text-xs text-[#6B6B6D] mt-2"><strong>Session length:</strong> your GitHub session lasts up to 8 hours, and is cleared if you close or reload this tab.</p>
+          <p class="text-xs text-[#6B6B6D] mt-2">If something doesn't look right, ask whoever set up the Atlas for help — don't guess.</p>
         </div>
       </div>
     </div>
@@ -637,7 +656,18 @@
     const ACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors bg-[#6B21A8] text-white";
     const INACTIVE_BTN = "px-4 py-2 rounded-full text-sm font-medium transition-colors border border-[#C9C9C9] text-[#424244] hover:bg-white";
 
-    let token = null;
+    // Cloudflare Worker URL that proxies the GitHub Device Flow endpoints
+    // (github.com/login/* has no CORS). Replace with your deployed Worker URL.
+    // Must also match the `connect-src` CSP directive in this file's <head>.
+    const DEVICE_AUTH_WORKER = "https://eta-gh-auth.communication-a9f.workers.dev";
+
+    // Token lives in a closure — never written to sessionStorage or localStorage.
+    // Refresh or tab close ⇒ user re-authenticates. By design.
+    const auth = (() => {
+      let t = null;
+      return { set: v => { t = v; }, get: () => t, clear: () => { t = null; } };
+    })();
+
     let csvContent = null;
     let csvParsedRows = null;   // parsed rows of the file being uploaded
     let csvServerRows = null;   // parsed rows of the CSV currently on the repo (for diff)
@@ -729,21 +759,20 @@
 
     // ── Auth ──
     // Translate a GitHub API response into actionable human language.
-    // Pass the response *and* the parsed JSON body (null if unavailable).
     async function translateGhError(res, fallbackMsg) {
       let body = null;
       try { body = await res.clone().json(); } catch (e) { /* not JSON */ }
       const ghMsg = body?.message || "";
       switch (res.status) {
         case 401:
-          return "Your token was not accepted by GitHub. It may have expired, been revoked, or contain a typo. Generate a new token and try again.";
+          return "GitHub didn't recognise your session. It may have expired or been revoked. Please sign in again.";
         case 403:
           if (ghMsg.toLowerCase().includes("rate limit")) {
             return "GitHub is temporarily rate-limiting your account. Wait a minute and try again.";
           }
-          return "Your token exists but doesn't have permission for this action. You need \"Contents: Read and write\" on this repository. Generate a new token with the right permission.";
+          return "Your GitHub session doesn't have permission for this action. Make sure the Atlas Admin GitHub App is installed on this repository with \"Contents: Read and write\".";
         case 404:
-          return "GitHub can't see the target file — either your token doesn't have access to this repository, or the file has been moved. Double-check the token's repository access.";
+          return "GitHub can't see the target file — the Atlas Admin app may not be installed on this repository, or the file has been moved.";
         case 409:
           return "The file was changed on GitHub since you loaded this page. Click \"View Site\" then reload the admin to pick up the latest version before saving again.";
         case 422:
@@ -753,93 +782,192 @@
       }
     }
 
-    // Test-only: does this token have the right access? Does not sign in.
-    async function testToken() {
-      const pat = document.getElementById("pat-input").value.trim();
-      const resEl = document.getElementById("token-test-result");
-      hideMsg("auth-error");
-      resEl.classList.remove("hidden");
-      if (!pat) {
-        resEl.textContent = "Paste a token first.";
-        resEl.className = "text-xs mb-3 text-red-600";
-        return;
-      }
-      resEl.textContent = "Checking…";
-      resEl.className = "text-xs mb-3 text-[#6B6B6D]";
-      try {
-        const userRes = await ghFetch("/user", pat);
-        if (!userRes.ok) throw { res: userRes, step: "token" };
-        const user = await userRes.json();
-        const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`, pat);
-        if (!repoRes.ok) throw { res: repoRes, step: "repo" };
-        const repo = await repoRes.json();
-        if (!repo.permissions?.push) {
-          resEl.textContent = `Your token recognises you as ${user.login} and can read the repository, but can't write. Regenerate the token with "Contents: Read and write".`;
-          resEl.className = "text-xs mb-3 text-red-600";
-          return;
-        }
-        resEl.textContent = `✓ Your token works. Recognised as ${user.login} with write access to ${OWNER}/${REPO}.`;
-        resEl.className = "text-xs mb-3 text-emerald-700";
-      } catch (obj) {
-        if (obj?.res) {
-          const msg = await translateGhError(obj.res, "Token test failed");
-          resEl.textContent = msg;
-        } else {
-          resEl.textContent = `Token test failed: ${obj?.message || obj}`;
-        }
-        resEl.className = "text-xs mb-3 text-red-600";
-      }
+    // ── Device Flow OAuth ──
+    // State machine: IDLE → REQUESTING → AWAITING_USER → POLLING → AUTHENTICATED
+    // Flow is cancellable; cancel flips a guard that stops the polling loop.
+    let deviceFlowCancelled = false;
+    let failCount = 0;                  // incremental back-off counter
+    let countdownTimer = null;
+
+    function setAuthBusy(busy, label) {
+      const btn = document.getElementById("signin-btn");
+      if (!btn) return;
+      btn.disabled = !!busy;
+      btn.classList.toggle("opacity-60", !!busy);
+      btn.classList.toggle("cursor-not-allowed", !!busy);
+      document.getElementById("signin-btn-label").textContent = label || "Sign in with GitHub";
     }
 
-    async function authenticate() {
-      const pat = document.getElementById("pat-input").value.trim();
-      hideMsg("token-test-result");
-      if (!pat) return showError("auth-error", "Please paste a token above.");
+    function showAuthScreen(which) {
+      document.getElementById("auth-idle").classList.toggle("hidden", which !== "idle");
+      document.getElementById("auth-pending").classList.toggle("hidden", which !== "pending");
+    }
 
+    async function startDeviceFlow() {
+      if (failCount > 0) {
+        // Respect the cooldown window
+        const remainingEl = document.getElementById("auth-countdown");
+        if (remainingEl && !remainingEl.classList.contains("hidden")) return;
+      }
+      hideMsg("auth-error");
+      hideMsg("auth-countdown");
+      deviceFlowCancelled = false;
+      setAuthBusy(true, "Requesting code…");
+
+      let dc;
       try {
-        const userRes = await ghFetch("/user", pat);
-        if (!userRes.ok) {
-          showError("auth-error", await translateGhError(userRes, "Sign-in failed"));
+        const res = await fetch(`${DEVICE_AUTH_WORKER}/device/code`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // scope omitted; GitHub App permissions are fixed at App-creation time
+          body: JSON.stringify({}),
+        });
+        if (!res.ok) throw new Error(`Device code request failed (HTTP ${res.status}).`);
+        dc = await res.json();
+        if (dc.error) throw new Error(dc.error_description || dc.error);
+      } catch (e) {
+        setAuthBusy(false);
+        handleAuthFailure(`Couldn't start sign-in: ${e.message}`);
+        return;
+      }
+
+      // Render the user code and verification link
+      document.getElementById("auth-user-code").textContent = dc.user_code || "——————";
+      const link = document.getElementById("auth-verification-link");
+      link.href = dc.verification_uri_complete || dc.verification_uri || "https://github.com/login/device";
+      showAuthScreen("pending");
+      setAuthBusy(false);
+
+      // Auto-open the GitHub verification page (best effort — popup blockers may intervene)
+      try { window.open(link.href, "_blank", "noopener,noreferrer"); } catch (_) {}
+
+      await pollForToken(dc);
+    }
+
+    async function pollForToken(dc) {
+      const statusEl = document.getElementById("auth-status");
+      let interval = Math.max(1, dc.interval || 5) * 1000;
+      const deadline = Date.now() + (dc.expires_in || 900) * 1000;
+
+      while (Date.now() < deadline) {
+        if (deviceFlowCancelled) return;
+        await new Promise(r => setTimeout(r, interval));
+        if (deviceFlowCancelled) return;
+
+        let r;
+        try {
+          const res = await fetch(`${DEVICE_AUTH_WORKER}/device/token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ device_code: dc.device_code }),
+          });
+          r = await res.json();
+        } catch (e) {
+          statusEl.textContent = "Network error talking to the sign-in service; retrying…";
+          continue;
+        }
+
+        if (r.access_token) {
+          auth.set(r.access_token);
+          await completeSignIn();
           return;
         }
+        if (r.error === "authorization_pending") { statusEl.textContent = "Waiting for you to authorise on GitHub…"; continue; }
+        if (r.error === "slow_down")              { interval += 5000; statusEl.textContent = "Slowing down polling…"; continue; }
+        if (r.error === "expired_token")          { handleAuthFailure("The code expired before you authorised. Please try again."); return; }
+        if (r.error === "access_denied")          { handleAuthFailure("You declined authorisation on GitHub."); return; }
+        handleAuthFailure(r.error_description || r.error || "Sign-in failed.");
+        return;
+      }
+      handleAuthFailure("The code expired before you authorised. Please try again.");
+    }
+
+    function cancelDeviceFlow() {
+      deviceFlowCancelled = true;
+      showAuthScreen("idle");
+      setAuthBusy(false);
+    }
+
+    async function completeSignIn() {
+      // Validate the token and confirm write access to the repo.
+      try {
+        const userRes = await ghFetch("/user");
+        if (!userRes.ok) { handleAuthFailure(await translateGhError(userRes, "Sign-in failed")); return; }
         const user = await userRes.json();
 
-        const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`, pat);
-        if (!repoRes.ok) {
-          showError("auth-error", await translateGhError(repoRes, "Could not load repository"));
-          return;
-        }
+        const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`);
+        if (!repoRes.ok) { handleAuthFailure(await translateGhError(repoRes, "Could not load repository")); return; }
         const repo = await repoRes.json();
         if (!repo.permissions?.push) {
-          showError("auth-error", `Signed in as ${user.login}, but this token can only read the repository. Regenerate the token with "Contents: Read and write".`);
+          handleAuthFailure(`Signed in as ${user.login}, but the Atlas Admin app doesn't have write access to ${OWNER}/${REPO}. Ask a repo admin to install it with "Contents: Read and write".`);
           return;
         }
 
-        token = pat;
-        sessionStorage.setItem("_eta_session", pat);
+        failCount = 0;
+        showAuthScreen("idle");
         document.getElementById("user-info").textContent = `Signed in as ${user.login}`;
         document.getElementById("auth-screen").classList.add("hidden");
         document.getElementById("admin-dashboard").classList.remove("hidden");
         fetchServerCSVForDiff(); // fire-and-forget; populates csvServerRows for later diffing
       } catch (e) {
-        showError("auth-error", `Couldn't reach GitHub: ${e.message}. Check your connection and try again.`);
+        handleAuthFailure(`Couldn't reach GitHub: ${e.message}. Check your connection and try again.`);
       }
     }
 
-    function signOut() {
-      token = null;
-      configData = null;
-      configSha = null;
-      sessionStorage.removeItem("_eta_session");
-      document.getElementById("auth-screen").classList.remove("hidden");
-      document.getElementById("admin-dashboard").classList.add("hidden");
-      document.getElementById("pat-input").value = "";
+    // Incremental back-off: 2, 4, 8, ... seconds, capped at 60. Resets on success.
+    function handleAuthFailure(msg) {
+      auth.clear();
+      showAuthScreen("idle");
+      setAuthBusy(false);
+      showError("auth-error", msg);
+
+      failCount += 1;
+      const seconds = Math.min(Math.pow(2, failCount), 60);
+      const countdownEl = document.getElementById("auth-countdown");
+      const btn = document.getElementById("signin-btn");
+      btn.disabled = true;
+      btn.classList.add("opacity-60", "cursor-not-allowed");
+      countdownEl.classList.remove("hidden");
+
+      let remaining = seconds;
+      const tick = () => {
+        if (remaining <= 0) {
+          countdownEl.classList.add("hidden");
+          btn.disabled = false;
+          btn.classList.remove("opacity-60", "cursor-not-allowed");
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+          return;
+        }
+        countdownEl.textContent = `You can try again in ${remaining}s…`;
+        remaining -= 1;
+      };
+      if (countdownTimer) clearInterval(countdownTimer);
+      tick();
+      countdownTimer = setInterval(tick, 1000);
     }
 
-    (function() {
-      const saved = sessionStorage.getItem("_eta_session");
-      if (saved) { document.getElementById("pat-input").value = saved; authenticate(); }
-    })();
+    function copyUserCode() {
+      const code = document.getElementById("auth-user-code").textContent;
+      navigator.clipboard?.writeText(code).then(() => {
+        const btn = document.getElementById("auth-copy-btn");
+        const old = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = old; }, 1500);
+      }).catch(() => {});
+    }
+
+    function signOut() {
+      auth.clear();
+      configData = null;
+      configSha = null;
+      deviceFlowCancelled = true;
+      showAuthScreen("idle");
+      hideMsg("auth-error");
+      hideMsg("auth-countdown");
+      document.getElementById("auth-screen").classList.remove("hidden");
+      document.getElementById("admin-dashboard").classList.add("hidden");
+    }
 
     // ── Tabs ──
     function switchTab(tab) {
@@ -856,7 +984,7 @@
     // ── Config Loading ──
     async function loadConfig() {
       try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token);
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`);
         if (!res.ok) throw new Error("Could not load config");
         const data = await res.json();
         configSha = data.sha;
@@ -928,13 +1056,19 @@
 
     // Clean HTML output from a Quill host. Strips empty <p>s and trailing breaks;
     // returns "" when the editor is effectively empty.
+    // All output passes through DOMPurify before it leaves the editor, so anything
+    // written to admin-config.json is guaranteed free of scripts/handlers/iframes.
     function getQuillHTML(host) {
       if (!host._quill) return "";
       let html = host._quill.root.innerHTML.trim();
-      // Quill's empty state is "<p><br></p>"; treat that as empty.
       if (html === "<p><br></p>") return "";
-      // Extra sanitisation: strip script/iframe/event handlers (Quill already strips on paste, belt-and-braces)
-      html = html.replace(/<(script|iframe)[\s\S]*?<\/\1>/gi, "").replace(/\son\w+="[^"]*"/gi, "");
+      if (typeof DOMPurify !== "undefined") {
+        html = DOMPurify.sanitize(html, {
+          ALLOWED_TAGS: ["a", "b", "strong", "i", "em", "u", "br", "p", "ul", "ol", "li"],
+          ALLOWED_ATTR: ["href", "target", "rel"],
+          ALLOW_DATA_ATTR: false,
+        });
+      }
       return html;
     }
 
@@ -1390,7 +1524,7 @@
       const label = sectionLabels[section] || section;
       try {
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(configData, null, 2) + "\n")));
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, {
           method: "PUT",
           body: JSON.stringify({
             message: `Update ${label} content via Atlas Admin`,
@@ -1442,7 +1576,7 @@
       loadingEl.textContent = "Loading history…";
 
       try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/commits?path=${encodeURIComponent(path)}&per_page=20`, token);
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/commits?path=${encodeURIComponent(path)}&per_page=20`);
         if (!res.ok) throw new Error(await translateGhError(res, "Could not load history"));
         const commits = await res.json();
         if (!commits.length) {
@@ -1480,17 +1614,17 @@
       if (!confirm(`Revert the ${label} to the state at commit ${sha.substring(0, 7)}? This will create a new commit and trigger a redeploy.`)) return;
       try {
         // Fetch the file contents at the target commit
-        const atRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}?ref=${sha}`, token);
+        const atRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}?ref=${sha}`);
         if (!atRes.ok) throw new Error(await translateGhError(atRes, "Could not fetch the historical version"));
         const atData = await atRes.json();
 
         // Fetch the current sha so we can PUT on top of it
-        const curRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`, token);
+        const curRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`);
         if (!curRes.ok) throw new Error(await translateGhError(curRes, "Could not fetch the current version"));
         const curData = await curRes.json();
 
         // PUT the historical content back
-        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`, token, {
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${historyCurrentPath}`, {
           method: "PUT",
           body: JSON.stringify({
             message: `Revert ${historyCurrentPath} to ${sha.substring(0, 7)} via Atlas Admin`,
@@ -1736,7 +1870,7 @@
     // Fetch the current CSV on load so we can diff against it when the admin uploads.
     async function fetchServerCSVForDiff() {
       try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`);
         if (!res.ok) return;
         const data = await res.json();
         const b64 = data.content.replace(/\n/g, "");
@@ -1749,16 +1883,16 @@
     }
 
     async function uploadCSV() {
-      if (!csvContent || !token) return;
+      if (!csvContent || !auth.get()) return;
       const btn = document.getElementById("csv-upload-btn");
       btn.disabled = true; btn.textContent = "Uploading...";
       hideMsg("csv-error"); hideMsg("csv-success");
       try {
-        const fileRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        const fileRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`);
         const fileData = fileRes.ok ? await fileRes.json() : null;
         const body = { message: "Update practices_master.csv via Atlas Admin", content: btoa(unescape(encodeURIComponent(csvContent))), branch: "main" };
         if (fileData?.sha) body.sha = fileData.sha;
-        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, { method: "PUT", body: JSON.stringify(body) });
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, { method: "PUT", body: JSON.stringify(body) });
         if (!putRes.ok) {
           const msg = await translateGhError(putRes, "CSV upload failed");
           showError("csv-error", msg);
@@ -1795,7 +1929,7 @@
       btn.disabled = true;
       btn.textContent = "Downloading…";
       try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`);
         if (!res.ok) throw new Error("Could not fetch master CSV");
         const data = await res.json();
         // GitHub returns base64-encoded content with embedded newlines
@@ -1830,7 +1964,7 @@
         try { await loadConfig(); } catch (e) { /* fall through; defaults will be used */ }
       }
       try {
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token);
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`);
         if (!res.ok) throw new Error(await translateGhError(res, "Could not load practices"));
         const data = await res.json();
         practicesState.sha = data.sha;
@@ -2055,7 +2189,7 @@
         const commitMsg = isNew
           ? `Add practice #${updated.id} (${updated.title.slice(0, 50)}) via Atlas Admin`
           : `Update practice #${updated.id} (${updated.title.slice(0, 50)}) via Atlas Admin`;
-        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, token, {
+        const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/practices_master.csv`, {
           method: "PUT",
           body: JSON.stringify({
             message: commitMsg,
@@ -2116,12 +2250,12 @@
       try {
         const content = await readFileAsBase64(file);
         // Fetch existing sha if the file already exists
-        const existingRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token);
+        const existingRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`);
         const existingSha = existingRes.ok ? (await existingRes.json()).sha : null;
 
         const putBody = { message: `Update image for practice #${id} via Atlas Admin`, content, branch: "main" };
         if (existingSha) putBody.sha = existingSha;
-        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token, { method: "PUT", body: JSON.stringify(putBody) });
+        const putRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, { method: "PUT", body: JSON.stringify(putBody) });
         if (!putRes.ok) throw new Error(await translateGhError(putRes, "Image upload failed"));
 
         const result = await putRes.json();
@@ -2198,7 +2332,7 @@
         const content = await readFileAsBase64(file);
 
         // Fetch existing logo sha if present (404 means new file)
-        const existingRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token);
+        const existingRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`);
         let existingSha = null;
         if (existingRes.ok) {
           const existing = await existingRes.json();
@@ -2213,7 +2347,7 @@
         };
         if (existingSha) logoBody.sha = existingSha;
 
-        const logoPutRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, token, {
+        const logoPutRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${targetPath}`, {
           method: "PUT",
           body: JSON.stringify(logoBody),
         });
@@ -2238,7 +2372,7 @@
 
         // Commit admin-config.json
         const configContent = btoa(unescape(encodeURIComponent(JSON.stringify(configData, null, 2) + "\n")));
-        const configRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, token, {
+        const configRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/admin-config.json`, {
           method: "PUT",
           body: JSON.stringify({
             message: `Update brand bar logo path for ${name} via Atlas Admin`,
@@ -2305,8 +2439,31 @@
     }
 
     // ── Helpers ──
-    function ghFetch(path, pat, opts = {}) {
-      return fetch(API + path, { ...opts, headers: { Authorization: `Bearer ${pat}`, Accept: "application/vnd.github.v3+json", "Content-Type": "application/json", ...(opts.headers || {}) } });
+    // Fetch a GitHub API path using the token stored in auth.get().
+    // On 401, auto-clear the session and send the user back to sign-in. Callers
+    // handle other non-OK statuses themselves via translateGhError.
+    async function ghFetch(path, opts = {}) {
+      const t = auth.get();
+      if (!t) {
+        // No active session — route the caller to the sign-in flow.
+        signOut();
+        throw new Error("Not signed in");
+      }
+      const res = await fetch(API + path, {
+        ...opts,
+        headers: {
+          Authorization: `Bearer ${t}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+          ...(opts.headers || {}),
+        },
+      });
+      if (res.status === 401) {
+        // Session expired/revoked — punt to sign-in rather than bubbling to every caller.
+        toastError("Session ended", "Your GitHub session ended. Please sign in again.");
+        signOut();
+      }
+      return res;
     }
 
     function showError(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.classList.remove("hidden"); }

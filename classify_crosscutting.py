@@ -17,7 +17,8 @@ from collections import defaultdict
 
 DRY_RUN = True
 
-CSV_PATH = "practices_master.csv"
+from pathlib import Path
+CSV_PATH = Path(__file__).resolve().parent / "practices_master.csv"
 
 # ---------------------------------------------------------------------------
 # Helpers
