@@ -35,6 +35,46 @@ The **Energy Transition Atlas** is a mobile-first single-page web application di
 | `worker/` | Cloudflare Worker source that proxies the GitHub Device Flow endpoints (admin sign-in) |
 | `.github/workflows/update-practices.yml` | GitHub Action: auto-regenerates JSX PRACTICES array when CSV is pushed |
 
+## Setup on a New Machine
+
+Everything needed to run this project from scratch. No Node, no build step.
+
+**Prerequisites:**
+- macOS (instructions assume this; Linux mostly works the same)
+- `git`
+- `python3.11` (Homebrew: `brew install python@3.11`)
+- `pip install requests beautifulsoup4 openpyxl` (for the Python scraper/pipeline scripts)
+- A modern browser (Chrome recommended — Claude Code's browser MCP requires it)
+
+**Clone and run:**
+```bash
+git clone https://github.com/RenewablesGridInitiative/energy-transition-atlas.git
+cd energy-transition-atlas
+python3.11 -m http.server 8080
+# Open http://localhost:8080 — the site renders from EnergyTransitionAtlas.jsx directly.
+```
+
+**Environment variables** (only needed when running the data pipeline):
+```bash
+export ETA_EXCEL_PATH=~/path/to/ETA_workbook.xlsx   # for build_master_csv.py
+# optional:
+export ETA_CSV_PATH=~/alt/practices_master.csv      # override CSV output path
+```
+
+**What's NOT in git** (copy manually if you want them on the new machine):
+- `ETA_Developer_Brief*.docx` / `.pdf` — project briefs
+- `Re: Atlas Brief for Devs.pdf`
+- `Energy Transition Atlas  Site Audit.pdf`
+- `ETA_Atlas_Prototype.jsx` — early prototype
+- `Claude_Code_Prompt.md` — original prompt
+- `Illustrations/` — design source material (~4 MB)
+- `panorama_raw.json` — scratch file regenerated each time you run the Panorama scraper
+- `.claude/` — Claude Code session state (new session on the new machine writes its own)
+
+None of these are required for the site to build or deploy. The site deploys automatically from GitHub Pages on every push to `main`.
+
+**For admin access on the new machine:** nothing extra needed. The GitHub App + Cloudflare Worker live on GitHub / Cloudflare — when an editor visits admin.html they click "Sign in with GitHub" and authorise the App. See the **Admin Page** section below for operator details.
+
 ## Data Pipeline
 
 ```
