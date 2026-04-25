@@ -1863,10 +1863,10 @@ export default function EnergyTransitionAtlas() {
               <p className="text-[#424244] text-sm mb-6">{contactConfig?.orgSubline || "For questions about the Atlas, submitting practices, or partnership enquiries:"}</p>
               <a
                 href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`}
-                className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-lg"
+                className="inline-flex max-w-full items-center gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-3.5 rounded-3xl sm:rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-sm sm:text-lg"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                {contactConfig?.email || "communication@renewables-grid.eu"}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <span className="min-w-0 break-all">{contactConfig?.email || "communication@renewables-grid.eu"}</span>
               </a>
               <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
                 {(contactConfig?.address || "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
