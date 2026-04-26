@@ -1096,7 +1096,7 @@ function SortDropdown({ value, onChange, compact }) {
 /* ══════════════════════════════════════════════════════════════════════════════
    FILTER DROPDOWN COMPONENT
    ══════════════════════════════════════════════════════════════════════════════ */
-function FilterDropdown({ label, options, selected, onChange, groups, searchable }) {
+const FilterDropdown = React.memo(function FilterDropdown({ label, options, selected, onChange, groups, searchable }) {
   const [open, setOpen] = useState(false);
   const [filterText, setFilterText] = useState("");
   const ref = useRef(null);
@@ -1176,7 +1176,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
         )}
       </button>
       {open && (
-        <div role="listbox" aria-label={`${label} options`} className="absolute z-50 mt-2 w-72 max-h-72 overflow-y-auto rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2">
+        <div role="listbox" aria-label={`${label} options`} className="absolute z-50 mt-2 w-72 max-w-[calc(100vw-1rem)] max-h-72 overflow-y-auto rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2">
           {searchable && (
             <div className="px-3 py-2 border-b border-[#C9C9C9]/50">
               <input type="text" value={filterText} onChange={e => setFilterText(e.target.value)}
@@ -1211,7 +1211,7 @@ function FilterDropdown({ label, options, selected, onChange, groups, searchable
       )}
     </div>
   );
-}
+});
 
 /* ══════════════════════════════════════════════════════════════════════════════
    PLACEHOLDER IMAGE
@@ -1437,9 +1437,12 @@ export default function EnergyTransitionAtlas() {
     { label: selDims.length ? `Topic (${selDims.join(", ")})` : "Topic", options: availableTopics, selected: selTopics, onChange: setSelTopics, searchable: true },
   ];
 
-  /* ── expanded filters ── */
+  /* ── expanded filters (Year arrays/handler memoized so React.memo on FilterDropdown can skip re-renders) ── */
+  const yearOptions = useMemo(() => allYears.map(String), [allYears]);
+  const selYearsStr = useMemo(() => selYears.map(String), [selYears]);
+  const onChangeYears = useCallback((arr) => setSelYears(arr.map(Number)), []);
   const expandedFilters = [
-    { label: "Year", options: allYears.map(String), selected: selYears.map(String), onChange: (arr) => setSelYears(arr.map(Number)) },
+    { label: "Year", options: yearOptions, selected: selYearsStr, onChange: onChangeYears },
     { label: "Location", options: allCountries, selected: selCountries, onChange: setSelCountries, groups: COUNTRY_REGIONS, searchable: true },
     { label: "Organisation", options: allOrgs, selected: selOrgs, onChange: setSelOrgs, searchable: true },
     { label: "Atlas Partner", options: allBrands, selected: selBrands, onChange: setSelBrands },
@@ -1860,10 +1863,10 @@ export default function EnergyTransitionAtlas() {
               <p className="text-[#424244] text-sm mb-6">{contactConfig?.orgSubline || "For questions about the Atlas, submitting practices, or partnership enquiries:"}</p>
               <a
                 href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`}
-                className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-lg"
+                className="flex max-w-full items-center gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-3.5 rounded-3xl sm:rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-sm sm:text-lg"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                {contactConfig?.email || "communication@renewables-grid.eu"}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <span className="min-w-0 break-all">{contactConfig?.email || "communication@renewables-grid.eu"}</span>
               </a>
               <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
                 {(contactConfig?.address || "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
@@ -1967,9 +1970,9 @@ export default function EnergyTransitionAtlas() {
                 </div>
               )}
 
-              {/* Mobile: Single row — Infrastructure, Theme, More, Sort */}
+              {/* Mobile: Wraps onto multiple rows — Infrastructure, Theme, More, Sort */}
               <div className="md:hidden">
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 flex-wrap">
                   {[basicFilters[0], basicFilters[1]].map((f) => (
                     <div key={f.label}>
                       <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
@@ -2222,9 +2225,9 @@ export default function EnergyTransitionAtlas() {
       {/* ─── 7. Footer ─── */}
       <footer className="bg-[#424244] px-6 py-10">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-x-6 gap-y-8 md:gap-10">
-            {/* Col 1: Logos + tagline */}
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-x-6 gap-y-8 md:gap-10">
+            {/* Col 1: Logos + tagline (always first) */}
+            <div>
               <div className="flex flex-nowrap items-center gap-6">
                 {(brandBarConfig?.owners || [
                   { name: "RGI", url: brandLinks.RGI, logo: "logos/rgi-white.svg" },
@@ -2244,8 +2247,8 @@ export default function EnergyTransitionAtlas() {
               </div>
               <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md" dangerouslySetInnerHTML={safeHtml(siteCopy?.footerTagline || "The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables.")} />
             </div>
-            {/* Col 2: Contact */}
-            <div>
+            {/* Contact — desktop col 2, mobile last (full-width) */}
+            <div className="order-3 md:order-2">
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Contact</h4>
               <p className="text-[#C9C9C9] text-sm leading-relaxed">
                 {contactConfig?.orgName || "Renewables Grid Initiative (RGI)"}<br />
@@ -2254,15 +2257,15 @@ export default function EnergyTransitionAtlas() {
                 ))}
               </p>
               <p className="mt-2">
-                <a href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`} className="text-[#FFF8E5] text-sm hover:text-white transition-colors">
+                <a href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`} className="text-[#FFF8E5] text-sm hover:text-white transition-colors break-words">
                   {contactConfig?.email || "communication@renewables-grid.eu"}
                 </a>
               </p>
             </div>
-            {/* Col 3: Links */}
-            <div>
+            {/* Links — desktop col 3, mobile second (2-col list) */}
+            <div className="order-2 md:order-3">
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Links</h4>
-              <ul className="space-y-2">
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-1">
                 <li><a href="#about" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">About</a></li>
                 <li><a href="#submit" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Submit a Practice</a></li>
                 <li><a href="#contact" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Contact</a></li>
