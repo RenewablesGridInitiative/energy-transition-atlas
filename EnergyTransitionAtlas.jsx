@@ -2267,7 +2267,7 @@ export default function EnergyTransitionAtlas() {
             {/* Links — desktop col 3, mobile second (2-col list) */}
             <div className="order-2 md:order-3">
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Links</h4>
-              <ul className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-1">
+              <ul className="grid grid-rows-3 grid-flow-col gap-x-4 gap-y-2 md:grid-rows-none md:grid-flow-row md:grid-cols-1">
                 <li><a href="#about" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">About</a></li>
                 <li><a href="#submit" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Submit a Practice</a></li>
                 <li><a href="#contact" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Contact</a></li>
