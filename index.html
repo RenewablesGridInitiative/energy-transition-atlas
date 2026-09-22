@@ -28,8 +28,10 @@
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net;
     style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data: https:;
+    img-src 'self' data: blob: https:;
     connect-src 'self' https://api.github.com https://raw.githubusercontent.com;
+    worker-src 'self';
+    child-src 'self';
     frame-ancestors 'none';
     base-uri 'self';
   " />
@@ -47,9 +49,21 @@
   <!-- DOMPurify — sanitises runtime-rendered HTML from admin-config.json -->
   <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" integrity="sha384-XQqX/4yiUGu+oyr87jvWzRuqBUK/adrY0DunhL+tID9m/9dwSpV8h9Fk/Sg6ifVQ"></script>
 
+  <!-- d3-array (peer dep of d3-geo) + d3-geo + topojson-client (Map view) -->
+  <script crossorigin="anonymous" src="https://unpkg.com/d3-array@3.2.4/dist/d3-array.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/d3-geo@3.1.0/dist/d3-geo.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+
   <style>
     /* guarantee full-viewport rendering */
     html, body, #root { margin: 0; padding: 0; min-height: 100vh; }
+    /* Filter menu: original ~288px, or viewport minus 20px sides — whichever is smaller */
+    .filter-dropdown-menu {
+      position: fixed;
+      width: max-content;
+      min-width: min(224px, calc(100vw - 40px));
+      max-width: min(288px, calc(100vw - 40px));
+    }
   </style>
 </head>
 <body>
@@ -63,7 +77,7 @@
   -->
   <script type="text/babel" data-type="module">
     // ── Destructure the hooks the component uses ──
-    const { useState, useMemo, useRef, useEffect, useCallback } = React;
+    const { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } = React;
 
     // ── Fetch the JSX source, patch it, and run it ──
     // cache: 'no-store' — bypass HTTP cache entirely. 'no-cache' only forces
@@ -103,9 +117,10 @@
           "useMemo",
           "useRef",
           "useEffect",
+          "useLayoutEffect",
           "useCallback",
           transformed + "\nreturn EnergyTransitionAtlas;"
-        )(React, useState, useMemo, useRef, useEffect, useCallback);
+        )(React, useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback);
 
         // Mount it
         const root = ReactDOM.createRoot(document.getElementById("root"));

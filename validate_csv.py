@@ -21,7 +21,13 @@ CSV_PATH = os.path.join(DIR, "practices_master.csv")
 CONFIG_PATH = os.path.join(DIR, "admin-config.json")
 
 HEADERS = ["id", "title", "url", "brand", "theme", "topic", "inf", "year",
-           "country", "org", "desc", "img", "award"]
+           "country", "org", "desc", "img", "img_copyright", "award"]
+# Older exports omit img_copyright; both shapes are valid. Missing credits
+# become empty strings in csv_to_jsx.py so the site still builds.
+HEADERS_WITHOUT_IMG_COPYRIGHT = [
+    "id", "title", "url", "brand", "theme", "topic", "inf", "year",
+    "country", "org", "desc", "img", "award",
+]
 DEFAULT_BRANDS = {"RGI", "OCEaN", "Panorama", "SL4B"}
 REQUIRED_NON_EMPTY = ("title", "url", "brand", "inf")
 URL_RE = re.compile(r"^https?://\S+$")
@@ -57,8 +63,14 @@ def validate(path):
         except StopIteration:
             return [(1, "header", "CSV is empty")]
 
-        if header != HEADERS:
-            return [(1, "header", f"First row must be exactly: {','.join(HEADERS)}")]
+        if header == HEADERS:
+            columns = HEADERS
+        elif header == HEADERS_WITHOUT_IMG_COPYRIGHT:
+            columns = HEADERS_WITHOUT_IMG_COPYRIGHT
+        else:
+            return [(1, "header",
+                     f"First row must be: {','.join(HEADERS)} "
+                     f"(img_copyright may be omitted)")]
 
         id_rows = {}
         max_year = datetime.datetime.now().year + 1
@@ -66,10 +78,10 @@ def validate(path):
 
         for idx, row in enumerate(reader):
             row_num = idx + 2  # header is row 1
-            if len(row) != len(HEADERS):
-                push(row_num, "(row)", f"expected {len(HEADERS)} columns, found {len(row)}")
+            if len(row) != len(columns):
+                push(row_num, "(row)", f"expected {len(columns)} columns, found {len(row)}")
                 continue
-            r = dict(zip(HEADERS, row))
+            r = dict(zip(columns, row))
 
             id_val = r["id"].strip()
             if not id_val:

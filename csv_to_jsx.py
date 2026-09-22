@@ -76,6 +76,8 @@ def csv_to_js_array(csv_path):
         org = json.dumps(field("org"), ensure_ascii=False)
         desc = json.dumps(field("desc"), ensure_ascii=False)
         img = json.dumps(field("img"), ensure_ascii=False)
+        # img_copyright is optional: older CSVs omit the column entirely.
+        img_copyright = json.dumps(r.get("img_copyright") or "", ensure_ascii=False)
 
         award_raw = (field("award") or "").strip().lower()
         if award_raw not in ("true", "false"):
@@ -86,7 +88,7 @@ def csv_to_js_array(csv_path):
             f"  {{ id: {_id}, title: {title}, url: {url}, brand: {brand}, "
             f"dim: {dim}, topic: {topic}, inf: {inf}, year: {year}, "
             f"country: {country}, org: {org}, desc: {desc}, img: {img}, "
-            f"award: {award} }},"
+            f"imgCopyright: {img_copyright}, award: {award} }},"
         )
         lines.append(line)
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 
 /**
  * @typedef {Object} Practice
@@ -14,6 +14,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
  * @property {string} org
  * @property {string} desc
  * @property {string} img
+ * @property {string} imgCopyright
  * @property {boolean} award
  */
 
@@ -33,31 +34,52 @@ function useDebounce(value, delayMs) {
 }
 
 // Sanitise HTML before passing to dangerouslySetInnerHTML.
-// DOMPurify is loaded in index.html; if it's ever missing (dev or if the script
-// fails to load), we still strip the obvious dangerous tags and attributes so
-// a script tag in admin-config.json can never execute.
-function safeHtml(html) {
+// DOMPurify is loaded in index.html before this script runs.
+const SANITIZE_ATTR = ["href", "target", "rel", "class", "style", "title", "download", "hreflang", "id", "name", "aria-label"];
+const SANITIZE_TAGS = ["a", "b", "strong", "i", "em", "u", "br", "p", "ul", "ol", "li", "span", "hr"];
+const SANITIZE_TAGS_RICH = [...SANITIZE_TAGS, "h1", "h2", "h3", "h4", "h5", "h6"];
+
+function sanitizeHtml(html, { rich = false } = {}) {
   const raw = typeof html === "string" ? html : "";
-  if (typeof window !== "undefined" && window.DOMPurify) {
-    return { __html: window.DOMPurify.sanitize(raw, {
-      ALLOWED_TAGS: ["a", "b", "strong", "i", "em", "u", "br", "p", "ul", "ol", "li", "span"],
-      ALLOWED_ATTR: ["href", "target", "rel", "class"],
-      ALLOW_DATA_ATTR: false,
-    }) };
-  }
-  const stripped = raw
-    .replace(/<(script|iframe|object|embed|style|link|meta)[\s\S]*?<\/\1>/gi, "")
-    .replace(/<\/?(script|iframe|object|embed|style|link|meta)[^>]*>/gi, "")
-    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
-    .replace(/\son\w+\s*=\s*'[^']*'/gi, "");
-  return { __html: stripped };
+  return { __html: DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: rich ? SANITIZE_TAGS_RICH : SANITIZE_TAGS,
+    ALLOWED_ATTR: SANITIZE_ATTR,
+    ALLOW_DATA_ATTR: false,
+  }) };
 }
+
+function isSafeFooterHref(href) {
+  if (!href) return false;
+  if (href.startsWith("#")) return true;
+  try {
+    const { protocol } = new URL(href);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+// admin-config.json may store [] or {} as placeholders; treat those as missing.
+function configOrDefault(value, fallback) {
+  if (value == null) return fallback;
+  if (Array.isArray(value)) return value.length > 0 ? value : fallback;
+  if (typeof value === "object") return Object.keys(value).length > 0 ? value : fallback;
+  return value;
+}
+
+const DEFAULT_FOOTER_LINKS = [
+  { label: "About", href: "#about" },
+  { label: "Submit a Practice", href: "#submit" },
+  { label: "Contact", href: "#contact" },
+  { label: "GitHub", href: "https://github.com/RenewablesGridInitiative/energy-transition-atlas" },
+  { label: "Imprint & Privacy Policy", href: "https://renewables-grid.eu/privacy-policy/" },
+];
 
 /* ==== SECTION: DATA LAYER ==== */
 
 /* ──────────────────────────────────────────────────────────────────────────────
    PRACTICE DATA  (309 records from master CSV)
-   Schema: { id, title, url, brand, dim, topic, inf, year, country, org, desc, img, award }
+   Schema: { id, title, url, brand, dim, topic, inf, year, country, org, desc, img, imgCopyright, award }
    ────────────────────────────────────────────────────────────────────────────── */
 const PRACTICES = [
   { id: 1, title: "Regional investments for onshore high voltage energy infrastructure", url: "https://renewables-grid.eu/database/dutch-scheme/", brand: "RGI", dim: ["Planning"], topic: ["Public Acceptance & Engagement"], inf: "Energy system", year: 2026, country: "Netherlands", org: "MINEZK", desc: "To support the expansion of the national extra high voltage grid in the upcoming years, the Dutch Ministry of Climate Policy and Green Growth actively invests in improving the quality of life in communities affected by high-voltage grid projects in the Netherlands. Highlights 01 The amount of funding received by communities will depend on the […]", img: "https://renewables-grid.eu/app/uploads/2026/02/2026_Database_Minezk_RegionalInvestments1-644x398-c-default.png", award: false },
@@ -453,7 +475,7 @@ const BRAND_LINKS = {
    ══════════════════════════════════════════════════════════════════════════════ */
 const PURPLE   = "#6B21A8";
 const CREAM    = "#FFF8E5";
-const CHARCOAL = "#424244";
+const CHARCOAL = "#363636";
 const LTGREY   = "#C9C9C9";
 const INITIAL_ITEMS = 21;
 const LOAD_MORE_INCREMENT = 21;
@@ -498,6 +520,38 @@ const COUNTRY_NORMALIZE = {
 };
 const normalizeCountry = (c) => COUNTRY_NORMALIZE[c] || c;
 
+/** Individual location names for map outlines / filters. Combined CSV values
+ *  ("France, Belgium") become ["France", "Belgium"]. Marshall Islands is kept
+ *  intact even though Natural Earth 110m has no polygon for it. */
+function expandCountryNames(country) {
+  const n = normalizeCountry(country);
+  if (!n) return [];
+  if (n === "Marshall Islands") return [n];
+  return n.split(/\s*,\s*/).filter(Boolean);
+}
+
+/** Normalized Location-filter labels. Combined CSV values ("France, Belgium")
+ *  stay one label here; expandCountryNames still splits them for map outlines. */
+const COUNTRY_LABELS = new Set(
+  PRACTICES.map((p) => normalizeCountry(p.country)).filter(Boolean)
+);
+
+/** Repeated ?country= params so a combined value round-trips as one selection.
+ *  A single comma-delimited param is kept whole when it matches a known label,
+ *  otherwise split for legacy bookmarks (?country=France,Belgium). */
+function parseCountryParams(search) {
+  const raw = new URLSearchParams(search).getAll("country").filter(Boolean);
+  if (raw.length === 0) return [];
+  if (raw.length > 1) return raw;
+  const v = raw[0];
+  if (!v.includes(",") || COUNTRY_LABELS.has(v)) return [v];
+  return v.split(/\s*,\s*/).filter(Boolean);
+}
+
+function appendCountryParams(params, countries) {
+  for (const c of countries) params.append("country", c);
+}
+
 /* Region groupings for Location filter */
 const COUNTRY_REGIONS = {
   "Northern Europe": ["Denmark", "Estonia", "Finland", "Iceland", "Ireland", "Latvia", "Lithuania", "Norway", "Sweden", "United Kingdom"],
@@ -508,6 +562,9 @@ const COUNTRY_REGIONS = {
   "Americas": ["Brazil", "Peru", "United States"],
   "Multi-country": ["Europe", "Worldwide"],
 };
+// Not country polygons — Location-filter group, map chips, and selection
+// that must not mix with clicked outlines all share this list.
+const REGION = new Set(COUNTRY_REGIONS["Multi-country"]);
 
 /* Organisation normalization (UI-layer only — CSV untouched) */
 const ORG_NORMALIZE = {
@@ -599,10 +656,66 @@ const normalizeOrg = (o) => ORG_NORMALIZE[o] || o;
 const allTopics    = [...new Set(PRACTICES.flatMap(p => p.topic || []))].filter(Boolean).sort();
 const allBrands    = [...new Set(PRACTICES.map(p => p.brand))].filter(Boolean).sort();
 const allDims      = [...new Set(PRACTICES.flatMap(p => p.dim || []))].filter(Boolean).sort();
-const allCountries = [...new Set(PRACTICES.map(p => normalizeCountry(p.country)))].filter(Boolean).sort();
+const allCountries = [...COUNTRY_LABELS].sort();
 const allYears     = [...new Set(PRACTICES.map(p => p.year))].filter(y => y != null).sort((a, b) => b - a);
 const allInfra     = [...new Set(PRACTICES.map(p => p.inf))].filter(Boolean).sort();
 const allOrgs      = [...new Set(PRACTICES.map(p => normalizeOrg(p.org)))].filter(Boolean).sort();
+
+/** Same rules as main results list; set `skipCountryFilter` to build per-country map availability while a location is selected. */
+function practiceMatchesFilters(
+  p,
+  {
+    debouncedSearch,
+    selTopics,
+    selBrands,
+    selDims,
+    selCountries,
+    selYears,
+    selInfra,
+    selOrgs,
+  },
+  skipCountryFilter
+) {
+  if (debouncedSearch) {
+    const q = debouncedSearch.toLowerCase();
+    const topicStr = Array.isArray(p.topic) ? p.topic.join(" ") : (p.topic || "");
+    const dimStr = Array.isArray(p.dim) ? p.dim.join(" ") : (p.dim || "");
+    const hay = `${p.title} ${p.desc} ${p.org} ${topicStr} ${p.country} ${dimStr}`.toLowerCase();
+    const tokens = q.split(/\s+/).filter(Boolean);
+    if (!tokens.every(tok => hay.includes(tok))) return false;
+  }
+  if (selTopics.length) {
+    const pTopics = p.topic || [];
+    if (!pTopics.some(t => selTopics.includes(t))) return false;
+  }
+  if (selBrands.length && !selBrands.includes(p.brand)) return false;
+  if (selDims.length) {
+    const pDims = p.dim || [];
+    if (!pDims.some(d => selDims.includes(d))) return false;
+  }
+  if (!skipCountryFilter && selCountries.length) {
+    const n = normalizeCountry(p.country);
+    const names = expandCountryNames(p.country);
+    if (!selCountries.some((s) => s === n || names.includes(s))) return false;
+  }
+  if (selYears.length && !selYears.includes(p.year)) return false;
+  if (selInfra.length) {
+    const pInfra = p.inf ? p.inf.split(/[;,]\s*/) : [];
+    if (!pInfra.some(i => selInfra.includes(i))) return false;
+  }
+  if (selOrgs.length && !selOrgs.includes(normalizeOrg(p.org))) return false;
+  return true;
+}
+
+function sortFilteredPractices(results, sortMode) {
+  switch (sortMode) {
+    case "oldest": results.sort((a, b) => (a.year ?? 0) - (b.year ?? 0)); break;
+    case "az":     results.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case "za":     results.sort((a, b) => b.title.localeCompare(a.title)); break;
+    default:       results.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)); break;
+  }
+  return results;
+}
 
 /* ── Helper: get filtered topics based on selected dimensions ── */
 function getFilteredTopics(selectedDims) {
@@ -641,10 +754,11 @@ const IconGridView = () => (
   </svg>
 );
 
-const IconSettings = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <circle cx="6" cy="6" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="6" cy="18" r="2" /><circle cx="18" cy="18" r="2" />
-    <circle cx="12" cy="12" r="2" />
+const IconMapView = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a20 20 0 0 0 0 18M12 3a20 20 0 0 1 0 18" />
+    <ellipse cx="12" cy="12" rx="4" ry="9" />
   </svg>
 );
 
@@ -688,12 +802,6 @@ const IconX = () => (
   </svg>
 );
 
-const IconChevronLeft = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
-
 const IconChevronRight = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <polyline points="9 6 15 12 9 18" />
@@ -717,11 +825,381 @@ const IconAward = () => (
     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
   </svg>
 );
-const IconSort = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 12h12M3 18h6" />
-  </svg>
-);
+/* ══════════════════════════════════════════════════════════════════════════════
+   MAP (click countries to filter location)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+// Local Natural Earth 110m TopoJSON (from world-atlas@2.0.2). Country labels
+// live in each geometry's properties.name — edit that JSON to match practice
+// country strings (e.g. "United States") instead of aliasing at click time.
+const WORLD_ATLAS_URL = "geo/countries-110m.json";
+
+function WorldMap({ availabilityFiltered, selCountries, setSelCountries }) {
+  const d3g = window.d3;
+  const boxRef = useRef(null);
+  const svgRef = useRef(null);
+  const [geo, setGeo] = useState(null);
+  const [err, setErr] = useState(null);
+  const [dims, setDims] = useState({ w: 640, h: 320 });
+  const [view, setView] = useState({ k: 1, x: 0, y: 0 });
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const dimsRef = useRef(dims);
+  dimsRef.current = dims;
+  const gRef = useRef(null);
+  const pctRef = useRef(null);
+  const pan = useRef(null);
+  const pinch = useRef(null);
+  const pointers = useRef(new Map());
+  const skipClick = useRef(false);
+  const wheelCommit = useRef(0);
+
+  const paintView = useCallback((v) => {
+    viewRef.current = v;
+    const { w, h } = dimsRef.current;
+    const cx = w / 2;
+    const cy = h / 2;
+    gRef.current?.setAttribute("transform", `translate(${v.x},${v.y}) translate(${cx},${cy}) scale(${v.k}) translate(${-cx},${-cy})`);
+    if (pctRef.current) pctRef.current.textContent = `${Math.round(v.k * 100)}%`;
+  }, []);
+  const commitView = useCallback(() => setView({ ...viewRef.current }), []);
+
+  const pickCountry = (label, shift) =>
+    setSelCountries((prev) => {
+      const countries = prev.filter((x) => !REGION.has(x));
+      if (!shift) return [label];
+      const next = new Set(countries);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return [...next];
+    });
+  const pickRegion = (label) =>
+    setSelCountries((prev) => {
+      if (prev.includes(label)) return prev.filter((x) => x !== label);
+      return [...prev.filter((x) => REGION.has(x)), label];
+    });
+
+  useEffect(() => {
+    let live = true;
+    fetch(WORLD_ATLAS_URL)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load map geography");
+        return r.json();
+      })
+      .then((topo) => {
+        if (live) setGeo(window.topojson.feature(topo, topo.objects.countries));
+      })
+      .catch((e) => {
+        if (live) setErr(e.message || "Could not load map geography.");
+      });
+    return () => { live = false; };
+  }, []);
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.max(280, entry.contentRect.width);
+      setDims({ w, h: Math.max(260, Math.min(520, w * 0.52)) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const { pathGen, features } = useMemo(() => {
+    if (!geo || !d3g?.geoNaturalEarth1 || !d3g?.geoPath) return { pathGen: null, features: [] };
+    const projection = d3g.geoNaturalEarth1().precision(0.1);
+    try {
+      projection.fitExtent([[1, 1], [dims.w - 1, dims.h - 1]], geo);
+    } catch (e) { /* ignore */ }
+    return { pathGen: d3g.geoPath(projection), features: geo.features || [] };
+  }, [geo, dims, d3g]);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || !geo) return;
+    const onWheel = (e) => {
+      e.preventDefault();
+      const factor = e.deltaY > 0 ? 1 / 1.12 : 1.12;
+      const rect = svg.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (dims.w / rect.width);
+      const my = (e.clientY - rect.top) * (dims.h / rect.height);
+      const cx = dims.w / 2;
+      const cy = dims.h / 2;
+      const v = viewRef.current;
+      const k1 = Math.min(16, Math.max(1, v.k * factor));
+      let next = { k: 1, x: 0, y: 0 };
+      if (k1 > 1.001) {
+        const ux = (mx - cx - v.x) / v.k;
+        const uy = (my - cy - v.y) / v.k;
+        next = { k: k1, x: mx - cx - k1 * ux, y: my - cy - k1 * uy };
+      }
+      paintView(next);
+      clearTimeout(wheelCommit.current);
+      wheelCommit.current = setTimeout(commitView, 80);
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      clearTimeout(wheelCommit.current);
+      wheelCommit.current = 0;
+      svg.removeEventListener("wheel", onWheel);
+    };
+  }, [geo, dims.w, dims.h, paintView, commitView]);
+
+  const withData = useMemo(
+    () => new Set(
+      availabilityFiltered.flatMap((p) =>
+        expandCountryNames(p.country).filter((name) => name !== "Marshall Islands")
+      )
+    ),
+    [availabilityFiltered]
+  );
+  const selectedOutlines = useMemo(
+    () => new Set(selCountries.flatMap(expandCountryNames)),
+    [selCountries]
+  );
+
+  const cx = dims.w / 2;
+  const cy = dims.h / 2;
+  const transform = `translate(${view.x},${view.y}) translate(${cx},${cy}) scale(${view.k}) translate(${-cx},${-cy})`;
+  const zoomBtn = "px-2 py-1 rounded border border-[#C9C9C9] text-xs text-[#363636] bg-white hover:border-[#6B21A8]";
+  const blockMapFocus = (e) => {
+    if (e.target !== e.currentTarget) e.target.blur();
+  };
+
+  const onPointerDown = (e) => {
+    skipClick.current = false;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size >= 2) {
+      const pts = [...pointers.current.values()];
+      pinch.current = { dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) };
+      pan.current = null;
+      skipClick.current = true;
+      pointers.current.forEach((_, id) => {
+        try { svgRef.current.setPointerCapture(id); } catch (_) { /* ignore */ }
+      });
+      return;
+    }
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (viewRef.current.k <= 1) return;
+    pan.current = { x: e.clientX, y: e.clientY, ox: viewRef.current.x, oy: viewRef.current.y, dragged: false };
+  };
+  const onPointerMove = (e) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.current && pointers.current.size >= 2) {
+      const pts = [...pointers.current.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const prev = pinch.current.dist;
+      pinch.current.dist = dist;
+      if (prev > 8 && dist > 8) {
+        skipClick.current = true;
+        const factor = dist / prev;
+        const svg = svgRef.current;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        const mx = ((pts[0].x + pts[1].x) / 2 - rect.left) * (dims.w / rect.width);
+        const my = ((pts[0].y + pts[1].y) / 2 - rect.top) * (dims.h / rect.height);
+        const v = viewRef.current;
+        const k1 = Math.min(16, Math.max(1, v.k * factor));
+        if (k1 <= 1.001) paintView({ k: 1, x: 0, y: 0 });
+        else {
+          const ux = (mx - cx - v.x) / v.k;
+          const uy = (my - cy - v.y) / v.k;
+          paintView({ k: k1, x: mx - cx - k1 * ux, y: my - cy - k1 * uy });
+        }
+      }
+      return;
+    }
+    const p = pan.current;
+    if (!p) return;
+    if (!p.dragged && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) return;
+    if (!p.dragged) {
+      p.dragged = true;
+      try { svgRef.current.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    }
+    const rect = svgRef.current.getBoundingClientRect();
+    paintView({
+      k: viewRef.current.k,
+      x: p.ox + (e.clientX - p.x) * (dims.w / rect.width),
+      y: p.oy + (e.clientY - p.y) * (dims.h / rect.height),
+    });
+  };
+  const endPan = (e) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    if (pan.current?.dragged) skipClick.current = true;
+    pan.current = null;
+    try { svgRef.current?.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    commitView();
+  };
+
+  if (!d3g?.geoPath || !d3g?.geoNaturalEarth1) {
+    return (
+      <div className="rounded-xl border border-[#C9C9C9] bg-white p-6 text-sm text-[#767676]">
+        Map library failed to load (d3-geo).
+      </div>
+    );
+  }
+
+  return (
+    <div aria-hidden="true" onFocusCapture={blockMapFocus}>
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        {COUNTRY_REGIONS["Multi-country"].map((label) => {
+          const has = withData.has(label);
+          const on = selCountries.includes(label);
+          return (
+            <div
+              key={label}
+              onClick={has ? () => pickRegion(label) : undefined}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                !has
+                  ? "border-[#C9C9C9] text-[#C9C9C9] cursor-not-allowed bg-white/50"
+                  : on
+                    ? "border-[#6B21A8] bg-[#6B21A8] text-white cursor-pointer"
+                    : "border-[#6B21A8]/40 text-[#6B21A8] bg-white hover:border-[#6B21A8] cursor-pointer"
+              }`}
+            >
+              {label}
+            </div>
+          );
+        })}
+      </div>
+      <div ref={boxRef} className="w-full rounded-xl border border-[#C9C9C9] bg-[#fafafa] overflow-hidden shadow-sm">
+        {err ? (
+          <div style={{ minHeight: dims.h }} className="flex items-center justify-center text-red-700 text-sm px-4 text-center">{err}</div>
+        ) : !geo ? (
+          <div style={{ minHeight: dims.h }} className="flex items-center justify-center text-[#6B6B6D] text-sm">Loading map…</div>
+        ) : (
+          <svg
+            ref={svgRef}
+            width="100%"
+            height={dims.h}
+            viewBox={`0 0 ${dims.w} ${dims.h}`}
+            className={`block touch-manipulation select-none ${view.k > 1 ? "cursor-grab" : ""}`}
+            style={{ touchAction: "none" }}
+            focusable="false"
+            tabIndex={-1}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endPan}
+            onPointerCancel={endPan}
+          >
+            <g ref={gRef} transform={transform} style={{ willChange: "transform" }}>
+              <rect
+                width={dims.w}
+                height={dims.h}
+                fill="#fafafa"
+                onClick={() => {
+                  if (skipClick.current) { skipClick.current = false; return; }
+                  setSelCountries([]);
+                }}
+              />
+              {features.map((f, i) => {
+                const d = pathGen(f);
+                if (!d) return null;
+                const label = (f.properties?.name || "").trim();
+                const selected = !!label && selectedOutlines.has(label);
+                const has = !!label && withData.has(label);
+                const live = has || selected;
+                return (
+                  <path
+                    key={f.id || i}
+                    d={d}
+                    fill={selected ? "#6B21A8" : has ? "#a855f7" : "#b8b8b8"}
+                    stroke="#fff"
+                    strokeOpacity={0.4}
+                    strokeWidth={0.3}
+                    style={{ pointerEvents: live ? "auto" : "none" }}
+                    className={live ? "cursor-pointer" : undefined}
+                    focusable="false"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (skipClick.current) { skipClick.current = false; return; }
+                      if (live) pickCountry(label, e.shiftKey);
+                    }}
+                  />
+                );
+              })}
+            </g>
+          </svg>
+        )}
+      </div>
+      <div className="flex items-center justify-end gap-1.5 mt-2">
+        <div className={`${zoomBtn} cursor-pointer`} onClick={() => setView((v) => ({ ...v, k: Math.min(16, v.k * 1.2) }))}>+</div>
+        <div className={`${zoomBtn} cursor-pointer`} onClick={() => setView((v) => { const k = Math.max(1, v.k / 1.2); return k <= 1.02 ? { k: 1, x: 0, y: 0 } : { ...v, k }; })}>−</div>
+        <div className={`${zoomBtn} cursor-pointer`} onClick={() => setView({ k: 1, x: 0, y: 0 })}>Reset</div>
+        <span ref={pctRef} className="text-[10px] text-[#6B6B6D] w-10 tabular-nums">{Math.round(view.k * 100)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function AtlasPracticeListRow({ p, onSelect, getThemeClasses }) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(p)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(p);
+        }
+      }}
+      className="block py-4 px-3 -mx-3 rounded-lg group cursor-pointer hover:bg-white/60 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
+    >
+      <div className="flex items-center gap-2">
+        <h3 className="text-base font-bold text-[#363636] group-hover:text-[#6B21A8] transition-colors">
+          {p.title}
+        </h3>
+        {p.award && (
+          <span className="text-[#6B21A8]" title="RGI Grid Awards Winner">
+            <IconAward />
+          </span>
+        )}
+      </div>
+      <div className="mt-1.5 flex items-center gap-4 text-xs text-[#6B6B6D] flex-wrap">
+        {p.country && (
+          <span className="flex items-center gap-1">
+            <IconPin />
+            {truncateText(p.country)}
+          </span>
+        )}
+        {p.year && (
+          <span className="flex items-center gap-1">
+            <IconCalendar />
+            {p.year}
+          </span>
+        )}
+        {p.org && (
+          <span className="flex items-center gap-1">
+            <IconBuilding />
+            {truncateText(p.org)}
+          </span>
+        )}
+        {p.inf && (
+          <span className="flex items-center gap-1">
+            <IconLayers />
+            {p.inf}
+          </span>
+        )}
+      </div>
+      <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+        {(p.dim || []).map((d) => (
+          <span key={d} className={`text-xs border rounded-full px-2.5 py-0.5 ${getThemeClasses(d)}`}>
+            {d}
+          </span>
+        ))}
+        {p.topic?.length > 0 && (
+          <span className="text-xs border border-[#6B21A8]/30 text-[#6B21A8] rounded-full px-2.5 py-0.5">
+            {p.topic[0]}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    HERO ANIMATED GRAPHIC (desktop only)
@@ -981,7 +1459,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses,
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-3">
           <h2 id="practice-modal-title" className="font-['League_Gothic'] text-[#6B21A8] text-2xl lg:text-3xl uppercase tracking-wide pr-4">{p.title}</h2>
-          <button onClick={onClose} className="ml-4 mt-1 text-[#424244] hover:text-[#6B21A8] hover:bg-[#424244]/10 transition-colors text-2xl leading-none flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full" aria-label="Close">×</button>
+          <button onClick={onClose} className="ml-4 mt-1 text-[#363636] hover:text-[#6B21A8] hover:bg-[#363636]/10 transition-colors text-2xl leading-none flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full" aria-label="Close">×</button>
         </div>
         <div className="px-6 pb-6">
           {/* Theme + ALL topic badges */}
@@ -994,7 +1472,7 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses,
             ))}
           </div>
           {/* Metadata */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[#424244] mb-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[#363636] mb-4">
             {p.country && <div className="flex items-center gap-1.5"><IconPin /><span>{p.country}</span></div>}
             {p.year && <div className="flex items-center gap-1.5"><IconCalendar /><span>{p.year}</span></div>}
             {p.org && <div className="flex items-center gap-1.5"><IconBuilding /><span>{p.org}</span></div>}
@@ -1003,19 +1481,24 @@ function PracticeDetailModal({ practice, onClose, themeClasses: getThemeClasses,
           {p.award && <div className="flex items-center gap-1.5 text-[#6B21A8] text-sm font-medium mb-4"><IconAward /><span>RGI Grid Awards: Good Practice of the Year{p.year ? ` (${p.year})` : ""}</span></div>}
           {/* Description */}
           {p.desc ? (
-            <p className="text-sm text-[#424244] leading-relaxed mb-4">{p.desc}</p>
+            <p className="text-sm text-[#363636] leading-relaxed mb-4">{p.desc}</p>
           ) : (
             <p className="text-sm text-[#767676] italic mb-4">No description available.</p>
           )}
           {/* Atlas Partner */}
-          {p.brand && (
-            <p className="text-xs text-[#6B6B6D] mb-6">
-              Atlas Partner: <a href={brandLinks?.[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#6B21A8] font-medium hover:underline">{atlasPartnerLabels?.[p.brand] || p.brand}</a>
-            </p>
+          {(p.brand || p.imgCopyright) && (
+            <div className="text-xs text-[#6B6B6D] mb-6 space-y-1">
+              {p.brand && (
+                <p>
+                  Atlas Partner: <a href={brandLinks?.[p.brand]} target="_blank" rel="noopener noreferrer" className="text-[#6B21A8] font-medium hover:underline">{atlasPartnerLabels?.[p.brand] || p.brand}</a>
+                </p>
+              )}
+              {p.imgCopyright && <p>Image copyright: {p.imgCopyright}</p>}
+            </div>
           )}
           {/* Actions */}
           <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-[#C9C9C9] text-[#424244] text-sm font-medium hover:border-[#6B21A8] transition-colors">Close</button>
+            <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-[#C9C9C9] text-[#363636] text-sm font-medium hover:border-[#6B21A8] transition-colors">Close</button>
             <a href={p.url} target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 rounded-full bg-[#6B21A8] text-white text-sm font-medium hover:bg-[#6B21A8]/90 transition-colors inline-flex items-center gap-2">
               Go to practice <IconChevronRight />
             </a>
@@ -1046,34 +1529,74 @@ const SORT_OPTIONS = [
   { value: "za", label: "Z - A" },
 ];
 
-function SortDropdown({ value, onChange, compact }) {
+const DROPDOWN_VIEWPORT_MARGIN = 20;
+
+/** Place a dropdown next to its trigger; shift only enough to keep a 20px viewport margin. */
+function pinDropdownInViewport(triggerEl, menuEl) {
+  if (!triggerEl || !menuEl) return;
+
+  const margin = DROPDOWN_VIEWPORT_MARGIN;
+  const vw = document.documentElement.clientWidth;
+  const trigger = triggerEl.getBoundingClientRect();
+
+  menuEl.style.top = `${trigger.bottom + 8}px`;
+  menuEl.style.left = `${trigger.left}px`;
+
+  const width = menuEl.getBoundingClientRect().width;
+  let left = trigger.left;
+  if (left + width > vw - margin) left = vw - margin - width;
+  if (left < margin) left = margin;
+  menuEl.style.left = `${left}px`;
+}
+
+function usePinnedDropdown(open, layoutKey) {
+  const wrapRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const pin = () => pinDropdownInViewport(wrapRef.current, menuRef.current);
+    pin();
+    window.addEventListener("resize", pin);
+    window.addEventListener("scroll", pin, true);
+    return () => {
+      window.removeEventListener("resize", pin);
+      window.removeEventListener("scroll", pin, true);
+    };
+  }, [open, layoutKey]);
+
+  return { wrapRef, menuRef };
+}
+
+function SortDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const { wrapRef, menuRef } = usePinnedDropdown(open);
 
   useEffect(() => {
     function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [wrapRef]);
 
   const current = SORT_OPTIONS.find((o) => o.value === value) || SORT_OPTIONS[0];
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={wrapRef} className="relative flex-shrink-0">
       <button
         onClick={() => setOpen(!open)}
         aria-label="Sort practices"
-        className={compact
-          ? "p-2.5 rounded-full border border-[#C9C9C9] text-[#424244] hover:border-[#6B21A8] transition-colors bg-white"
-          : "flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-sm text-[#424244] hover:border-[#6B21A8] transition-colors bg-white"
-        }
+        className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-sm text-[#363636] hover:border-[#6B21A8] transition-colors bg-white whitespace-nowrap flex-shrink-0"
       >
-        {compact ? <IconSort /> : <><span>{current.label}</span><IconChevronDown /></>}
+        <span>{current.label}</span><IconChevronDown />
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-44 rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2">
+        <div
+          ref={menuRef}
+          className="z-50 w-44 rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2"
+          style={{ position: "fixed" }}
+        >
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -1081,7 +1604,7 @@ function SortDropdown({ value, onChange, compact }) {
               className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                 opt.value === value
                   ? "text-[#6B21A8] font-medium bg-[#FFF8E5]"
-                  : "text-[#424244] hover:bg-[#FFF8E5]"
+                  : "text-[#363636] hover:bg-[#FFF8E5]"
               }`}
             >
               {opt.label}
@@ -1099,16 +1622,16 @@ function SortDropdown({ value, onChange, compact }) {
 const FilterDropdown = React.memo(function FilterDropdown({ label, options, selected, onChange, groups, searchable }) {
   const [open, setOpen] = useState(false);
   const [filterText, setFilterText] = useState("");
-  const ref = useRef(null);
+  const { wrapRef, menuRef } = usePinnedDropdown(open, filterText);
   const buttonRef = useRef(null);
 
   useEffect(() => {
     function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [wrapRef]);
 
   useEffect(() => { if (!open) setFilterText(""); }, [open]);
 
@@ -1147,15 +1670,15 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
       key={String(opt)}
       role="option"
       aria-selected={selected.includes(opt)}
-      className="flex items-center gap-2 px-4 py-2.5 hover:bg-[#FFF8E5] cursor-pointer text-sm text-[#424244]"
+      className="flex items-start gap-2 pl-4 pr-5 py-2.5 hover:bg-[#FFF8E5] cursor-pointer text-sm text-[#363636]"
     >
-      <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="accent-[#6B21A8] w-4 h-4" />
-      <span>{String(opt)}</span>
+      <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="accent-[#6B21A8] w-4 h-4 flex-shrink-0 mt-0.5" />
+      <span className="min-w-0 whitespace-normal">{String(opt)}</span>
     </label>
   );
 
   return (
-    <div ref={ref} className="relative" onKeyDown={handleKeyDown}>
+    <div ref={wrapRef} className="relative flex-shrink-0" onKeyDown={handleKeyDown}>
       <button
         ref={buttonRef}
         onClick={() => setOpen(!open)}
@@ -1168,7 +1691,7 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
             : "bg-white text-[#6B21A8] border-[#6B21A8]"
         }`}
       >
-        <span className="truncate">{label}{active ? ` (${selected.length})` : ""}</span>
+        <span className="truncate">{label}</span>
         {active ? (
           <span className="flex-shrink-0" onClick={(e) => { e.stopPropagation(); onChange([]); }}><IconX /></span>
         ) : (
@@ -1176,9 +1699,14 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
         )}
       </button>
       {open && (
-        <div role="listbox" aria-label={`${label} options`} className="absolute z-50 mt-2 w-72 max-w-[calc(100vw-1rem)] max-h-72 overflow-y-auto rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2">
+        <div
+          ref={menuRef}
+          role="listbox"
+          aria-label={`${label} options`}
+          className="filter-dropdown-menu z-50 max-h-72 overflow-y-auto rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2"
+        >
           {searchable && (
-            <div className="px-3 py-2 border-b border-[#C9C9C9]/50">
+            <div className="pl-3 pr-4 py-2 border-b border-[#C9C9C9]/50">
               <input type="text" value={filterText} onChange={e => setFilterText(e.target.value)}
                 placeholder={`Search ${label.toLowerCase()}...`}
                 className="w-full px-3 py-1.5 text-xs border border-[#C9C9C9] rounded-full focus:outline-none focus:border-[#6B21A8]" />
@@ -1193,7 +1721,7 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
                 <div key={region}>
                   <button
                     onClick={() => toggleGroup(available)}
-                    className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#6B21A8] bg-[#6B21A8]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
+                    className={`block text-left pl-4 pr-5 py-2.5 text-xs font-bold uppercase tracking-wider ${allSel ? "text-[#6B21A8] bg-[#6B21A8]/5" : "text-[#6B6B6D]"} hover:bg-[#FFF8E5] transition-colors`}
                   >
                     {region} ({available.length})
                   </button>
@@ -1205,7 +1733,7 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
             filteredOptions.map(renderOption)
           )}
           {searchable && filterText && filteredOptions.length === 0 && (
-            <p className="px-4 py-2 text-xs text-[#767676] italic">No matches</p>
+            <p className="pl-4 pr-5 py-2 text-xs text-[#767676] italic">No matches</p>
           )}
         </div>
       )}
@@ -1218,6 +1746,110 @@ const FilterDropdown = React.memo(function FilterDropdown({ label, options, sele
    ══════════════════════════════════════════════════════════════════════════════ */
 const placeholderImg =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='370' fill='%23e2e2e2'%3E%3Crect width='600' height='370'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HOMEPAGE HERO COUNTERS
+   PANORAMA-style stat strip below the hero subtitle. Items come from
+   admin-config.json (site.heroCounters). Empty list → nothing renders.
+   ══════════════════════════════════════════════════════════════════════════════ */
+function AnimatedStat({ value }) {
+  const raw = String(value ?? "").trim();
+  const [shown, setShown] = useState(raw);
+
+  useEffect(() => {
+    const compact = raw.replace(/,/g, "");
+    const match = compact.match(/^(\d+)(.*)$/);
+    const reduceMotion = typeof window !== "undefined"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!match || reduceMotion) {
+      setShown(raw);
+      return;
+    }
+    const target = parseInt(match[1], 10);
+    const suffix = match[2];
+    const start = performance.now();
+    const duration = 1100;
+    let raf;
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - (1 - t) ** 3;
+      setShown(t < 1 ? String(Math.round(target * eased)) + suffix : raw);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [raw]);
+
+  return shown;
+}
+
+function HeroCounters({ items, link }) {
+  const valid = (Array.isArray(items) ? items : [])
+    .filter((item) => item && String(item.value || "").trim() && String(item.label || "").trim())
+    .slice(0, 4);
+  if (!valid.length) return null;
+
+  const number_of_columns = valid.length;
+  const ctaLabel = (link?.label || "").trim();
+  const ctaHref = (link?.href || "").trim();
+  const gridClass = `grid w-full grid-cols-1 justify-items-start mb-7${
+    number_of_columns > 1 ? ` ${{ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" }[number_of_columns]} md:justify-items-stretch` : ""
+  }`;
+
+  const itemClass = (i, linked) => [
+    "min-w-[250px] md:min-w-0 py-0.5 pr-3",
+    linked ? "block hover:bg-black/10 transition-colors" : "",
+    i > 0 ? "border-t border-[#FFF8E5]/35 pt-3.5 md:border-t-0 md:pt-0.5 md:border-l md:border-[#FFF8E5]/35 md:pl-3.5" : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className="relative z-10 mt-6 lg:mt-8" role="region" aria-label="Atlas figures">
+      <div className={gridClass}>
+        {valid.map((item, i) => {
+          const href = (item.href || "").trim();
+          const inner = (
+            <>
+              <strong className="block font-['League_Gothic'] text-white text-[2rem] sm:text-4xl lg:text-5xl leading-none tracking-wide font-normal">
+                <AnimatedStat value={item.value} />
+              </strong>
+              <span className="label mt-1.5 block text-white text-xs sm:text-sm font-normal leading-snug">
+                {item.label}
+              </span>
+            </>
+          );
+          if (!href) {
+            return (
+              <div key={i} className={itemClass(i, false)} role="group" aria-label={`${item.value} ${item.label}`}>
+                {inner}
+              </div>
+            );
+          }
+          const external = href.startsWith("http");
+          return (
+            <a
+              key={i}
+              href={href}
+              {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={itemClass(i, true)}
+              aria-label={`${item.value} ${item.label}`}
+            >
+              {inner}
+            </a>
+          );
+        })}
+      </div>
+      {ctaLabel && ctaHref && (
+        <a
+          href={ctaHref}
+          {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className="inline-block border border-[#FFF8E5] text-[#FFF8E5] px-5 py-1.5 rounded-full text-sm font-medium tracking-wide hover:bg-[#FFF8E5] hover:text-[#6B21A8] transition-colors"
+        >
+          {ctaLabel}
+        </a>
+      )}
+    </div>
+  );
+}
 
 /* ==== SECTION: MAIN APPLICATION ==== */
 
@@ -1241,24 +1873,22 @@ export default function EnergyTransitionAtlas() {
   const [selTopics, setSelTopics] = useState(() => getParamList("topic"));
   const [selBrands, setSelBrands] = useState(() => getParamList("brand"));
   const [selDims, setSelDims] = useState(() => getParamList("dim"));
-  const [selCountries, setSelCountries] = useState(() => getParamList("country"));
+  const [selCountries, setSelCountries] = useState(() => parseCountryParams(window.location.search));
   const [selYears, setSelYears] = useState(() => getParamList("year").map(Number).filter(Boolean));
   const [selInfra, setSelInfra] = useState(() => getParamList("inf"));
   const [selOrgs, setSelOrgs] = useState(() => getParamList("org"));
-  const [awardOnly, setAwardOnly] = useState(() => getParam("award") === "1");
-  const [viewMode, setViewMode] = useState(() => getParam("view") || "grid");
+  const VALID_VIEW_MODES = ["list", "grid", "map"];
+  const [viewMode, setViewMode] = useState(() => {
+    const v = getParam("view");
+    return v === "globe" ? "map" : VALID_VIEW_MODES.includes(v) ? v : "grid";
+  });
   const [sortMode, setSortMode] = useState(() => getParam("sort") || "newest");
-  const [moreOptions, setMoreOptions] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
 
   /* ── Scroll state ── */
   const heroRef = useRef(null);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-
-  /* ── Mobile filter panel ── */
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   /* ── UI states ── */
   const [selectedPractice, setSelectedPractice] = useState(null);
@@ -1298,12 +1928,16 @@ export default function EnergyTransitionAtlas() {
   const partnersConfig = siteConfig?.partners || null;
   const brandBarConfig = siteConfig?.brandBar || null;
   const siteCopy = siteConfig?.site || null;
-  const navItems = siteConfig?.nav || [
+  const imprintConfig = siteConfig?.imprint || null;
+  const footerLinks = configOrDefault(siteCopy?.footerLinks, DEFAULT_FOOTER_LINKS);
+  const heroCounters = configOrDefault(siteCopy?.heroCounters, undefined);
+  const heroCounterLink = configOrDefault(siteCopy?.heroCounterLink, undefined);
+  const navItems = configOrDefault(siteConfig?.nav, [
     { label: "Home", href: "#/" },
     { label: "About", href: "#about" },
     { label: "Submit a Practice", href: "#submit" },
     { label: "Contact", href: "#contact" },
-  ];
+  ]);
   const brandLinks = { ...BRAND_LINKS, ...(siteConfig?.brandLinks || {}) };
   const atlasPartnerLabels = siteConfig?.atlasPartnerLabels || {
     RGI: "Renewables Grid Initiative (RGI)",
@@ -1331,16 +1965,15 @@ export default function EnergyTransitionAtlas() {
     if (selTopics.length) p.set("topic", selTopics.join(","));
     if (selBrands.length) p.set("brand", selBrands.join(","));
     if (selInfra.length) p.set("inf", selInfra.join(","));
-    if (selCountries.length) p.set("country", selCountries.join(","));
+    if (selCountries.length) appendCountryParams(p, selCountries);
     if (selYears.length) p.set("year", selYears.join(","));
     if (selOrgs.length) p.set("org", selOrgs.join(","));
-    if (awardOnly) p.set("award", "1");
     if (viewMode !== "grid") p.set("view", viewMode);
     if (sortMode !== "newest") p.set("sort", sortMode);
     const qs = p.toString();
     const url = window.location.pathname + (qs ? "?" + qs : "") + window.location.hash;
     window.history.replaceState(null, "", url);
-  }, [search, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, awardOnly, viewMode, sortMode, currentPage]);
+  }, [search, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, viewMode, sortMode, currentPage]);
 
   /* ── IntersectionObserver for hero ── */
   useEffect(() => {
@@ -1376,8 +2009,10 @@ export default function EnergyTransitionAtlas() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  /* ── reset visible count when filters or sort change ── */
-  useEffect(() => { setVisibleCount(INITIAL_ITEMS); }, [search, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, awardOnly, sortMode]);
+  /* ── reset visible count when filters, sort, or view mode change ── */
+  useEffect(() => {
+    setVisibleCount(INITIAL_ITEMS);
+  }, [search, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, sortMode, viewMode]);
 
   /* ── Cascading topic filter: clear invalid topics when dims change ── */
   useEffect(() => {
@@ -1390,62 +2025,45 @@ export default function EnergyTransitionAtlas() {
   const availableTopics = useMemo(() => getFilteredTopics(selDims), [selDims]);
 
   /* ── filtered + sorted results ── */
+  const filterState = {
+    debouncedSearch,
+    selTopics,
+    selBrands,
+    selDims,
+    selCountries,
+    selYears,
+    selInfra,
+    selOrgs,
+  };
+
   const filtered = useMemo(() => {
-    let results = PRACTICES.filter((p) => {
-      if (debouncedSearch) {
-        const q = debouncedSearch.toLowerCase();
-        const topicStr = Array.isArray(p.topic) ? p.topic.join(" ") : (p.topic || "");
-        const dimStr   = Array.isArray(p.dim)   ? p.dim.join(" ")   : (p.dim || "");
-        const hay = `${p.title} ${p.desc} ${p.org} ${topicStr} ${p.country} ${dimStr}`.toLowerCase();
-        const tokens = q.split(/\s+/).filter(Boolean);
-        if (!tokens.every(tok => hay.includes(tok))) return false;
-      }
-      if (selTopics.length) {
-        const pTopics = p.topic || [];
-        if (!pTopics.some(t => selTopics.includes(t))) return false;
-      }
-      if (selBrands.length && !selBrands.includes(p.brand)) return false;
-      if (selDims.length) {
-        const pDims = p.dim || [];
-        if (!pDims.some(d => selDims.includes(d))) return false;
-      }
-      if (selCountries.length && !selCountries.includes(normalizeCountry(p.country))) return false;
-      if (selYears.length && !selYears.includes(p.year)) return false;
-      if (selInfra.length) {
-        const pInfra = p.inf ? p.inf.split(/[;,]\s*/) : [];
-        if (!pInfra.some(i => selInfra.includes(i))) return false;
-      }
-      if (selOrgs.length && !selOrgs.includes(normalizeOrg(p.org))) return false;
-      if (awardOnly && !p.award) return false;
-      return true;
-    });
-    switch (sortMode) {
-      case "oldest": results.sort((a, b) => (a.year ?? 0) - (b.year ?? 0)); break;
-      case "az":     results.sort((a, b) => a.title.localeCompare(b.title)); break;
-      case "za":     results.sort((a, b) => b.title.localeCompare(a.title)); break;
-      default:       results.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)); break;
-    }
-    return results;
-  }, [debouncedSearch, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, awardOnly, sortMode]);
+    const results = PRACTICES.filter((p) => practiceMatchesFilters(p, filterState, false));
+    return sortFilteredPractices(results, sortMode);
+  }, [debouncedSearch, selTopics, selBrands, selDims, selCountries, selYears, selInfra, selOrgs, sortMode]);
+
+  /** Same filters as the list, ignoring location — so the map stays coloured while a country is selected. */
+  const mapAvailability = useMemo(
+    () => PRACTICES.filter((p) => practiceMatchesFilters(p, filterState, true)),
+    [debouncedSearch, selTopics, selBrands, selDims, selYears, selInfra, selOrgs]
+  );
 
   const pageItems = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
   const remaining = filtered.length - visibleCount;
 
-  /* ── basic filters (always visible) ── */
+  /* ── primary filters ── */
   const basicFilters = [
     { label: "Infrastructure", options: allInfra, selected: selInfra, onChange: setSelInfra },
     { label: "Theme", options: allDims, selected: selDims, onChange: setSelDims },
     { label: selDims.length ? `Topic (${selDims.join(", ")})` : "Topic", options: availableTopics, selected: selTopics, onChange: setSelTopics, searchable: true },
   ];
 
-  /* ── expanded filters (Year arrays/handler memoized so React.memo on FilterDropdown can skip re-renders) ── */
+  /* ── extra filters (Year arrays/handler memoized so React.memo on FilterDropdown can skip re-renders) ── */
   const yearOptions = useMemo(() => allYears.map(String), [allYears]);
   const selYearsStr = useMemo(() => selYears.map(String), [selYears]);
   const onChangeYears = useCallback((arr) => setSelYears(arr.map(Number)), []);
-  const expandedFilters = [
+  const expandedFiltersCore = [
     { label: "Year", options: yearOptions, selected: selYearsStr, onChange: onChangeYears },
-    { label: "Location", options: allCountries, selected: selCountries, onChange: setSelCountries, groups: COUNTRY_REGIONS, searchable: true },
     { label: "Organisation", options: allOrgs, selected: selOrgs, onChange: setSelOrgs, searchable: true },
     { label: "Atlas Partner", options: allBrands, selected: selBrands, onChange: setSelBrands },
   ];
@@ -1461,14 +2079,12 @@ export default function EnergyTransitionAtlas() {
     selCountries.forEach((v) => chips.push({ label: "Location", value: v, onRemove: () => setSelCountries((s) => s.filter((x) => x !== v)) }));
     selOrgs.forEach((v) => chips.push({ label: "Organisation", value: v, onRemove: () => setSelOrgs((s) => s.filter((x) => x !== v)) }));
     selBrands.forEach((v) => chips.push({ label: "Partner", value: v, onRemove: () => setSelBrands((s) => s.filter((x) => x !== v)) }));
-    if (awardOnly) chips.push({ label: "Awards", value: "Winners only", onRemove: () => setAwardOnly(false) });
     return chips;
-  }, [search, selDims, selInfra, selTopics, selYears, selCountries, selOrgs, selBrands, awardOnly]);
+  }, [search, selDims, selInfra, selTopics, selYears, selCountries, selOrgs, selBrands]);
 
   const clearAllFilters = () => {
     setSearch(""); setSelTopics([]); setSelBrands([]); setSelDims([]);
     setSelCountries([]); setSelYears([]); setSelInfra([]); setSelOrgs([]);
-    setAwardOnly(false);
   };
 
   const exportFilteredCSV = useCallback(() => {
@@ -1529,7 +2145,7 @@ export default function EnergyTransitionAtlas() {
       )}
 
       {/* ─── 1. Brand Bar (desktop only) ─── */}
-      <div className="hidden md:block bg-[#424244] px-6 py-3">
+      <div className="hidden md:block bg-[#363636] px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-5 overflow-x-auto scrollbar-hide">
           <span className="text-[#C9C9C9] text-xs whitespace-nowrap flex-shrink-0">A platform by</span>
           {(brandBarConfig?.owners || [
@@ -1597,7 +2213,7 @@ export default function EnergyTransitionAtlas() {
             {menuOpen && (
               <div className="hidden md:block absolute right-0 z-50 mt-2 w-48 rounded-xl bg-white shadow-lg border border-[#C9C9C9] py-2">
                 {navItems.map(item => (
-                  <button key={item.href} onClick={() => navigateTo(item.href)} className="block w-full text-left px-4 py-2 text-sm text-[#424244] hover:bg-[#FFF8E5] transition-colors">{item.label}</button>
+                  <button key={item.href} onClick={() => navigateTo(item.href)} className="block w-full text-left px-4 py-2 text-sm text-[#363636] hover:bg-[#FFF8E5] transition-colors">{item.label}</button>
                 ))}
               </div>
             )}
@@ -1642,10 +2258,10 @@ export default function EnergyTransitionAtlas() {
         <div className="max-w-7xl mx-auto relative">
           {/* Graphic — behind text on mobile, beside text on desktop */}
           <div className="absolute inset-x-0 top-8 bottom-0 flex items-center justify-end opacity-20 lg:opacity-100 lg:relative lg:top-0 lg:hidden pointer-events-none">
-            <div className="w-64 sm:w-72"><HeroGraphic /></div>
+            <div className="w-[340px] -mr-[50px]"><HeroGraphic /></div>
           </div>
           <div className="flex items-center lg:justify-between">
-            <div className="relative z-10 lg:w-6/12">
+            <div className="relative z-10 lg:w-6/12 pb-[65px]">
               <h2
                 className={`font-['League_Gothic'] text-white text-5xl sm:text-6xl lg:text-7xl uppercase tracking-wide leading-[0.95] ${!isHome ? "cursor-pointer hover:opacity-90 transition-opacity" : ""}`}
                 onClick={() => { if (!isHome) navigateTo("#/"); }}
@@ -1655,6 +2271,12 @@ export default function EnergyTransitionAtlas() {
               <p className="mt-3 lg:mt-4 text-[#FFF8E5] text-sm sm:text-base lg:text-xl font-light max-w-xl lg:max-w-3xl leading-relaxed opacity-90">
                 {siteCopy?.heroSubtitle || "Explore proven practices for decarbonising energy, protecting nature, and improving lives, shared by a growing network of partners."}
               </p>
+              {isHome && (
+                <HeroCounters
+                  items={heroCounters}
+                  link={heroCounterLink}
+                />
+              )}
             </div>
             <div className="hidden lg:block lg:w-6/12">
               <HeroGraphic />
@@ -1691,15 +2313,15 @@ export default function EnergyTransitionAtlas() {
                 ))}
               </div>
             </nav>
-            <div className="space-y-6 text-[#424244] leading-relaxed">
+            <div className="space-y-6 text-[#363636] leading-relaxed">
               {(aboutConfig?.intro || [
                 "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
                 "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
                 'The Atlas is a joint project of the <a href="https://renewables-grid.eu" target="_blank" rel="noopener noreferrer">Renewables Grid Initiative (RGI)</a>, the <a href="https://www.iucn.org/our-work/topic/green-just-energy-transition" target="_blank" rel="noopener noreferrer">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href="https://gingr.org" target="_blank" rel="noopener noreferrer">GINGR</a> \u2013 the Global Initiative for Nature, Grids and Renewables.',
                 'The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a href="https://github.com/RenewablesGridInitiative/energy-transition-atlas" target="_blank" rel="noopener noreferrer">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself.',
               ]).map((text, i) => (
-                <p key={i} className="text-[#424244] [&_a]:text-[#6B21A8] [&_a]:underline [&_a:hover]:text-[#6B21A8]/80 [&_strong]:font-bold"
-                  dangerouslySetInnerHTML={safeHtml(text)} />
+                <p key={i} className="text-[#363636] [&_a]:text-[#6B21A8] [&_a]:underline [&_a:hover]:text-[#6B21A8]/80 [&_strong]:font-bold"
+                  dangerouslySetInnerHTML={sanitizeHtml(text)} />
               ))}
               <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mt-8 scroll-mt-24" id="about-vision">Our Vision</h3>
               <p>{aboutConfig?.vision || "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind."}</p>
@@ -1721,7 +2343,7 @@ export default function EnergyTransitionAtlas() {
                   return (
                     <div key={i} className={`p-4 bg-white rounded-xl border-l-4 ${c.border}`}>
                       <span className={`${c.text} font-bold text-lg`}>{v.title}</span>
-                      <p className="text-sm text-[#424244] mt-1 leading-relaxed">{v.text}</p>
+                      <p className="text-sm text-[#363636] mt-1 leading-relaxed">{v.text}</p>
                     </div>
                   );
                 })}
@@ -1735,7 +2357,7 @@ export default function EnergyTransitionAtlas() {
                   "OCEaN brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
                   "SafeLines4Birds contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe.",
                 ]).map((src, i) => (
-                  <li key={i} dangerouslySetInnerHTML={safeHtml(src)} />
+                  <li key={i} dangerouslySetInnerHTML={sanitizeHtml(src)} />
                 ))}
               </ul>
               <p className="text-sm text-[#6B6B6D]">{aboutConfig?.collection?.cta || "The collection keeps growing. New partners and practices are added on a rolling basis."} {" "}<a href="#contact" onClick={(e) => { e.preventDefault(); setCurrentPage("#contact"); window.scrollTo(0, 0); }} className="text-[#6B21A8] underline hover:text-[#6B21A8]/80">Get in touch</a>.</p>
@@ -1744,7 +2366,7 @@ export default function EnergyTransitionAtlas() {
               <div className="flex items-start gap-4 mt-4 p-5 bg-white rounded-xl border border-[#C9C9C9]">
                 <div>
                   <p className="text-sm leading-relaxed"><span className="inline-flex items-center align-middle mr-1"><IconAward /><span className="sr-only">star</span></span>
-                    <span dangerouslySetInnerHTML={safeHtml(siteCopy?.awards?.body || `The icon on practice cards marks winners of the <strong>RGI Grid Awards: Good Practice of the Year</strong>, an annual recognition. ${PRACTICES.filter(p => p.award).length} practices in the Atlas hold this award.`)} />
+                    <span dangerouslySetInnerHTML={sanitizeHtml(siteCopy?.awards?.body || `The icon on practice cards marks winners of the <strong>RGI Grid Awards: Good Practice of the Year</strong>, an annual recognition. ${PRACTICES.filter(p => p.award).length} practices in the Atlas hold this award.`)} />
                   </p>
                   {(siteCopy?.awards?.linkHref || "https://renewables-grid.eu/award/") && (
                     <a href={siteCopy?.awards?.linkHref || "https://renewables-grid.eu/award/"} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-sm text-[#6B21A8] underline hover:text-[#6B21A8]/80">{siteCopy?.awards?.linkLabel || "Learn more about the RGI Grid Awards"}</a>
@@ -1770,7 +2392,7 @@ export default function EnergyTransitionAtlas() {
                     className="block p-4 bg-white rounded-xl border border-[#C9C9C9] hover:border-[#6B21A8] hover:shadow-md transition-all"
                   >
                     <span className="text-[#6B21A8] font-bold text-lg">{partner.name}</span>
-                    <p className="text-sm text-[#424244] mt-1 leading-relaxed">{partner.desc}</p>
+                    <p className="text-sm text-[#363636] mt-1 leading-relaxed">{partner.desc}</p>
                     <span className="block text-xs text-[#6B6B6D] mt-2">{partner.url}</span>
                   </a>
                 ))}
@@ -1800,7 +2422,7 @@ export default function EnergyTransitionAtlas() {
                 "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
                 "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work.",
               ]).map((para, i) => (
-                <p key={i} className="text-[#424244] text-base leading-relaxed">{para}</p>
+                <p key={i} className="text-[#363636] text-base leading-relaxed">{para}</p>
               ))}
             </div>
 
@@ -1821,7 +2443,7 @@ export default function EnergyTransitionAtlas() {
                   className={`block p-5 bg-white rounded-xl border border-[#C9C9C9] border-l-4 ${partner.color} hover:shadow-md hover:border-[#6B21A8] transition-all`}
                 >
                   <span className="text-[#6B21A8] font-bold text-lg">{partner.name}</span>
-                  <p className="text-sm text-[#424244] mt-2 leading-relaxed">{partner.desc}</p>
+                  <p className="text-sm text-[#363636] mt-2 leading-relaxed">{partner.desc}</p>
                   <span className="inline-flex items-center gap-1 mt-3 text-xs text-[#6B21A8] font-medium">
                     Visit website
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -1852,7 +2474,7 @@ export default function EnergyTransitionAtlas() {
             <h2 className="font-['League_Gothic'] text-[#6B21A8] text-4xl lg:text-5xl uppercase tracking-wide mb-4">Contact</h2>
             <div className="mb-8 p-5 bg-white rounded-xl border border-[#C9C9C9]">
               <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-2">Export Data</h3>
-              <p className="text-[#424244] text-sm mb-4">Download the currently filtered practices as a CSV file for offline analysis.</p>
+              <p className="text-[#363636] text-sm mb-4">Download the currently filtered practices as a CSV file for offline analysis.</p>
               <button
                 onClick={exportFilteredCSV}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#6B21A8] text-[#6B21A8] text-sm font-medium hover:bg-[#6B21A8] hover:text-white transition-colors"
@@ -1862,7 +2484,7 @@ export default function EnergyTransitionAtlas() {
             </div>
             <div className="bg-white rounded-xl border border-[#C9C9C9] p-8">
               <h3 className="font-['League_Gothic'] text-[#6B21A8] text-2xl uppercase tracking-wide mb-4">{contactConfig?.orgName || "Renewables Grid Initiative (RGI)"}</h3>
-              <p className="text-[#424244] text-sm mb-6">{contactConfig?.orgSubline || "For questions about the Atlas, submitting practices, or partnership enquiries:"}</p>
+              <p className="text-[#363636] text-sm mb-6">{contactConfig?.orgSubline || "For questions about the Atlas, submitting practices, or partnership enquiries:"}</p>
               <a
                 href={`mailto:${contactConfig?.email || "communication@renewables-grid.eu"}`}
                 className="inline-flex max-w-full items-center gap-1.5 sm:gap-3 px-4 sm:px-8 py-3 sm:py-3.5 rounded-3xl sm:rounded-full bg-[#6B21A8] text-white font-medium hover:bg-[#6B21A8]/90 transition-colors text-[11px] sm:text-lg whitespace-nowrap"
@@ -1870,12 +2492,32 @@ export default function EnergyTransitionAtlas() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                 <span className="min-w-0 break-all">{contactConfig?.email || "communication@renewables-grid.eu"}</span>
               </a>
-              <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#424244] text-sm leading-relaxed">
+              <div className="mt-6 pt-6 border-t border-[#C9C9C9]/50 text-[#363636] text-sm leading-relaxed">
                 {(contactConfig?.address || "Manfred-von-Richthofen-Str. 4\n12101 Berlin, Germany").split("\n").map((line, i, arr) => (
                   <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── IMPRINT PAGE ─── */}
+      {currentPage === "#imprint" && (
+        <section className="flex-1 bg-[#FFF8E5] px-6 py-12">
+          <div className="max-w-3xl mx-auto">
+            <div
+              className="imprint-content text-[#363636] leading-relaxed
+                [&_h1]:font-['League_Gothic'] [&_h1]:text-[#6B21A8] [&_h1]:text-4xl [&_h1]:lg:text-5xl [&_h1]:uppercase [&_h1]:tracking-wide [&_h1]:mb-6
+                [&_h2]:font-['League_Gothic'] [&_h2]:text-[#6B21A8] [&_h2]:text-3xl [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:mt-8 [&_h2]:mb-4
+                [&_h3]:font-['League_Gothic'] [&_h3]:text-[#6B21A8] [&_h3]:text-2xl [&_h3]:uppercase [&_h3]:tracking-wide [&_h3]:mt-6 [&_h3]:mb-3
+                [&_h4]:font-semibold [&_h4]:text-[#363636] [&_h4]:text-lg [&_h4]:mt-5 [&_h4]:mb-2
+                [&_h5]:font-semibold [&_h5]:text-[#363636] [&_h5]:text-base [&_h5]:mt-4 [&_h5]:mb-2
+                [&_h6]:font-medium [&_h6]:text-[#6B6B6D] [&_h6]:text-sm [&_h6]:uppercase [&_h6]:tracking-wide [&_h6]:mt-4 [&_h6]:mb-2
+                [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1 [&_hr]:border-[#C9C9C9] [&_hr]:my-6
+                [&_a]:text-[#6B21A8] [&_a]:underline [&_a:hover]:text-[#6B21A8]/80 [&_strong]:font-bold"
+              dangerouslySetInnerHTML={sanitizeHtml(imprintConfig?.body || "<h1>Imprint &amp; Privacy Policy</h1><p>Content coming soon.</p>", { rich: true })}
+            />
           </div>
         </section>
       )}
@@ -1886,69 +2528,9 @@ export default function EnergyTransitionAtlas() {
           {/* ─── 4. Filter Section ─── */}
           <section className="bg-[#FFF8E5] px-6 py-6">
             <div className="max-w-7xl mx-auto space-y-4">
-              {/* Desktop: All controls in one row — filters left, search right */}
-              <div className="hidden md:flex items-center gap-3 flex-wrap">
-                {basicFilters.map((f) => (
-                  <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
-                ))}
-                <button
-                  onClick={() => setAwardOnly(!awardOnly)}
-                  aria-label="Toggle award winners only"
-                  aria-pressed={awardOnly}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
-                    awardOnly
-                      ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                      : "bg-white text-[#6B21A8] border-[#6B21A8]"
-                  }`}
-                >
-                  <IconAward />
-                  <span>Awards</span>
-                </button>
-                <button
-                  onClick={() => setMoreOptions(!moreOptions)}
-                  aria-label={moreOptions ? "Hide additional filters" : "Show additional filters"}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm transition-colors ${
-                    moreOptions
-                      ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                      : "border-[#C9C9C9] text-[#424244] hover:border-[#6B21A8] bg-white"
-                  }`}
-                >
-                  {moreOptions ? <IconX /> : <IconSettings />}
-                  <span>More Options</span>
-                </button>
-                <SortDropdown value={sortMode} onChange={setSortMode} />
-                <button
-                  onClick={() => setViewMode("list")}
-                  aria-label="List view"
-                  className={`p-2.5 rounded-full border transition-colors ${
-                    viewMode === "list"
-                      ? "border-[#6B21A8] text-[#6B21A8] bg-white"
-                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#6B21A8]"
-                  }`}
-                >
-                  <IconListView />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  aria-label="Grid view"
-                  className={`p-2.5 rounded-full border transition-colors ${
-                    viewMode === "grid"
-                      ? "border-[#6B21A8] text-[#6B21A8] bg-white"
-                      : "border-[#C9C9C9] text-[#424244] bg-white hover:border-[#6B21A8]"
-                  }`}
-                >
-                  <IconGridView />
-                </button>
-                <button
-                  onClick={exportFilteredCSV}
-                  aria-label={`Download ${filtered.length} practices as CSV`}
-                  title={`Download ${filtered.length} practices as CSV`}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-[#424244] text-sm hover:border-[#6B21A8] hover:text-[#6B21A8] bg-white transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  <span>CSV</span>
-                </button>
-                <div className="flex-1 relative min-w-[140px] max-w-[280px]">
+              {/* Search first, then filters; sort / views / CSV wrap instead of shrinking */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative min-w-[140px] max-w-[280px] w-[280px]">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#767676]">
                     <IconSearch />
                   </span>
@@ -1958,104 +2540,74 @@ export default function EnergyTransitionAtlas() {
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search practices..."
                     aria-label="Search practices"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#6B21A8] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#363636] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#6B21A8] transition-colors"
                   />
                 </div>
-              </div>
-
-              {/* Desktop: Expanded filters — left-aligned, compact */}
-              {moreOptions && (
-                <div className="hidden md:flex items-center gap-3 flex-wrap">
-                  {expandedFilters.map((f) => (
-                    <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
-                  ))}
-                </div>
-              )}
-
-              {/* Mobile: Wraps onto multiple rows — Infrastructure, Theme, More, Sort */}
-              <div className="md:hidden">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[basicFilters[0], basicFilters[1]].map((f) => (
-                    <div key={f.label}>
-                      <FilterDropdown label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
-                    </div>
-                  ))}
+                {basicFilters.map((f) => (
+                  <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
+                ))}
+                {(viewMode === "list" || viewMode === "grid") && (
+                  <FilterDropdown
+                    label="Location"
+                    options={allCountries}
+                    selected={selCountries}
+                    onChange={setSelCountries}
+                    groups={COUNTRY_REGIONS}
+                    searchable
+                  />
+                )}
+                {expandedFiltersCore.map((f) => (
+                  <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
+                ))}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <SortDropdown value={sortMode} onChange={setSortMode} />
                   <button
-                    onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-                    aria-label="Toggle additional filters"
-                    className={`flex-shrink-0 p-2.5 rounded-full border text-sm font-medium transition-colors ${
-                      filterPanelOpen
-                        ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                        : "bg-white text-[#6B21A8] border-[#6B21A8]"
+                    onClick={() => setViewMode("grid")}
+                    aria-label="Grid view"
+                    aria-pressed={viewMode === "grid"}
+                    className={`flex-shrink-0 p-2.5 rounded-full border transition-colors ${
+                      viewMode === "grid"
+                        ? "border-[#6B21A8] text-[#6B21A8] bg-white"
+                        : "border-[#C9C9C9] text-[#363636] bg-white hover:border-[#6B21A8]"
                     }`}
                   >
-                    <IconSettings />
+                    <IconGridView />
                   </button>
-                  <SortDropdown value={sortMode} onChange={setSortMode} compact />
+                  <button
+                    onClick={() => setViewMode("list")}
+                    aria-label="List view"
+                    aria-pressed={viewMode === "list"}
+                    className={`flex-shrink-0 p-2.5 rounded-full border transition-colors ${
+                      viewMode === "list"
+                        ? "border-[#6B21A8] text-[#6B21A8] bg-white"
+                        : "border-[#C9C9C9] text-[#363636] bg-white hover:border-[#6B21A8]"
+                    }`}
+                  >
+                    <IconListView />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("map")}
+                    aria-label="Map view"
+                    aria-pressed={viewMode === "map"}
+                    className={`flex-shrink-0 p-2.5 rounded-full border transition-colors ${
+                      viewMode === "map"
+                        ? "border-[#6B21A8] text-[#6B21A8] bg-white"
+                        : "border-[#C9C9C9] text-[#363636] bg-white hover:border-[#6B21A8]"
+                    }`}
+                  >
+                    <IconMapView />
+                  </button>
+                  <button
+                    onClick={exportFilteredCSV}
+                    aria-label={`Download ${filtered.length} practices as CSV`}
+                    title={`Download ${filtered.length} practices as CSV`}
+                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#C9C9C9] text-[#363636] text-sm hover:border-[#6B21A8] hover:text-[#6B21A8] bg-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>CSV</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Mobile: Expanded filter panel (Search, Topic, Awards, expanded filters, view) */}
-              {filterPanelOpen && (
-                <div className="md:hidden flex flex-col gap-2">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#767676]">
-                      <IconSearch />
-                    </span>
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search practices..."
-                      aria-label="Search practices"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-full border border-[#C9C9C9] bg-white text-sm text-[#424244] placeholder:text-[#C9C9C9] focus:outline-none focus:border-[#6B21A8] transition-colors"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 [&>.relative]:w-full [&>.relative>button]:w-full">
-                    <FilterDropdown label={basicFilters[2].label} options={basicFilters[2].options} selected={basicFilters[2].selected} onChange={basicFilters[2].onChange} searchable={basicFilters[2].searchable} />
-                    <button
-                      onClick={() => setAwardOnly(!awardOnly)}
-                      aria-label="Toggle award winners only"
-                      aria-pressed={awardOnly}
-                      className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full border text-sm font-medium transition-colors w-full ${
-                        awardOnly
-                          ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                          : "bg-white text-[#6B21A8] border-[#6B21A8]"
-                      }`}
-                    >
-                      <IconAward />
-                      <span>Awards</span>
-                    </button>
-                    {expandedFilters.map((f) => (
-                      <FilterDropdown key={f.label} label={f.label} options={f.options} selected={f.selected} onChange={f.onChange} groups={f.groups} searchable={f.searchable} />
-                    ))}
-                    <div className="col-span-2 flex items-center gap-2">
-                      <button
-                        onClick={() => setViewMode("list")}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
-                          viewMode === "list"
-                            ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#6B21A8]"
-                        }`}
-                      >
-                        <IconListView />
-                        <span>List</span>
-                      </button>
-                      <button
-                        onClick={() => setViewMode("grid")}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition-colors ${
-                          viewMode === "grid"
-                            ? "bg-[#6B21A8] text-white border-[#6B21A8]"
-                            : "bg-white text-[#424244] border-[#C9C9C9] hover:border-[#6B21A8]"
-                        }`}
-                      >
-                        <IconGridView />
-                        <span>Grid</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </section>
 
@@ -2092,7 +2644,7 @@ export default function EnergyTransitionAtlas() {
                 Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} practice{filtered.length !== 1 ? "s" : ""}
               </p>
 
-              {filtered.length === 0 && (
+              {filtered.length === 0 && viewMode !== "map" && (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 rounded-full bg-[#6B21A8]/10 flex items-center justify-center mx-auto mb-4 text-[#6B21A8]">
                     <IconSearch />
@@ -2118,6 +2670,59 @@ export default function EnergyTransitionAtlas() {
                 </div>
               )}
 
+              {/* Map + sidebar list */}
+              {viewMode === "map" && (
+                <>
+                  <p className="sr-only">
+                    Map view is visual only. Switch to list or grid view and use the Location filter to choose countries.
+                  </p>
+                  <div className="flex flex-col xl:flex-row gap-8 items-stretch">
+                  <div className="flex-1 min-w-0">
+                    <WorldMap
+                      availabilityFiltered={mapAvailability}
+                      selCountries={selCountries}
+                      setSelCountries={setSelCountries}
+                    />
+                  </div>
+                  <aside
+                    className="w-full xl:w-[420px] xl:max-w-[42%] shrink-0 border border-[#C9C9C9] rounded-xl bg-white/50 p-4 max-h-[min(85vh,920px)] overflow-y-auto shadow-sm"
+                    aria-label="Filtered practices for current map selection"
+                  >
+                    <h3 className="text-sm font-semibold text-[#6B21A8] mb-3">Practices</h3>
+                    {filtered.length === 0 ? (
+                      <p className="py-8 px-2 text-center text-[#767676] text-sm leading-relaxed">
+                        No practices match. Change filters or pick another country.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="divide-y divide-[#C9C9C9]">
+                          {pageItems.map((p) => (
+                            <AtlasPracticeListRow
+                              key={p.id}
+                              p={p}
+                              onSelect={setSelectedPractice}
+                              getThemeClasses={themeClasses}
+                            />
+                          ))}
+                        </div>
+                        {hasMore && (
+                          <div className="flex justify-center mt-6 pt-4 border-t border-[#C9C9C9]/60">
+                            <button
+                              type="button"
+                              onClick={() => setVisibleCount((prev) => prev + LOAD_MORE_INCREMENT)}
+                              className="px-6 py-2.5 rounded-full border-2 border-[#6B21A8] text-[#6B21A8] text-sm font-semibold hover:bg-[#6B21A8] hover:text-white transition-colors"
+                            >
+                              Show More Practices ({remaining} remaining)
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </aside>
+                </div>
+                </>
+              )}
+
               {/* Grid / Picture View */}
               {viewMode === "grid" && filtered.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -2128,7 +2733,7 @@ export default function EnergyTransitionAtlas() {
                       tabIndex={0}
                       onClick={() => setSelectedPractice(p)}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedPractice(p); } }}
-                      className="group block cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
+                      className="group block cursor-pointer hover:-translate-y-1 transition-all duration-200 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
                     >
                       <div className="relative overflow-hidden rounded-xl">
                         <img
@@ -2137,6 +2742,11 @@ export default function EnergyTransitionAtlas() {
                           loading="lazy"
                           className="w-full h-48 object-cover bg-[#e2e2e2] transition-transform duration-300 group-hover:scale-105"
                         />
+                        {p.imgCopyright && (
+                          <p className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] px-3 py-2 text-sm leading-snug text-center text-white bg-gradient-to-t from-black/75 to-black/15 break-words">
+                            © {p.imgCopyright}
+                          </p>
+                        )}
                         {p.award && (
                           <span className="absolute top-2.5 right-2.5 bg-[#6B21A8] text-[#FFF8E5] rounded-full p-1.5 shadow-md" title="RGI Grid Awards Winner">
                             <IconAward />
@@ -2149,7 +2759,7 @@ export default function EnergyTransitionAtlas() {
                         {p.org && <span className="flex items-center gap-1"><IconBuilding />{truncateText(p.org)}</span>}
                         {p.inf && <span className="flex items-center gap-1"><IconLayers />{p.inf}</span>}
                       </div>
-                      <h3 className="mt-2 text-base font-bold text-[#424244] group-hover:text-[#6B21A8] transition-colors leading-snug">
+                      <h3 className="mt-2 text-base font-bold text-[#363636] group-hover:text-[#6B21A8] transition-colors leading-snug">
                         {p.title}
                       </h3>
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -2171,45 +2781,18 @@ export default function EnergyTransitionAtlas() {
               {viewMode === "list" && filtered.length > 0 && (
                 <div className="divide-y divide-[#C9C9C9]">
                   {pageItems.map((p) => (
-                    <div
+                    <AtlasPracticeListRow
                       key={p.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelectedPractice(p)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedPractice(p); } }}
-                      className="block py-4 px-3 -mx-3 rounded-lg group cursor-pointer hover:bg-white/60 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6B21A8]"
-                    >
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-[#424244] group-hover:text-[#6B21A8] transition-colors">
-                          {p.title}
-                        </h3>
-                        {p.award && (
-                          <span className="text-[#6B21A8]" title="RGI Grid Awards Winner"><IconAward /></span>
-                        )}
-                      </div>
-                      <div className="mt-1.5 flex items-center gap-4 text-xs text-[#6B6B6D] flex-wrap">
-                        {p.country && <span className="flex items-center gap-1"><IconPin />{truncateText(p.country)}</span>}
-                        {p.year && <span className="flex items-center gap-1"><IconCalendar />{p.year}</span>}
-                        {p.org && <span className="flex items-center gap-1"><IconBuilding />{truncateText(p.org)}</span>}
-                        {p.inf && <span className="flex items-center gap-1"><IconLayers />{p.inf}</span>}
-                      </div>
-                      <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                        {(p.dim || []).map(d => (
-                          <span key={d} className={`text-xs border rounded-full px-2.5 py-0.5 ${themeClasses(d)}`}>
-                            {d}
-                          </span>
-                        ))}
-                        {p.topic?.length > 0 && <span className="text-xs border border-[#6B21A8]/30 text-[#6B21A8] rounded-full px-2.5 py-0.5">
-                          {p.topic[0]}
-                        </span>}
-                      </div>
-                    </div>
+                      p={p}
+                      onSelect={setSelectedPractice}
+                      getThemeClasses={themeClasses}
+                    />
                   ))}
                 </div>
               )}
 
-              {/* ─── 6. Load More ─── */}
-              {hasMore && (
+              {/* ─── 6. Load More (list + grid only; map uses sidebar control) ─── */}
+              {hasMore && viewMode !== "map" && (
                 <div className="flex justify-center mt-10">
                   <button
                     onClick={() => setVisibleCount(prev => prev + LOAD_MORE_INCREMENT)}
@@ -2225,7 +2808,7 @@ export default function EnergyTransitionAtlas() {
       )}
 
       {/* ─── 7. Footer ─── */}
-      <footer className="bg-[#424244] px-6 py-10">
+      <footer className="bg-[#363636] px-6 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-x-6 gap-y-8 md:gap-10">
             {/* Col 1: Logos + tagline (always first) */}
@@ -2247,7 +2830,7 @@ export default function EnergyTransitionAtlas() {
                   );
                 })}
               </div>
-              <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md" dangerouslySetInnerHTML={safeHtml(siteCopy?.footerTagline || "The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables.")} />
+              <p className="mt-3 text-[#C9C9C9] text-sm leading-relaxed max-w-md" dangerouslySetInnerHTML={sanitizeHtml(siteCopy?.footerTagline || "The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR &ndash; the Global Initiative for Nature, Grids and Renewables.")} />
             </div>
             {/* Contact — desktop col 2, mobile last (full-width) */}
             <div className="order-3 md:order-2">
@@ -2268,11 +2851,29 @@ export default function EnergyTransitionAtlas() {
             <div className="order-2 md:order-3">
               <h4 className="font-['League_Gothic'] text-[#FFF8E5] text-xl uppercase tracking-widest mb-3">Links</h4>
               <ul className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-1">
-                <li><a href="#about" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">About</a></li>
-                <li><a href="#submit" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Submit a Practice</a></li>
-                <li><a href="#contact" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Contact</a></li>
-                <li><a href="https://github.com/RenewablesGridInitiative/energy-transition-atlas" target="_blank" rel="noopener noreferrer" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">GitHub</a></li>
-                <li><a href="https://renewables-grid.eu/privacy-policy/" target="_blank" rel="noopener noreferrer" className="text-[#C9C9C9] text-sm hover:text-white transition-colors">Imprint &amp; Privacy Policy</a></li>
+                {footerLinks.map((link) => {
+                  const href = (link.href || "").trim();
+                  const className = "text-[#C9C9C9] text-sm hover:text-white transition-colors";
+                  if (!isSafeFooterHref(href)) {
+                    return (
+                      <li key={`${link.label}-${href}`}>
+                        <span className={className}>{link.label}</span>
+                      </li>
+                    );
+                  }
+                  if (href.startsWith("#")) {
+                    return (
+                      <li key={`${link.label}-${href}`}>
+                        <a href={href} onClick={(e) => { e.preventDefault(); navigateTo(href); }} className={className}>{link.label}</a>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={`${link.label}-${href}`}>
+                      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{link.label}</a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>

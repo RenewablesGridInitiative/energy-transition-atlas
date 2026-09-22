@@ -5,15 +5,26 @@ This file is the **single source of truth** for CSV validation. Both the browser
 ## Header row
 
 - Must be the first line of the file.
-- Must contain exactly these 13 column names, in this order:
+- Two valid header shapes are accepted:
+
+  **Canonical (14 columns)** — preferred for new exports:
+
+  ```
+  id,title,url,brand,theme,topic,inf,year,country,org,desc,img,img_copyright,award
+  ```
+
+  **Legacy (13 columns)** — older CSVs that omit `img_copyright` still validate and rebuild the site. Missing credits become empty strings in `csv_to_jsx.py`.
+
   ```
   id,title,url,brand,theme,topic,inf,year,country,org,desc,img,award
   ```
-- Column names are case-sensitive. No extra columns, no missing columns.
+
+- Column names are case-sensitive. No extra columns, no missing columns, no reordering.
+- If `img_copyright` is present, it must appear immediately after `img` and before `award`.
 
 ## Row shape
 
-- Every non-empty row after the header must have exactly 13 fields after RFC 4180 CSV parsing (quoted commas count as one field).
+- Every non-empty row after the header must have exactly as many fields as the header row (13 or 14) after RFC 4180 CSV parsing (quoted commas count as one field).
 - Empty trailing lines are ignored.
 
 ## Per-field rules
@@ -32,7 +43,8 @@ This file is the **single source of truth** for CSV validation. Both the browser
 | 10 | `org` | no | string | May be empty. |
 | 11 | `desc` | no | string | May be empty. |
 | 12 | `img` | no | string | If present: starts with `http://` or `https://`. |
-| 13 | `award` | yes | boolean literal | Exactly `true` or `false` (case-insensitive). |
+| 13 | `img_copyright` | no | string | Optional column. May be empty. Owner name only (e.g. `TenneT`); the site adds the © symbol when displaying it. Omitted entirely in legacy 13-column CSVs. |
+| 14 | `award` | yes | boolean literal | Exactly `true` or `false` (case-insensitive). |
 
 ## Error reporting
 
@@ -42,6 +54,7 @@ This file is the **single source of truth** for CSV validation. Both the browser
   - Column name (from the header).
   - Short human-readable message (e.g. "must be a positive integer", "not a valid URL", "brand must be one of RGI, OCEaN, Panorama, SL4B").
 - For duplicate `id`, report every duplicate row with the colliding id.
+- Header mismatch message: `First row must be: id,title,…,img_copyright,award (img_copyright may be omitted)`.
 
 ## Why two implementations?
 
