@@ -3,7 +3,7 @@
     "intro": [
       "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
       "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
-      "The Atlas is a joint project of the <a href=\"https://renewables-grid.eu\" target=\"_blank\" rel=\"noopener noreferrer\">Renewables Grid Initiative (RGI)</a>, the <a href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\" target=\"_blank\" rel=\"noopener noreferrer\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">GINGR</a> – the Global Initiative for Nature, Grids and Renewables.",
+      "The Atlas is a joint project of the <a href=\"https://renewables-grid.eu\" target=\"_blank\" rel=\"noopener noreferrer\">Renewables Grid Initiative (RGI)</a>, the <a href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\" target=\"_blank\" rel=\"noopener noreferrer\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">GINGR</a> â the Global Initiative for Nature, Grids and Renewables.",
       "The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a href=\"https://github.com/RenewablesGridInitiative/energy-transition-atlas\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself."
     ],
     "vision": "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.",
@@ -101,7 +101,7 @@
     {
       "name": "Panorama",
       "url": "https://panorama.solutions/en",
-      "desc": "PANORAMA – Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas."
+      "desc": "PANORAMA â Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas."
     }
   ],
   "brandBar": {
@@ -144,22 +144,26 @@
     "heroCounters": [
       {
         "value": "351",
-        "label": "Practices"
+        "label": "Good Practices"
       },
       {
-        "value": "6",
-        "label": "Partners"
+        "value": "177",
+        "label": "Organisations featured"
+      },
+      {
+        "value": "46",
+        "label": "Countries represented"
       }
     ],
     "heroCounterLink": {
       "label": "",
       "href": ""
     },
-    "footerTagline": "<p>The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR – the Global Initiative for Nature, Grids and Renewables.</p>",
+    "footerTagline": "<p>The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR â the Global Initiative for Nature, Grids and Renewables.</p>",
     "copyrightOrgs": "RGI, GINGR & IUCN",
     "awards": {
       "heading": "RGI Grid Awards",
-      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories – <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
+      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories â <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
       "linkLabel": "Learn more about the RGI Grid Awards",
       "linkHref": "https://renewables-grid.eu/award/"
     },
@@ -197,7 +201,7 @@
   "atlasPartnerLabels": {
     "RGI": "Renewables Grid Initiative (RGI)",
     "OCEaN": "Offshore Coalition for Energy and Nature (OCEaN)",
-    "Panorama": "IUCN PANORAMA – Solutions for a Healthy Planet",
+    "Panorama": "IUCN PANORAMA â Solutions for a Healthy Planet",
     "SL4B": "LIFE SafeLines4Birds (SL4B)"
   }
 }
