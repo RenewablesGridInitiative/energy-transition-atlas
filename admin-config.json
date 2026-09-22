@@ -1,10 +1,10 @@
 {
   "about": {
     "intro": [
-      "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
-      "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
-      "The Atlas is a joint project of the <a href=\"https://renewables-grid.eu\" target=\"_blank\" rel=\"noopener noreferrer\">Renewables Grid Initiative (RGI)</a>, the <a href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\" target=\"_blank\" rel=\"noopener noreferrer\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">GINGR</a> Ã¢ÂÂ the Global Initiative for Nature, Grids and Renewables.",
-      "The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a href=\"https://github.com/RenewablesGridInitiative/energy-transition-atlas\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself."
+      "<p>The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.</p>",
+      "<p>Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.</p>",
+      "<p>The Atlas is a joint project of the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu\">Renewables Grid Initiative (RGI)</a>, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative, the Global Initiative for Nature, Grids and Renewables (<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://gingr.org\">GINGR</a>).</p>",
+      "<p>The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://github.com/RenewablesGridInitiative/energy-transition-atlas\">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself.</p>"
     ],
     "vision": "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.",
     "mission": "The Energy Transition Atlas brings together a growing network of partners who document and share what works in renewable energy and grid development. By collecting these practices in one searchable platform, we help practitioners, policymakers, and communities put proven approaches to work.",
@@ -25,10 +25,10 @@
     "collection": {
       "intro": "The Atlas draws on several complementary sources, each bringing a unique perspective to the energy transition:",
       "sources": [
-        "<strong>RGI's Good Practice Database</strong> has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.",
-        "<strong>IUCN's PANORAMA platform</strong> contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.",
-        "<strong>OCEaN</strong> brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.",
-        "<strong>SafeLines4Birds</strong> contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe."
+        "<p><strong>RGI's Good Practice Database</strong> has documented best practices in grid development and renewable energy since 2010, contributing the largest share of practices covering stakeholder engagement, nature protection, technology innovation, and spatial planning across Europe.</p>",
+        "<p><strong>IUCN's PANORAMA platform</strong> contributes nature-based and community-focused solutions relevant to the energy transition, drawn from a global repository of conservation and sustainable development approaches.</p>",
+        "<p><strong>OCEaN</strong> brings enhancement and restoration projects from the offshore wind sector, showing how offshore energy and marine conservation can work together.</p>",
+        "<p><strong>SafeLines4Birds</strong> contributes bird protection practices from the LIFE SafeLines4Birds project, documenting real-world solutions for making power line infrastructure safer for birds across Europe.</p>"
       ],
       "cta": "The collection keeps growing. New partners and practices are added on a rolling basis. If your organisation documents energy transition practices, we'd love to hear from you."
     },
