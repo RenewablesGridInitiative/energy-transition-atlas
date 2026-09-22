@@ -3,7 +3,7 @@
     "intro": [
       "The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.",
       "Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.",
-      "The Atlas is a joint project of the <a href=\"https://renewables-grid.eu\" target=\"_blank\" rel=\"noopener noreferrer\">Renewables Grid Initiative (RGI)</a>, the <a href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\" target=\"_blank\" rel=\"noopener noreferrer\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">GINGR</a> \u2013 the Global Initiative for Nature, Grids and Renewables.",
+      "The Atlas is a joint project of the <a href=\"https://renewables-grid.eu\" target=\"_blank\" rel=\"noopener noreferrer\">Renewables Grid Initiative (RGI)</a>, the <a href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\" target=\"_blank\" rel=\"noopener noreferrer\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative <a href=\"https://gingr.org\" target=\"_blank\" rel=\"noopener noreferrer\">GINGR</a> – the Global Initiative for Nature, Grids and Renewables.",
       "The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a href=\"https://github.com/RenewablesGridInitiative/energy-transition-atlas\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself."
     ],
     "vision": "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.",
@@ -46,43 +46,116 @@
       "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work."
     ],
     "pathways": [
-      { "name": "RGI Grid Awards", "url": "https://renewables-grid.eu/award/", "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.", "color": "border-l-amber-500" },
-      { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together.", "color": "border-l-sky-500" },
-      { "name": "SafeLines4Birds", "url": "https://safelines4birds.eu", "desc": "The LIFE SafeLines4Birds project documents bird protection practices for power line infrastructure across Europe, including bird flight diverters, nesting platforms, and sensitivity mapping.", "color": "border-l-orange-500" },
-      { "name": "IUCN PANORAMA", "url": "https://panorama.solutions/en", "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant practices reviewed for conservation relevance and documented outcomes.", "color": "border-l-emerald-500" }
+      {
+        "name": "RGI Grid Awards",
+        "url": "https://renewables-grid.eu/award/",
+        "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.",
+        "color": "border-l-amber-500"
+      },
+      {
+        "name": "OCEaN",
+        "url": "https://offshore-coalition.eu",
+        "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together.",
+        "color": "border-l-sky-500"
+      },
+      {
+        "name": "SafeLines4Birds",
+        "url": "https://safelines4birds.eu",
+        "desc": "The LIFE SafeLines4Birds project documents bird protection practices for power line infrastructure across Europe, including bird flight diverters, nesting platforms, and sensitivity mapping.",
+        "color": "border-l-orange-500"
+      },
+      {
+        "name": "IUCN PANORAMA",
+        "url": "https://panorama.solutions/en",
+        "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant practices reviewed for conservation relevance and documented outcomes.",
+        "color": "border-l-emerald-500"
+      }
     ]
   },
   "partners": [
-    { "name": "GINGR", "url": "https://gingr.org", "desc": "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that owns and manages the Energy Transition Atlas." },
-    { "name": "RGI", "url": "https://renewables-grid.eu", "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe." },
-    { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "desc": "The International Union for Conservation of Nature drives global action on nature-positive energy through its Green, Just Energy Transition programme and co-founded GINGR." },
-    { "name": "OCEaN", "url": "https://offshore-coalition.eu", "desc": "The Offshore Coalition for Energy and Nature works to ensure offshore renewable energy and marine nature conservation develop in harmony." },
-    { "name": "SL4B", "url": "https://safelines4birds.eu", "desc": "LIFE SafeLines4Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks." },
-    { "name": "Panorama", "url": "https://panorama.solutions/en", "desc": "PANORAMA \u2013 Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas." }
+    {
+      "name": "GINGR",
+      "url": "https://gingr.org",
+      "desc": "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that owns and manages the Energy Transition Atlas."
+    },
+    {
+      "name": "RGI",
+      "url": "https://renewables-grid.eu",
+      "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe."
+    },
+    {
+      "name": "IUCN",
+      "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition",
+      "desc": "The International Union for Conservation of Nature drives global action on nature-positive energy through its Green, Just Energy Transition programme and co-founded GINGR."
+    },
+    {
+      "name": "OCEaN",
+      "url": "https://offshore-coalition.eu",
+      "desc": "The Offshore Coalition for Energy and Nature works to ensure offshore renewable energy and marine nature conservation develop in harmony."
+    },
+    {
+      "name": "SL4B",
+      "url": "https://safelines4birds.eu",
+      "desc": "LIFE SafeLines4Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks."
+    },
+    {
+      "name": "Panorama",
+      "url": "https://panorama.solutions/en",
+      "desc": "PANORAMA – Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas."
+    }
   ],
   "brandBar": {
     "owners": [
-      { "name": "RGI", "url": "https://renewables-grid.eu", "logo": "logos/rgi.svg" },
-      { "name": "GINGR", "url": "https://gingr.org", "logo": "logos/gingr-white.svg" },
-      { "name": "IUCN", "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition", "logo": "logos/iucn.png" }
+      {
+        "name": "RGI",
+        "url": "https://renewables-grid.eu",
+        "logo": "logos/rgi.svg"
+      },
+      {
+        "name": "GINGR",
+        "url": "https://gingr.org",
+        "logo": "logos/gingr-white.svg"
+      },
+      {
+        "name": "IUCN",
+        "url": "https://www.iucn.org/our-work/topic/green-just-energy-transition",
+        "logo": "logos/iucn.png"
+      }
     ],
     "partners": [
-      { "name": "OCEaN", "url": "https://offshore-coalition.eu" },
-      { "name": "SL4B", "url": "https://safelines4birds.eu" },
-      { "name": "Panorama", "url": "https://panorama.solutions/en" }
+      {
+        "name": "OCEaN",
+        "url": "https://offshore-coalition.eu"
+      },
+      {
+        "name": "SL4B",
+        "url": "https://safelines4birds.eu"
+      },
+      {
+        "name": "Panorama",
+        "url": "https://panorama.solutions/en"
+      }
     ],
     "logoVersion": 4
   },
   "site": {
     "heroTitle": "Energy Transition Atlas",
     "heroSubtitle": "Explore proven practices for decarbonising energy, protecting nature, and improving lives, shared by a growing network of partners.",
-    "heroCounters": [],
-    "heroCounterLink": {},
-    "footerTagline": "The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR \u2013 the Global Initiative for Nature, Grids and Renewables.",
+    "heroCounters": [
+      {
+        "value": "351",
+        "label": "Practices"
+      }
+    ],
+    "heroCounterLink": {
+      "label": "",
+      "href": ""
+    },
+    "footerTagline": "<p>The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR – the Global Initiative for Nature, Grids and Renewables.</p>",
     "copyrightOrgs": "RGI, GINGR & IUCN",
     "awards": {
       "heading": "RGI Grid Awards",
-      "body": "Each year, the <a href=\"https://renewables-grid.eu/award/\" target=\"_blank\" rel=\"noopener noreferrer\">RGI Grid Awards</a> celebrate outstanding projects across three categories \u2013 <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".",
+      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories – <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
       "linkLabel": "Learn more about the RGI Grid Awards",
       "linkHref": "https://renewables-grid.eu/award/"
     },
@@ -92,10 +165,22 @@
     "body": ""
   },
   "nav": [
-    { "label": "Home", "href": "#/" },
-    { "label": "About", "href": "#about" },
-    { "label": "Submit a Practice", "href": "#submit" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Home",
+      "href": "#/"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Submit a Practice",
+      "href": "#submit"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "brandLinks": {
     "RGI": "https://renewables-grid.eu",
@@ -108,7 +193,7 @@
   "atlasPartnerLabels": {
     "RGI": "Renewables Grid Initiative (RGI)",
     "OCEaN": "Offshore Coalition for Energy and Nature (OCEaN)",
-    "Panorama": "IUCN PANORAMA \u2013 Solutions for a Healthy Planet",
+    "Panorama": "IUCN PANORAMA – Solutions for a Healthy Planet",
     "SL4B": "LIFE SafeLines4Birds (SL4B)"
   }
 }
