@@ -99,7 +99,7 @@
       "desc": "LIFE SafeLines4Birds promotes bird-safe practices for power line infrastructure, reducing avian collision and electrocution risks."
     },
     {
-      "name": "Panorama",
+      "name": "PANORAMA",
       "url": "https://panorama.solutions/en",
       "desc": "PANORAMA - Solutions for a Healthy Planet is an IUCN-hosted platform showcasing nature-based solutions worldwide. Energy-relevant practices from Panorama are featured in the Atlas."
     }
@@ -159,11 +159,11 @@
       "label": "",
       "href": ""
     },
-    "footerTagline": "<p>The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR Ã¢ÂÂ the Global Initiative for Nature, Grids and Renewables.</p>",
+    "footerTagline": "<p>The Energy Transition Atlas is a joint project of the Renewables Grid Initiative (RGI), the International Union for Conservation of Nature (IUCN), and their shared initiative GINGR ÃÂ¢ÃÂÃÂ the Global Initiative for Nature, Grids and Renewables.</p>",
     "copyrightOrgs": "RGI, GINGR & IUCN",
     "awards": {
       "heading": "RGI Grid Awards",
-      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories Ã¢ÂÂ <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
+      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories ÃÂ¢ÃÂÃÂ <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
       "linkLabel": "Learn more about the RGI Grid Awards",
       "linkHref": "https://renewables-grid.eu/award/"
     },
