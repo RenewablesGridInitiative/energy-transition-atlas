@@ -140,7 +140,7 @@
   },
   "site": {
     "heroTitle": "Energy Transition Atlas",
-    "heroSubtitle": "Explore proven practices for decarbonising energy, protecting nature, and improving lives, shared by a growing network of partners.",
+    "heroSubtitle": "Your hub to explore proven practices for developing electricity grids, decarbonising energy, and strengthening nature and communities - shared by a growing network of partners",
     "heroCounters": [
       {
         "value": "351",
@@ -163,7 +163,7 @@
     "copyrightOrgs": "RGI, GINGR & IUCN",
     "awards": {
       "heading": "RGI Grid Awards",
-      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
+      "body": "<p>Each year, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu/award/\">RGI Grid Awards</a> celebrate outstanding projects across three categories ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ <strong>Technological Innovation &amp; System Integration</strong>, <strong>Communication &amp; Engagement</strong>, and <strong>Environmental Protection</strong>. Winners receive the <em>Golden Pylon</em> trophy and are featured in the Atlas as \"Good Practice of the Year\".</p>",
       "linkLabel": "Learn more about the RGI Grid Awards",
       "linkHref": "https://renewables-grid.eu/award/"
     },
