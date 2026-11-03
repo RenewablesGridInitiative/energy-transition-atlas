@@ -1,10 +1,9 @@
 {
   "about": {
     "intro": [
-      "<p>The Energy Transition Atlas is a shared platform that brings together proven best practices from across the energy transition. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.</p>",
+      "<p>The Energy Transition Atlas is a shared platform that brings together proven best practices relevant for all facets the energy transition - from grid development and decarbonising energy to strengthening nature and communities. It serves as a navigator and search hub, providing a single access point for practices contributed by multiple organisations and initiatives.</p>",
       "<p>Rather than hosting full content, the Atlas links out to the source websites of each practice, keeping content management decentralised while offering unified discovery, filtering, and search.</p>",
-      "<p>The Atlas is a joint project of the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu\">Renewables Grid Initiative (RGI)</a>, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative, the Global Initiative for Nature, Grids and Renewables (<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://gingr.org\">GINGR</a>).</p>",
-      "<p>The Atlas is built in the open. Its codebase, data, and full contribution history are publicly available on <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://github.com/RenewablesGridInitiative/energy-transition-atlas\">GitHub</a>, reflecting the same commitment to transparency that we champion in the energy transition itself.</p>"
+      "<p>The Atlas is a joint project of the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://renewables-grid.eu\">Renewables Grid Initiative (RGI)</a>, the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.iucn.org/our-work/topic/green-just-energy-transition\">International Union for Conservation of Nature (IUCN)</a>, and their shared initiative, the Global Initiative for Nature, Grids and Renewables (<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://gingr.org\">GINGR</a>).</p>"
     ],
     "vision": "A decarbonised world powered by clean energy, where the shift to renewables strengthens communities, restores nature, and leaves no one behind.",
     "mission": "The Energy Transition Atlas brings together a growing network of partners who document and share what works in renewable energy and grid development. By collecting these practices in one searchable platform, we help practitioners, policymakers, and communities put proven approaches to work.",
@@ -42,8 +41,8 @@
   },
   "submit": {
     "overview": [
-      "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
-      "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work."
+      "<p>The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.</p>",
+      "<p>If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work.</p>"
     ],
     "pathways": [
       {
