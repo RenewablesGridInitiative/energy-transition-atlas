@@ -73,14 +73,14 @@
   },
   "partners": [
     {
-      "name": "GINGR",
-      "url": "https://gingr.org",
-      "desc": "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that owns and manages the Energy Transition Atlas."
-    },
-    {
       "name": "RGI",
       "url": "https://renewables-grid.eu",
-      "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe."
+      "desc": "The Renewables Grid Initiative brings together NGOs and transmission system operators to promote transparent and environmentally sensitive grid development across Europe. RGI owns and manages the Energy Transition Atlas."
+    },
+    {
+      "name": "GINGR",
+      "url": "https://gingr.org",
+      "desc": "The Global Initiative for Nature, Grids and Renewables is a joint initiative of RGI and IUCN that co-developed the Energy Transition Atlas."
     },
     {
       "name": "IUCN",
