@@ -41,20 +41,20 @@
   },
   "submit": {
     "overview": [
-      "<p>The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working in the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.</p>",
-      "<p>If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work.</p>"
+      "<p>The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working for the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.</p>",
+      "<p>If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid and other relevant infrastructure, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work.</p>"
     ],
     "pathways": [
       {
         "name": "RGI Grid Awards",
         "url": "https://renewables-grid.eu/award/",
-        "desc": "The RGI Grid Awards recognise outstanding Good Practices of the Year with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning practices are featured in the Atlas.",
+        "desc": "The RGI Grid Awards recognise outstanding practices in grid development with the Golden Pylon trophy. Winners are selected in three categories: Technological Innovation & System Integration, Communication & Engagement, and Environmental Protection. Award-winning and shortlisted practices are featured in the Atlas.",
         "color": "border-l-amber-500"
       },
       {
         "name": "OCEaN",
-        "url": "https://offshore-coalition.eu",
-        "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind sector, demonstrating how offshore energy and marine conservation can work together.",
+        "url": "https://offshore-coalition.eu/database-projects/",
+        "desc": "The Offshore Coalition for Energy and Nature focuses on enhancement and restoration projects in the offshore wind and grid sector, demonstrating how offshore energy and marine conservation can work together.",
         "color": "border-l-sky-500"
       },
       {
@@ -66,7 +66,7 @@
       {
         "name": "IUCN PANORAMA",
         "url": "https://panorama.solutions/en",
-        "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant practices reviewed for conservation relevance and documented outcomes.",
+        "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant and community-related practices.",
         "color": "border-l-emerald-500"
       }
     ]
