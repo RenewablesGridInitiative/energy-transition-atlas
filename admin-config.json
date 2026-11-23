@@ -41,8 +41,8 @@
   },
   "submit": {
     "overview": [
-      "The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working for the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.",
-      "If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid and other relevant infrastructure, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work."
+      "<p>The Energy Transition Atlas doesn't run its own submission process. Practices come to us through our Atlas Partners, trusted organisations that already document and share what's working for the energy transition. Each partner has its own focus and its own review process, shaped by the work they do: grid infrastructure, offshore wind and marine conservation, bird-safe power lines, or nature-based solutions worldwide.</p>",
+      "<p>If you have a practice that shows how the energy transition can strengthen communities and restore nature alongside building the grid and other relevant infrastructure, we'd love to see it featured in the Atlas. The best way to start is to explore the partner whose focus most closely matches your work.</p>"
     ],
     "pathways": [
       {
@@ -64,9 +64,9 @@
         "color": "border-l-orange-500"
       },
       {
-        "name": "IUCN PANORAMA",
+        "name": "PANORAMA",
         "url": "https://panorama.solutions/en",
-        "desc": "PANORAMA, an IUCN-hosted platform, showcases nature-based solutions worldwide, with a growing collection of energy-relevant and community-related practices.",
+        "desc": "PANORAMA – Solutions for a Healthy Planet is a global knowledge partnership initiative jointly led by IUCN and GIZ, on behalf of a network of international organisations, including UNDP. It is committed to documenting and sharing field-tested practices in biodiversity conservation and sustainable development, facilitating knowledge exchange and learning, and supporting their wider adaptation and replication.",
         "color": "border-l-emerald-500"
       }
     ]
